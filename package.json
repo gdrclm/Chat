@@ -1,0 +1,14 @@
+{
+  "name": "local-story-chat",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test --test-isolation=none",
+    "build": "node scripts/build.js",
+    "build:pages": "node scripts/pages.js"
+  },
+  "engines": {
+    "node": ">=22.8"
+  }
+}
