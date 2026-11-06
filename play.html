@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="ru">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content"><title>Между строк — локальная история</title><style>:root{color-scheme:dark;font-family:system-ui,-apple-system,sans-serif;color:#e8e5dd;background:#151917;font-size:14px;--app-height:100dvh;--app-top:0px}*{box-sizing:border-box}[hidden]{display:none!important}html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:none}body{position:fixed;top:var(--app-top);height:var(--app-height);left:0}button,input,textarea{font:inherit}button{cursor:pointer;touch-action:manipulation;border:0;border-radius:12px;padding:12px 16px;min-height:44px;background:#c4d5a5;color:#20291c}button:disabled{opacity:.5}button:focus-visible{outline:2px solid #fff;outline-offset:3px}main{width:100%;max-width:900px;margin:auto;height:100%;display:flex;flex-direction:column;min-height:0;padding-top:env(safe-area-inset-top)}header{flex-shrink:0;padding:18px 24px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #30372e;gap:12px}.eyebrow{font-size:10px;letter-spacing:2px;color:#a6b992}h2{font:24px Georgia,serif;margin:6px 0 0}.header-actions{display:flex;align-items:center;gap:12px}#badge{font-size:11px;color:#bacc9d;white-space:nowrap}#open-settings,.secondary{background:#303d2c;color:#d8e5cb}.hint{font-size:11px;line-height:1.5;color:#929d91}#memory{margin:0;padding:10px 24px;border-bottom:1px solid #30372e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0}#messages{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:24px;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}.intro{max-width:440px;margin:6vh auto;line-height:1.8;color:#929d91}.intro h3{font:28px Georgia,serif;color:#e1e5d8}article{margin-bottom:18px;max-width:92%;padding:16px 20px;background:#222a22;border:1px solid #333e30;border-radius:3px 16px 16px}article.user{margin-left:auto;background:#2f3829;border-color:#45503a;border-radius:16px 3px 16px 16px}article small{font-size:9px;letter-spacing:2px;color:#b6c89c}article p{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.7;margin:8px 0 0}.compose{flex-shrink:0;padding:0 20px max(10px,env(safe-area-inset-bottom));background:#151917}#status{color:#d8c899;font-size:12px;margin:6px 0;line-height:1.4}#status:empty{display:none}#chat{display:flex;align-items:end;gap:8px;background:#20271f;padding:8px;border:1px solid #46513c;border-radius:16px}#message{min-width:0;flex:1;color:#e8e5dd;font-size:16px;background:transparent;border:0;outline:none;margin:0;padding:10px;resize:none;max-height:100px}#send{flex-shrink:0}.compose>.hint{margin:6px 0 0;text-align:center}aside{height:100%;max-width:640px;margin:auto;overflow-y:auto;padding:24px 24px max(24px,env(safe-area-inset-bottom));padding-top:max(20px,env(safe-area-inset-top));background:#1d231f;overscroll-behavior:contain}.page-top{display:flex;align-items:center;justify-content:space-between;gap:12px}h1{font:38px Georgia,serif;margin:22px 0 12px}h1 br{display:none}h1 span{color:#c4d5a5;margin-left:16px}.muted{color:#929d91}label{display:block;font-size:13px;color:#bac5b5;margin:18px 0}input,textarea{width:100%;background:#151b17;border:1px solid #394336;border-radius:10px;padding:12px;color:#e8e5dd;font-size:16px;margin-top:8px}input:focus,textarea:focus{outline:1px solid #c4d5a5}#settings .secondary{width:100%}.text-button{background:transparent;color:#c4d5a5}.no-script{position:fixed;inset:20px;background:#222a22;padding:24px;z-index:20}@media(max-width:600px){header{padding:12px 16px}h2{font-size:20px}.eyebrow{font-size:9px}.header-actions{gap:8px}#badge{display:none}#open-settings{font-size:12px;padding:10px}#messages{padding:16px}#memory{padding:8px 16px;font-size:10px}.compose{padding-left:10px;padding-right:10px}#send{font-size:12px;padding:12px}article{padding:14px;max-width:95%}.compose>.hint{display:none}.intro{margin:4vh auto}.intro h3{font-size:25px}}@media(max-height:450px){header{padding:6px 12px}header .eyebrow,#memory{display:none}h2{font-size:18px;margin:0}.intro{margin:0 auto}.compose>.hint{display:none}}
+</style></head>
+<body>
+<aside id="settings-page" hidden aria-label="Настройки истории">
+  <div class="page-top"><span class="eyebrow">НАСТРОЙКИ</span><button id="close-settings" type="button" class="secondary">К чату ✕</button></div>
+  <div class="eyebrow">ИНТЕРАКТИВНАЯ ИСТОРИЯ</div><h1>Между<br>строк<span>✦</span></h1>
+  <p class="muted">Ваши слова меняют историю.</p>
+  <form id="settings">
+    <label>Мир и ситуация<textarea name="world" maxlength="4000" rows="3">Ночной город, где воспоминания продаются в стеклянных флаконах. Я прихожу в закрытую лавку за своим потерянным прошлым.</textarea></label>
+    <label>Персонаж<textarea name="character" maxlength="4000" rows="3">Мира — хозяйка лавки воспоминаний. Сдержанная, наблюдательная, с сухим юмором. Она знает обо мне больше, чем говорит.</textarea></label>
+    <label>Мой герой<input name="player" maxlength="1000" value="Путник без воспоминаний, с треснувшим компасом в кармане."></label>
+    <button class="secondary" type="submit">Сохранить вводные</button>
+  </form>
+  <p class="hint">Работает без интернета. Сценарный движок распознаёт намерения и помнит события; это не языковая модель. Изменение вводных начинает новую историю.</p>
+  <label>Загрузить сохранение<input id="import" type="file" accept="application/json,.json"></label>
+  <button id="export" class="text-button">Скачать сохранение</button><br>
+  <button id="reset" class="text-button">Начать заново</button>
+</aside>
+<main id="chat-page">
+  <header><div><span class="eyebrow">ВАША ИСТОРИЯ</span><h2>Лавка на краю ночи</h2></div><div class="header-actions"><span id="badge">● Офлайн</span><button id="open-settings" type="button" aria-label="Открыть настройки">Настройки ⚙</button></div></header>
+  <p id="memory" class="hint" aria-live="polite"></p>
+  <section id="messages" aria-label="Диалог" aria-live="polite"></section>
+  <div class="compose"><p id="status" role="status">Запуск… Если кнопки не отвечают, откройте файл в браузере, а не в предпросмотре мессенджера.</p><form id="chat"><textarea id="message" aria-label="Ваш ответ" placeholder="Что вы скажете или сделаете?" rows="2" maxlength="6000" required></textarea><button id="send" type="submit">Отправить</button></form><p class="hint">Enter — отправить · Shift + Enter — новая строка</p></div>
+</main>
+<noscript><div class="no-script">Для игры нужен JavaScript. Откройте файл в полноценном браузере: предпросмотр вложений может блокировать скрипты.</div></noscript>
+<script>(function (root) {
+  'use strict';
+  const fresh = () => ({ turn: 0, trust: 0, tension: 0, stage: 0, inventory: [], facts: {}, seen: {}, lastIntent: '', lastReply: '' });
+  const rules = [
+    ['refuse', /не\s+(?:буду|хочу|стану)|отказыва|не соглас/iu],
+    ['apology', /прости|извини/iu], ['threat', /убью|удар|угрожа|напада|сломаю/iu],
+    ['help', /помоги|помощ|что делать|как быть/iu],
+    ['greet', /привет|здравств|добрый (?:день|вечер)/iu],
+    ['thanks', /спасибо|благодар/iu], ['name', /меня зовут|мо[её] имя/iu],
+    ['remember', /помнишь|что ты знаешь обо мне|как меня зовут/iu],
+    ['take', /беру|взять|поднимаю|забираю/iu], ['use', /использ|примен|откры|отпер/iu],
+    ['inventory', /инвентарь|что у меня|мои вещи/iu],
+    ['inspect', /осмотр|осматр|смотр|изуч|ищу|обыск|вокруг/iu],
+    ['leave', /ухожу|уйти|выхожу|покидаю|до свидания/iu],
+    ['agree', /^(?:да|ладно|хорошо|согласен|согласна|пойд[её]м|продолжай)[.!\s]*$/iu],
+    ['fear', /боюсь|страшно|страх/iu], ['goal', /хочу|моя цель|мне нужно/iu],
+    ['identity', /кто ты|тебя зовут/iu], ['question', /\?|почему|зачем|расскажи/iu]
+  ];
+  function profile(config) {
+    const world = config.world || '';
+    const name = (config.character || '').match(/^\s*([^—–\n:.]{1,40})(?:\s*[—–:]|\s+-\s+)/u)?.[1]?.trim() || 'Собеседник';
+    const genre = /космо|корабл|станци|робот/iu.test(world) ? 'space' : /школ|универ|кампус/iu.test(world) ? 'school' : /лес|дракон|замок|маг|лавк|воспоминан/iu.test(world) ? 'fantasy' : 'mystery';
+    const scenes = {
+      space: { object: 'бортовой журнал', tool: 'карта доступа', obstacle: 'заблокированный шлюз', clue: 'В журнале есть координаты аварийного маяка.', ending: 'Шлюз открывается. По ту сторону мигает сигнал: кто-то ещё ждёт помощи.' },
+      school: { object: 'записка', tool: 'ключ от архива', obstacle: 'закрытая дверь архива', clue: 'На записке указан номер старого личного дела.', ending: 'Дверь открывается. На столе лежит дело с вырванной первой страницей.' },
+      fantasy: { object: 'запечатанное письмо', tool: 'серебряный ключ', obstacle: 'запертый ларец', clue: 'Под печатью проступают слова: «Правда ждёт того, кто решится открыть ларец».', ending: 'Ларец открывается. Внутри — флакон с мерцающим воспоминанием и записка: «Теперь выбирай, сохранить его или отпустить».' },
+      mystery: { object: 'записная книжка', tool: 'старый ключ', obstacle: 'закрытый сейф', clue: 'В книжке отмечено время встречи и зачёркнуто знакомое имя.', ending: 'Сейф открывается. Внутри лежит фотография: на обороте назначена новая встреча.' }
+    };
+    return { name, ...scenes[genre], warm: /добра|мягк|забот|дружелюб/iu.test(config.character || ''), cold: /сдержан|холод|суров|язв|юмор/iu.test(config.character || '') };
+  }
+  function reply(config, previous, input) {
+    const s = JSON.parse(JSON.stringify(previous || fresh()));
+    const p = profile(config); const text = input.trim().slice(0,6000);
+    const intent = rules.find(([, re]) => re.test(text))?.[0] || 'unknown';
+    s.turn++; s.seen[intent] = (s.seen[intent] || 0) + 1;
+    const statedName = text.match(/(?:меня зовут|мо[её] имя)\s+([A-Za-zА-Яа-яЁё-]{1,40})/iu)?.[1];
+    if (statedName) s.facts.name = statedName;
+    const goal = text.match(/(?:хочу|мне нужно|моя цель\s*[—:–]?)\s+(.{1,180})/iu)?.[1];
+    if (goal && intent !== 'refuse') s.facts.goal = goal;
+    let line = '';
+    const next = () => s.stage === 0 ? `Рядом лежит ${p.object}. Можно осмотреть его или спросить о нём.` : s.stage === 1 ? `Теперь можно взять ${p.tool} или продолжить разговор.` : s.stage === 2 ? `У вас есть ${p.tool}. Впереди — ${p.obstacle}.` : 'Можно обсудить находку, уйти или начать новую историю.';
+    switch (intent) {
+      case 'name': line = statedName ? `«${statedName}. Запомню. Что привело вас сюда?»` : '«Как мне к вам обращаться?»'; break;
+      case 'remember': line = `«${s.facts.name ? `Вас зовут ${s.facts.name}.` : `Вы рассказали о себе: ${config.player || 'пока немного'}.`} ${s.facts.goal ? `Вы хотели: ${s.facts.goal}.` : 'Свою цель вы ещё не назвали.'}»`; break;
+      case 'greet': s.trust++; line = `«Здравствуйте${s.facts.name ? ', ' + s.facts.name : ''}. ${s.turn === 1 ? 'Я ждала, когда кто-нибудь нарушит эту тишину.' : 'Я всё ещё здесь. Продолжим?'}»`; break;
+      case 'identity': line = `«${config.character || 'Я ваш проводник в этой истории.'}»`; break;
+      case 'goal': s.trust++; line = `«Значит, ваша цель — ${s.facts.goal || 'найти свой путь'}. Начнём с того, что можно проверить».\n${next()}`; break;
+      case 'inspect':
+        if (s.stage === 0) { s.stage = 1; line = `Вы замечаете ${p.object}. ${p.clue}\nРядом — ${p.tool}.`; }
+        else line = `${p.clue}\n${next()}`;
+        break;
+      case 'take':
+        if (s.stage === 0) line = `«Сначала осмотритесь. Брать вещи вслепую — плохая привычка».\n${next()}`;
+        else if (/не\s+(?:беру|брать|возьму)/iu.test(text)) line = 'Предмет остаётся на месте. Собеседник не настаивает.';
+        else if (!s.inventory.includes(p.tool)) { s.inventory.push(p.tool); s.stage = Math.max(s.stage, 2); line = `Теперь у вас есть ${p.tool}.\n«Не потеряйте. Возможно, он откроет путь дальше».`; }
+        else line = `У вас уже есть ${p.tool}.\n${next()}`;
+        break;
+      case 'use':
+        if (s.stage >= 3) line = `Путь уже открыт. ${p.ending}`;
+        else if (!s.inventory.includes(p.tool)) line = `Не удаётся открыть: нужен ${p.tool}.\n${next()}`;
+        else { s.stage = 3; line = p.ending; }
+        break;
+      case 'inventory': line = s.inventory.length ? `При вас: ${s.inventory.join(', ')}.` : `Вы ещё ничего не подобрали. О себе вы указали: ${config.player || 'нет описания'}.`; break;
+      case 'threat': s.trust -= 2; s.tension += 2; line = 'Собеседник отступает, преграждая путь. «Угрозы не помогут. Вы хотите получить ответ или поссориться?»'; break;
+      case 'apology': s.trust++; s.tension = Math.max(0,s.tension-2); line = '«Принимается. Давайте попробуем ещё раз». Напряжение понемногу спадает.'; break;
+      case 'thanks': s.trust++; line = '«Спасибо, что сказали. Здесь редко благодарят». Взгляд становится мягче.'; break;
+      case 'refuse': s.trust--; line = '«Хорошо. Решение за вами. Можем поговорить, осмотреться или разойтись». Ничто не заставляет вас продолжать.'; break;
+      case 'fear': s.trust++; line = '«Не нужно торопиться. Скажите, что именно вас пугает. Я выслушаю». Собеседник оставляет вам пространство.'; break;
+      case 'leave': line = '«Я не стану вас удерживать. Если захотите вернуться, разговор продолжим отсюда». Путь наружу свободен.'; break;
+      case 'help': case 'agree': line = `«Давайте по порядку». ${next()}`; break;
+      case 'question':
+        if (/письм|записк|журнал|книжк|ларец|сейф|шлюз|архив/iu.test(text)) line = `«${p.clue} Но проверить это сможете только вы».\n${next()}`;
+        else if (/довер|секрет|скрыва/iu.test(text)) line = s.trust >= 2 ? '«Я скрываю, что уже пыталась пройти этот путь. У меня не получилось. Поэтому я здесь». Это признание даётся нелегко.' : '«Доверие не возникает от одного вопроса. Дайте мне повод рассказать больше».';
+        else line = `«Вы спрашиваете: “${text.slice(0,180)}”. У меня пока нет точного ответа. Давайте искать то, что можно проверить».\n${next()}`;
+        break;
+      default: line = `Собеседник обдумывает ваши слова: «${text.slice(0,180)}».\n«Вы хотите что-то узнать, сделать или рассказать о себе? Скажите чуть конкретнее».\n${next()}`;
+    }
+    s.trust = Math.max(-5,Math.min(5,s.trust)); s.tension = Math.min(5,s.tension);
+    const manner = s.tension >= 2 ? 'Голос звучит настороженно.' : p.warm ? 'В голосе чувствуется участие.' : p.cold ? 'Ответ звучит сдержанно, после короткой паузы.' : 'Собеседник внимательно следит за разговором.';
+    const repeat = intent === s.lastIntent && s.seen[intent] > 1 ? '«Мы уже касались этого. Попробуем взглянуть ещё раз».\n' : '';
+    const opening = s.turn === 1 ? `${config.world || 'История начинается в незнакомом месте.'}\n\n` : '';
+    const output = `${opening}${p.name}. ${manner}\n${repeat}${line}`;
+    s.lastIntent = intent; s.lastReply = output;
+    return { text: output, memory: s };
+  }
+  root.StoryEngine = { fresh, reply, profile };
+})(globalThis);
+</script>
+<script>(function () {
+'use strict';
+const settings = document.querySelector('#settings');
+const chat = document.querySelector('#chat');
+const list = document.querySelector('#messages');
+const status = document.querySelector('#status');
+const field = document.querySelector('#message');
+const send = document.querySelector('#send');
+const engine = globalThis.StoryEngine;
+const key = 'between-lines-offline-v2';
+let busy = false;
+let state = { config: Object.fromEntries(new FormData(settings)), messages: [], memory: engine.fresh() };
+try {
+  const saved = JSON.parse(localStorage.getItem(key));
+  if (saved && saved.config && Array.isArray(saved.messages)) {
+    state.config = { ...state.config, ...saved.config };
+    if (saved.memory && Number.isInteger(saved.memory.turn) && saved.memory.facts && saved.memory.seen && Array.isArray(saved.memory.inventory)) state.memory = saved.memory;
+    state.messages = saved.messages.filter(m => ['user', 'assistant'].includes(m.role) && typeof m.content === 'string');
+  }
+} catch { status.textContent = 'Не удалось прочитать сохранение. Можно начать новую игру.'; }
+for (const [name, value] of Object.entries(state.config)) if (settings.elements.namedItem(name)) settings.elements.namedItem(name).value = value;
+function save() {
+  try { localStorage.setItem(key, JSON.stringify(state)); }
+  catch { status.textContent = 'Браузер не смог сохранить игру. Текущий диалог доступен до закрытия страницы.'; }
+}
+function render() {
+  list.replaceChildren();
+  if (!state.messages.length) {
+    const intro = document.createElement('div'); intro.className = 'intro';
+    const title = document.createElement('h3'); title.textContent = 'Каждая история начинается со слова.';
+    const text = document.createElement('p'); text.textContent = 'Откройте «Настройки», задайте мир и персонажа, затем напишите первое действие. Например: «Я стучу в дверь лавки». Персонаж реагирует на вопросы, поступки, угрозы и поддержку. Осматривайтесь, собирайте предметы и открывайте новые сцены.';
+    intro.append(title, text); list.append(intro);
+  }
+  for (const message of state.messages) {
+    const item = document.createElement('article'); item.className = message.role;
+    const label = document.createElement('small'); label.textContent = message.role === 'user' ? 'ВЫ' : 'РАССКАЗЧИК';
+    const text = document.createElement('p'); text.textContent = message.content;
+    item.append(label, text); list.append(item);
+  }
+  document.querySelector('#badge').textContent = '● Офлайн';
+  document.querySelector('#memory').textContent = `Доверие: ${state.memory.trust} · Напряжение: ${state.memory.tension} · Находки: ${state.memory.inventory.join(', ') || 'нет'}`;
+  list.scrollTop = list.scrollHeight;
+}
+settings.addEventListener('submit', event => {
+  event.preventDefault(); const config = Object.fromEntries(new FormData(settings));
+  if (config.world !== state.config.world || config.character !== state.config.character || config.player !== state.config.player) {
+    if (state.messages.length && !confirm('Изменение вводных начнёт новую историю. Продолжить?')) return;
+    state.messages = []; state.memory = engine.fresh();
+  }
+  state.config = config;
+  status.textContent = 'Вводные сохранены.'; save(); render(); showSettings(false);
+});
+document.querySelector('#reset').addEventListener('click', () => {
+  if (busy || !confirm('Удалить диалог и начать новую историю?')) return;
+  state.messages = []; state.memory = engine.fresh(); status.textContent = ''; save(); render();
+});
+chat.addEventListener('submit', async event => {
+  event.preventDefault();
+  const text = field.value.trim(); if (busy) return;
+  if (!text) { status.textContent = 'Напишите сообщение.'; return; }
+  busy = true; send.disabled = true; settings.querySelector('button').disabled = true;
+  try {
+    state.messages.push({ role: 'user', content: text }); field.value = '';
+    status.textContent = 'Персонаж обдумывает ответ…';
+    render();
+    const result = engine.reply(state.config, state.memory, text);
+    state.memory = result.memory;
+    const answer = result.text;
+    state.messages.push({ role: 'assistant', content: answer }); status.textContent = ''; save();
+  } catch (error) {
+    state.messages.pop(); field.value = text; status.textContent = `${error.message} Сообщение возвращено в поле ввода — попробуйте снова.`; save();
+  } finally { busy = false; send.disabled = false; settings.querySelector('button').disabled = false; render(); }
+});
+field.addEventListener('keydown', event => { if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) { event.preventDefault(); send.click(); } });
+render();
+status.textContent = '';
+
+document.querySelector('#export').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'story-save.json'; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+});
+document.querySelector('#import').addEventListener('change', async event => {
+  const file = event.target.files[0]; if (!file) return;
+  try {
+    if (file.size > 5_000_000) throw new Error('Сохранение слишком большое.');
+    const data = JSON.parse(await file.text());
+    const m = data.memory;
+    if (!data.config || !['world','character','player'].every(k => typeof data.config[k] === 'string') || !Array.isArray(data.messages) || !data.messages.every(v => ['user','assistant'].includes(v.role) && typeof v.content === 'string') || !m || !['turn','trust','tension','stage'].every(k => Number.isFinite(m[k])) || !Array.isArray(m.inventory) || !m.inventory.every(v => typeof v === 'string') || !m.facts || !m.seen) throw new Error('Неверный формат сохранения.');
+    if (!confirm('Заменить текущую историю загруженной?')) return;
+    state = data;
+    for (const name of ['world','character','player']) settings.elements.namedItem(name).value = state.config[name];
+    status.textContent = 'История загружена.'; save(); render();
+  } catch (error) { status.textContent = error.message; }
+  finally { event.target.value = ''; }
+});
+
+function showSettings(open) {
+  document.querySelector('#settings-page').hidden = !open;
+  document.querySelector('#chat-page').hidden = open;
+  (open ? document.querySelector('#close-settings') : document.querySelector('#open-settings')).focus();
+}
+document.querySelector('#open-settings').addEventListener('click', () => showSettings(true));
+document.querySelector('#close-settings').addEventListener('click', () => showSettings(false));
+document.addEventListener('keydown', event => { if (event.key === 'Escape') showSettings(false); });
+function resizeViewport() {
+  const viewport = window.visualViewport;
+  document.documentElement.style.setProperty('--app-height', `${viewport ? viewport.height : window.innerHeight}px`);
+  document.documentElement.style.setProperty('--app-top', `${viewport ? viewport.offsetTop : 0}px`);
+  list.scrollTop = list.scrollHeight;
+}
+window.addEventListener('resize', resizeViewport);
+if (window.visualViewport) { window.visualViewport.addEventListener('resize', resizeViewport); window.visualViewport.addEventListener('scroll', resizeViewport); }
+resizeViewport();
+
+})();
+</script>
+</body></html>
