@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ru">
+<html lang="ru" data-version="3.0">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content"><title>Между строк — локальная история</title><link rel="stylesheet" href="style.css"><script defer src="engine.js"></script><script defer src="app.js"></script></head>
 <body>
 <aside id="settings-page" hidden aria-label="Настройки истории">
@@ -10,15 +10,21 @@
     <label>Мир и ситуация<textarea name="world" maxlength="4000" rows="3">Ночной город, где воспоминания продаются в стеклянных флаконах. Я прихожу в закрытую лавку за своим потерянным прошлым.</textarea></label>
     <label>Персонаж<textarea name="character" maxlength="4000" rows="3">Мира — хозяйка лавки воспоминаний. Сдержанная, наблюдательная, с сухим юмором. Она знает обо мне больше, чем говорит.</textarea></label>
     <label>Мой герой<input name="player" maxlength="1000" value="Путник без воспоминаний, с треснувшим компасом в кармане."></label>
+    <label>Опоры истории · необязательно<textarea name="canon" maxlength="4000" rows="6" placeholder="Место: мастерская
+Предметы: ложка, фонарь, закрытый шкаф
+Цель персонажа: вернуть пропавшего друга
+Секрет: другу угрожает прежний союзник
+Правила: магии нет"></textarea></label>
     <button class="secondary" type="submit">Сохранить вводные</button>
   </form>
-  <p class="hint">Работает без интернета. Сценарный движок распознаёт намерения и помнит события; это не языковая модель. Изменение вводных начинает новую историю.</p>
+  <p class="hint">Работает без интернета. Сценарный движок распознаёт намерения и помнит события; это не языковая модель. Изменение вводных обновляет сцену без удаления переписки. Для чистого старта используйте «Начать заново». Явные опоры важнее жанровых заготовок.</p>
   <label>Загрузить сохранение<input id="import" type="file" accept="application/json,.json"></label>
   <button id="export" class="text-button">Скачать сохранение</button><br>
   <button id="reset" class="text-button">Начать заново</button>
+  <section class="memory-panel"><h2>Память истории</h2><p id="remembered-goal" class="hint"></p><h3>Факты и последствия</h3><ul id="journal"></ul><h3>Открытые зацепки</h3><ul id="threads"></ul></section>
 </aside>
 <main id="chat-page">
-  <header><div><span class="eyebrow">ВАША ИСТОРИЯ</span><h2>Лавка на краю ночи</h2></div><div class="header-actions"><span id="badge">● Офлайн</span><button id="open-settings" type="button" aria-label="Открыть настройки">Настройки ⚙</button></div></header>
+  <header><div><span class="eyebrow">МЕЖДУ СТРОК · 3.0</span><h2 id="story-title">Ваша история</h2></div><div class="header-actions"><span id="badge">● Офлайн</span><button id="open-settings" type="button" aria-label="Открыть настройки">Настройки ⚙</button></div></header>
   <p id="memory" class="hint" aria-live="polite"></p>
   <section id="messages" aria-label="Диалог" aria-live="polite"></section>
   <div class="compose"><p id="status" role="status">Запуск… Если кнопки не отвечают, откройте файл в браузере, а не в предпросмотре мессенджера.</p><form id="chat"><textarea id="message" aria-label="Ваш ответ" placeholder="Что вы скажете или сделаете?" rows="2" maxlength="6000" required></textarea><button id="send" type="submit">Отправить</button></form><p class="hint">Enter — отправить · Shift + Enter — новая строка</p></div>
