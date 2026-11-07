@@ -98,7 +98,8 @@
       main.access=s.entities.filter(e=>e.kind==='barrier'&&(owner||access&&namesMatch(e.label,access))).map(e=>e.id);
       main.trust=number(s.trust);main.tension=number(s.tension);main.seen=clone(s.seen||{});main.used=clone(s.used||{});main.pending=clone(s.pending||null);main.secretRevealed=Boolean(s.secretRevealed);
       main.secret=p.secret;
-      if(!old)for(const k of ['secret','debt','lastGift','proposal','claim','topic'])if(s.facts[k]!==undefined)main.memory[k]=s.facts[k];
+      if(!old)main.memory.heardNotes=clone(s.notes||[]);
+      if(!old)for(const k of ['secret','debt','lastGift','proposal','claim','topic','note','promise'])if(s.facts[k]!==undefined)main.memory[k]=s.facts[k];
       w.npcs[main.id]=main;w.primaryNpcId=main.id;w.activeNpcId=main.id;
       const extra=rawFields(config.canon).filter(([k])=>k==='персонаж');
       for(const [,line]of extra) {
@@ -140,7 +141,7 @@
       if(!Array.isArray(e.lineage))e.lineage=[];
       if(!Array.isArray(e.unlocks))e.unlocks=e.label===p.tool?s.entities.filter(v=>v.kind==='barrier'&&v.source==='scene').map(v=>v.id):[];
     }
-    const memoryKeys=['secret','debt','lastGift','proposal','claim','topic'];
+    const memoryKeys=['secret','debt','lastGift','proposal','claim','topic','note','promise'];
     function flush(s) {
       const n=npc(s);if(!n)return;
       n.trust=Math.max(-5,Math.min(5,number(s.trust)));n.tension=Math.max(0,Math.min(5,number(s.tension)));n.seen=clone(s.seen);n.used=clone(s.used);n.pending=clone(s.pending);n.secretRevealed=Boolean(s.secretRevealed);
@@ -379,6 +380,8 @@
         s.facts.note=text;s.notes.push(text);s.notes=s.notes.slice(-50);s.facts.claim=text;
         emit(s,'player_statement','player',null,{text,recipient:here(s,n)?n.id:null});log(s,'claim','Слова игрока: '+text);
         if(!n||!here(s,n))return ok('Вы записываете свою версию: '+text+'. Это сообщение игрока; факты и правила мира остаются прежними.','statement_recorded');
+        if(!Array.isArray(n.memory.heardNotes))n.memory.heardNotes=[];
+        if(!n.memory.heardNotes.includes(text))n.memory.heardNotes.push(text);n.memory.heardNotes=n.memory.heardNotes.slice(-50);
         const prop=proposition(s,text),belief=hear(s,n,prop,'player',Math.max(.2,Math.min(.65,.45+s.trust*.04)));
         return ok(voice(s,p,`Я запомню вашу версию: ${prop.text}. ${belief.confidence>=.7?'Она кажется убедительной.':'Пока я не могу считать её доказанной.'}`),'claim_heard');
       }

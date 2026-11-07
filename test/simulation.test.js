@@ -173,3 +173,10 @@ test('B: addressing the NPC by name does not accidentally execute the request as
 test('P0: magical movement cannot desynchronize the player from the location graph',()=>{
  const r=play(config,'Телепортируюсь на Марс');assert.equal(status(r),'clarification');assert.equal(r.memory.place,'лавка');assert.equal(r.memory.world.locations.find(l=>l.id===r.memory.world.player.location).name,r.memory.place);
 });
+
+test('P0: help, recall and unfamiliar dialogue do not leak another NPC private conversation',()=>{
+ const introduced=play(config,'Меня зовут Алекс','Хочу найти брата','Запомни: моя кошка Луна','Выхожу','Иду в город','Иду на рынок').memory;
+ for(const text of ['Помнишь меня?','Помоги','Фиолетовый вторник','Помнишь кошку?']) {
+  const r=E.reply(config,introduced,text);assert.doesNotMatch(r.text,/Алекс|брата|Луна/);assert.equal(person(r.memory,'Ника').memory.note,undefined);
+ }
+});

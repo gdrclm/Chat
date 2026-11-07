@@ -310,12 +310,12 @@
     s.inventory = s.inventory.filter(v => v !== item.label); item.location = destination;
   }
   function hint(s, p) {
-    if(/поговор|познаком|подруж|любов|поболт/.test(norm(s.facts.goal)))return 'Можно поговорить о вас, о моей цели или о том, что изменило ваш день. Вещи вокруг не обязывают нас идти за ними.';
+    if(/поговор|познаком|подруж|любов|поболт/.test(norm(knownPlayer(s,'goal'))))return 'Можно поговорить о вас, о моей цели или о том, что изменило ваш день. Вещи вокруг не обязывают нас идти за ними.';
     const lock = knownHere(s).find(e => e.kind === 'barrier' && !e.opened && !e.destroyed);
     const clue = knownHere(s).find(e => e.kind === 'clue');
     if (lock) return `Пока закрыто: «${lock.label}». Можно поискать способ открыть, договориться о помощи или придумать обход.`;
     if (clue) return `Можно изучить «${clue.label}» или обсудить, кому эта находка выгодна.`;
-    return s.facts.goal ? `Нить истории: ${s.facts.goal}. Что вы готовы ради этого предпринять?` : `Ваш следующий шаг определит, куда пойдёт разговор. ${p.name} пока ждёт.`;
+    return knownPlayer(s,'goal') ? `Нить истории: ${knownPlayer(s,'goal')}. Что вы готовы ради этого предпринять?` : `Ваш следующий шаг определит, куда пойдёт разговор. ${p.name} пока ждёт.`;
   }
   function learnFacts(s, c) {
     if (c.hypothetical || c.negated || c.question) return;
@@ -395,9 +395,9 @@
       case 'name': return voice(s,p,s.facts.name ? `${s.facts.name}. Запомню. ${s.facts.goal ? 'Вы всё ещё хотите ' + s.facts.goal + '?' : 'Что привело вас сюда?'}` : 'Как мне к вам обращаться?');
       case 'remember': {
         const tokens=words(c.text).map(stem).filter(w=>w.length>3);
-        const recalled=s.notes.map(note=>[note,words(note).map(stem).filter(w=>tokens.includes(w)).length]).filter(([,score])=>score>0).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([note])=>note);
+        const recalled=(simulation.npc(s)?.memory.heardNotes||[]).map(note=>[note,words(note).map(stem).filter(w=>tokens.includes(w)).length]).filter(([,score])=>score>0).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([note])=>note);
         const extra=recalled.filter(note=>note!==s.facts.note).map(note=>'Вы говорили: '+note+'.');
-        return voice(s,p,[knownPlayer(s,'name') ? 'Вы представились как ' + knownPlayer(s,'name') + '.' : 'О себе вы рассказали: ' + (config.player || 'пока немного') + '.', knownPlayer(s,'goal') ? 'Ваша цель — ' + knownPlayer(s,'goal') + '.' : '', s.facts.secret ? 'Вы уже знаете: ' + s.facts.secret + '.' : '', s.facts.promise ? 'Вы обещали: ' + s.facts.promise + '.' : '', s.facts.note ? 'Вы просили запомнить: ' + s.facts.note + '.' : '', s.facts.lastGift ? 'Вы передали мне: ' + s.facts.lastGift + '.' : ''].filter(Boolean).concat(extra).join(' '));
+        return voice(s,p,[knownPlayer(s,'name') ? 'Вы представились как ' + knownPlayer(s,'name') + '.' : 'Вы пока не называли мне своего имени.', knownPlayer(s,'goal') ? 'Ваша цель — ' + knownPlayer(s,'goal') + '.' : '', s.facts.secret ? 'Вы уже знаете: ' + s.facts.secret + '.' : '', s.facts.promise ? 'Вы обещали: ' + s.facts.promise + '.' : '', s.facts.note ? 'Вы просили запомнить: ' + s.facts.note + '.' : '', s.facts.lastGift ? 'Вы передали мне: ' + s.facts.lastGift + '.' : ''].filter(Boolean).concat(extra).join(' '));
       }
       case 'identity': return voice(s,p,`Я — ${p.name}. Сейчас для меня важно ${p.motive}. А вы решаете, говорить со мной начистоту или держать дистанцию.`);
       case 'inventory': return s.inventory.length ? 'При вас: ' + s.inventory.map(v=>'«'+v+'»').join(', ') + '.' : 'При вас нет учтённых предметов. Можно добавить стартовые вещи в описание героя или явно сказать: «У меня есть …».';
@@ -570,7 +570,7 @@
         s.facts.topic=c.text.slice(0,140);thread(s,c.text,'player-topic');
         return voice(s,p,choose(s,'unfamiliar',[
           `Похоже, вы предлагаете другой ход. Я пока не понимаю его цели. Это поступок, новая деталь мира или реплика мне? Можно описать желаемый результат своими словами.`,
-          `Мы ещё не пробовали такой путь. ${s.facts.goal?'Ваша цель — '+s.facts.goal+'. ':''}Что должно измениться после этого? Новые вещи и правила задаёт автор в настройках; в игре нужно уточнить доступный способ.`,
+          `Мы ещё не пробовали такой путь. ${knownPlayer(s,'goal')?'Ваша цель — '+knownPlayer(s,'goal')+'. ':''}Что должно измениться после этого? Новые вещи и правила задаёт автор в настройках; в игре нужно уточнить доступный способ.`,
           `Я не хочу приписать вам чужой замысел. Что в вашем предложении главное — изменить обстановку, повлиять на меня или установить факт истории?`
         ]));
       }

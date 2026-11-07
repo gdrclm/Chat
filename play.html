@@ -144,7 +144,8 @@
       main.access=s.entities.filter(e=>e.kind==='barrier'&&(owner||access&&namesMatch(e.label,access))).map(e=>e.id);
       main.trust=number(s.trust);main.tension=number(s.tension);main.seen=clone(s.seen||{});main.used=clone(s.used||{});main.pending=clone(s.pending||null);main.secretRevealed=Boolean(s.secretRevealed);
       main.secret=p.secret;
-      if(!old)for(const k of ['secret','debt','lastGift','proposal','claim','topic'])if(s.facts[k]!==undefined)main.memory[k]=s.facts[k];
+      if(!old)main.memory.heardNotes=clone(s.notes||[]);
+      if(!old)for(const k of ['secret','debt','lastGift','proposal','claim','topic','note','promise'])if(s.facts[k]!==undefined)main.memory[k]=s.facts[k];
       w.npcs[main.id]=main;w.primaryNpcId=main.id;w.activeNpcId=main.id;
       const extra=rawFields(config.canon).filter(([k])=>k==='персонаж');
       for(const [,line]of extra) {
@@ -186,7 +187,7 @@
       if(!Array.isArray(e.lineage))e.lineage=[];
       if(!Array.isArray(e.unlocks))e.unlocks=e.label===p.tool?s.entities.filter(v=>v.kind==='barrier'&&v.source==='scene').map(v=>v.id):[];
     }
-    const memoryKeys=['secret','debt','lastGift','proposal','claim','topic'];
+    const memoryKeys=['secret','debt','lastGift','proposal','claim','topic','note','promise'];
     function flush(s) {
       const n=npc(s);if(!n)return;
       n.trust=Math.max(-5,Math.min(5,number(s.trust)));n.tension=Math.max(0,Math.min(5,number(s.tension)));n.seen=clone(s.seen);n.used=clone(s.used);n.pending=clone(s.pending);n.secretRevealed=Boolean(s.secretRevealed);
@@ -425,6 +426,8 @@
         s.facts.note=text;s.notes.push(text);s.notes=s.notes.slice(-50);s.facts.claim=text;
         emit(s,'player_statement','player',null,{text,recipient:here(s,n)?n.id:null});log(s,'claim','Слова игрока: '+text);
         if(!n||!here(s,n))return ok('Вы записываете свою версию: '+text+'. Это сообщение игрока; факты и правила мира остаются прежними.','statement_recorded');
+        if(!Array.isArray(n.memory.heardNotes))n.memory.heardNotes=[];
+        if(!n.memory.heardNotes.includes(text))n.memory.heardNotes.push(text);n.memory.heardNotes=n.memory.heardNotes.slice(-50);
         const prop=proposition(s,text),belief=hear(s,n,prop,'player',Math.max(.2,Math.min(.65,.45+s.trust*.04)));
         return ok(voice(s,p,`Я запомню вашу версию: ${prop.text}. ${belief.confidence>=.7?'Она кажется убедительной.':'Пока я не могу считать её доказанной.'}`),'claim_heard');
       }
@@ -935,12 +938,12 @@
     s.inventory = s.inventory.filter(v => v !== item.label); item.location = destination;
   }
   function hint(s, p) {
-    if(/поговор|познаком|подруж|любов|поболт/.test(norm(s.facts.goal)))return 'Можно поговорить о вас, о моей цели или о том, что изменило ваш день. Вещи вокруг не обязывают нас идти за ними.';
+    if(/поговор|познаком|подруж|любов|поболт/.test(norm(knownPlayer(s,'goal'))))return 'Можно поговорить о вас, о моей цели или о том, что изменило ваш день. Вещи вокруг не обязывают нас идти за ними.';
     const lock = knownHere(s).find(e => e.kind === 'barrier' && !e.opened && !e.destroyed);
     const clue = knownHere(s).find(e => e.kind === 'clue');
     if (lock) return `Пока закрыто: «${lock.label}». Можно поискать способ открыть, договориться о помощи или придумать обход.`;
     if (clue) return `Можно изучить «${clue.label}» или обсудить, кому эта находка выгодна.`;
-    return s.facts.goal ? `Нить истории: ${s.facts.goal}. Что вы готовы ради этого предпринять?` : `Ваш следующий шаг определит, куда пойдёт разговор. ${p.name} пока ждёт.`;
+    return knownPlayer(s,'goal') ? `Нить истории: ${knownPlayer(s,'goal')}. Что вы готовы ради этого предпринять?` : `Ваш следующий шаг определит, куда пойдёт разговор. ${p.name} пока ждёт.`;
   }
   function learnFacts(s, c) {
     if (c.hypothetical || c.negated || c.question) return;
@@ -1020,9 +1023,9 @@
       case 'name': return voice(s,p,s.facts.name ? `${s.facts.name}. Запомню. ${s.facts.goal ? 'Вы всё ещё хотите ' + s.facts.goal + '?' : 'Что привело вас сюда?'}` : 'Как мне к вам обращаться?');
       case 'remember': {
         const tokens=words(c.text).map(stem).filter(w=>w.length>3);
-        const recalled=s.notes.map(note=>[note,words(note).map(stem).filter(w=>tokens.includes(w)).length]).filter(([,score])=>score>0).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([note])=>note);
+        const recalled=(simulation.npc(s)?.memory.heardNotes||[]).map(note=>[note,words(note).map(stem).filter(w=>tokens.includes(w)).length]).filter(([,score])=>score>0).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([note])=>note);
         const extra=recalled.filter(note=>note!==s.facts.note).map(note=>'Вы говорили: '+note+'.');
-        return voice(s,p,[knownPlayer(s,'name') ? 'Вы представились как ' + knownPlayer(s,'name') + '.' : 'О себе вы рассказали: ' + (config.player || 'пока немного') + '.', knownPlayer(s,'goal') ? 'Ваша цель — ' + knownPlayer(s,'goal') + '.' : '', s.facts.secret ? 'Вы уже знаете: ' + s.facts.secret + '.' : '', s.facts.promise ? 'Вы обещали: ' + s.facts.promise + '.' : '', s.facts.note ? 'Вы просили запомнить: ' + s.facts.note + '.' : '', s.facts.lastGift ? 'Вы передали мне: ' + s.facts.lastGift + '.' : ''].filter(Boolean).concat(extra).join(' '));
+        return voice(s,p,[knownPlayer(s,'name') ? 'Вы представились как ' + knownPlayer(s,'name') + '.' : 'Вы пока не называли мне своего имени.', knownPlayer(s,'goal') ? 'Ваша цель — ' + knownPlayer(s,'goal') + '.' : '', s.facts.secret ? 'Вы уже знаете: ' + s.facts.secret + '.' : '', s.facts.promise ? 'Вы обещали: ' + s.facts.promise + '.' : '', s.facts.note ? 'Вы просили запомнить: ' + s.facts.note + '.' : '', s.facts.lastGift ? 'Вы передали мне: ' + s.facts.lastGift + '.' : ''].filter(Boolean).concat(extra).join(' '));
       }
       case 'identity': return voice(s,p,`Я — ${p.name}. Сейчас для меня важно ${p.motive}. А вы решаете, говорить со мной начистоту или держать дистанцию.`);
       case 'inventory': return s.inventory.length ? 'При вас: ' + s.inventory.map(v=>'«'+v+'»').join(', ') + '.' : 'При вас нет учтённых предметов. Можно добавить стартовые вещи в описание героя или явно сказать: «У меня есть …».';
@@ -1195,7 +1198,7 @@
         s.facts.topic=c.text.slice(0,140);thread(s,c.text,'player-topic');
         return voice(s,p,choose(s,'unfamiliar',[
           `Похоже, вы предлагаете другой ход. Я пока не понимаю его цели. Это поступок, новая деталь мира или реплика мне? Можно описать желаемый результат своими словами.`,
-          `Мы ещё не пробовали такой путь. ${s.facts.goal?'Ваша цель — '+s.facts.goal+'. ':''}Что должно измениться после этого? Новые вещи и правила задаёт автор в настройках; в игре нужно уточнить доступный способ.`,
+          `Мы ещё не пробовали такой путь. ${knownPlayer(s,'goal')?'Ваша цель — '+knownPlayer(s,'goal')+'. ':''}Что должно измениться после этого? Новые вещи и правила задаёт автор в настройках; в игре нужно уточнить доступный способ.`,
           `Я не хочу приписать вам чужой замысел. Что в вашем предложении главное — изменить обстановку, повлиять на меня или установить факт истории?`
         ]));
       }
