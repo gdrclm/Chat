@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import '../scenes.js';
 import '../simulation.js';
 import '../engine.js';
 const E=globalThis.StoryEngine;
@@ -11,7 +12,7 @@ const prepared=()=>play(base,'Осматриваюсь').memory;
 
 test('one message can introduce a name, a goal, and an action',()=>{
  const r=play(base,'Меня зовут Лиса. Хочу вернуть брата. Осматриваюсь');
- assert.equal(r.memory.facts.name,'Лиса');assert.equal(r.memory.facts.goal,'вернуть брата');assert.equal(r.memory.stage,1);
+ assert.equal(r.memory.facts.name,'Лиса');assert.equal(r.memory.facts.goal,'вернуть брата');assert.equal(r.memory.stage,0);assert.ok(r.memory.world.loops.exploration.observed.length);
 });
 test('compound actions resolve pronouns against the item just taken',()=>{
  const r=E.reply(base,prepared(),'Беру письмо и открываю его');
@@ -117,7 +118,7 @@ test('newly revealed objects become usable scene entities',()=>{
  const r=play(config,'Ломаю сейф','Беру фотографию');assert.ok(r.memory.inventory.includes('фотография'));
 });
 test('help offer followed by yes acts on the earlier offer',()=>{
- const r=play(base,'Помоги','Да');assert.equal(r.memory.lastIntent,'agree');assert.ok(r.memory.stage>=1);
+ const r=play(base,'Помоги','Да');assert.equal(r.memory.lastIntent,'agree');assert.equal(r.memory.stage,0);assert.ok(r.memory.world.loops.exploration.observed.includes(r.memory.world.player.location));
 });
 test('NPC help provides another route and creates an obligation',()=>{
  const r=play({...base,canon:'Доступ персонажа: ларец'},'Привет','Помоги открыть ларец','Да');assert.equal(item(r.memory,'ларец').opened,true);assert.equal(r.memory.facts.debt,'защитить сестру');

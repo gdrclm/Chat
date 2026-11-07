@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import '../scenes.js';
 import '../simulation.js';
 import '../engine.js';
 const {fresh,reply}=globalThis.StoryEngine;
@@ -13,7 +14,7 @@ test('remembers name and goal, without mutating previous state',()=>{
 });
 test('quest requires discovery and tool, then stays completed',()=>{
  let r=reply(config,fresh(),'Открываю шлюз'); assert.equal(r.memory.stage,0);
- r=reply(config,r.memory,'Осматриваюсь'); assert.equal(r.memory.stage,1);
+ r=reply(config,r.memory,'Осматриваюсь'); assert.equal(r.memory.stage,0);assert.ok(r.memory.world.loops.exploration.observed.length);
  r=reply(config,r.memory,'Беру карту'); assert.equal(r.memory.stage,2);
  assert.deepEqual(r.memory.inventory,['карта доступа']);
  r=reply(config,r.memory,'Открываю шлюз'); assert.equal(r.memory.stage,3); assert.match(r.text,/Шлюз открывается/);

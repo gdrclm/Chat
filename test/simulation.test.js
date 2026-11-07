@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import '../scenes.js';
 import '../simulation.js';
 import '../engine.js';
 const E=globalThis.StoryEngine;
@@ -8,6 +9,7 @@ const play=(c,...commands)=>commands.reduce((r,t)=>E.reply(c,r.memory,t),{memory
 const person=(s,name='Мира')=>Object.values(s.world.npcs).find(n=>n.name===name);
 const item=(s,label)=>s.entities.find(e=>e.label.includes(label));
 const status=r=>r.outcome.status;
+const repairSteps=['Осматриваю механизм','Проверяю хватает ли деталей','Изготавливаю штифт','Устанавливаю штифт','Проверяю ход механизма'];
 
 test('A: testimony plus an unwitnessed forged clue persuades the NPC without rewriting world truth',()=>{
  const r=play(config,'Лгу: виновник = Борис','Беру письмо','Незаметно подбрасываю письмо: виновник = Борис','Кто виноват?');
@@ -62,11 +64,11 @@ test('C: another NPC has independent reaction counters and no inherited conflict
  assert.equal(person(r.memory).seen.greet,1);assert.equal(person(r.memory,'Ника').seen.greet,1);assert.equal(person(r.memory,'Ника').trust,1);assert.equal(person(r.memory,'Ника').grievances.length,0);
 });
 test('D: a work/exploration/social loop can complete without solving the original mystery',()=>{
- const r=play(config,'Выхожу','Иду в город','Иду в мастерскую','Ищу работу','Да','Работаю','Работаю','Забираю плату','Иду в город','Иду на рынок','Исследую город','Покупаю цепочку');
+ const r=play({...config,player:config.player+' с проволокой'},'Выхожу','Иду в город','Иду в мастерскую','Ищу работу','Да',...repairSteps,'Забираю плату','Иду в город','Иду на рынок','Исследую город','Покупаю цепочку');
  assert.equal(status(r),'success');assert.equal(r.memory.world.loops.work.status,'paid');assert.equal(r.memory.world.player.money,1);assert.ok(r.memory.inventory.includes('цепочка'));assert.ok(r.memory.world.loops.social.contacts.includes(person(r.memory,'Ника').id));assert.equal(item(r.memory,'ларец').opened,false);
 });
 test('D: one job cannot be paid twice',()=>{
- const r=play(config,'Выхожу','Иду в город','Иду в мастерскую','Ищу работу','Да','Работаю','Работаю','Забираю плату','Забираю плату');assert.equal(status(r),'refused');assert.equal(r.memory.world.player.money,3);
+ const r=play({...config,player:config.player+' с проволокой'},'Выхожу','Иду в город','Иду в мастерскую','Ищу работу','Да',...repairSteps,'Забираю плату','Забираю плату');assert.equal(status(r),'refused');assert.equal(r.memory.world.player.money,3);
 });
 test('D: real graph transitions reject teleportation and unknown destinations',()=>{
  const r=play(config,'Иду на рынок');assert.equal(status(r),'refused');assert.equal(r.memory.place,'лавка');
@@ -139,7 +141,7 @@ test('D: a delivery contract uses real locations and a real parcel',()=>{
  assert.equal(status(r),'success');assert.equal(r.memory.world.player.money,3);const parcel=r.memory.entities.find(e=>e.id===r.memory.world.loops.work.parcelId);assert.equal(parcel.location,person(r.memory,'Лея').id);
 });
 test('D: a completed paid job can be followed by a new independent contract',()=>{
- const r=play(config,'Выхожу','Иду в город','Иду в мастерскую','Ищу работу','Да','Работаю','Работаю','Забираю плату','Ищу работу','Да');assert.equal(r.memory.world.loops.work.status,'accepted');assert.equal(r.memory.world.loops.work.serial,2);assert.equal(r.memory.world.player.money,3);
+ const r=play({...config,player:config.player+' с проволокой'},'Выхожу','Иду в город','Иду в мастерскую','Ищу работу','Да',...repairSteps,'Забираю плату','Ищу работу','Да');assert.equal(r.memory.world.loops.work.status,'accepted');assert.equal(r.memory.world.loops.work.serial,2);assert.equal(r.memory.world.player.money,3);
 });
 test('E: keeping the key teeth while crafting preserves the specific access affordance',()=>{
  const c={...config,player:'Путник с цепочкой',canon:'Вещи персонажа: книга'};

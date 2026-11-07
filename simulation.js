@@ -66,7 +66,7 @@
     }
     function init(s,p,config) {
       const reusable=s.world?.schema===4&&Array.isArray(s.world.locations)&&Array.isArray(s.world.edges)&&s.world.player&&s.world.npcs&&Array.isArray(s.world.events)&&Array.isArray(s.world.deferred)&&s.world.locations.some(l=>l.id===s.world.player.location);
-      if(reusable && JSON.stringify(s.world.authorCanon)===JSON.stringify(config)) { bind(s,s.world.activeNpcId);s.place=byLoc(s,s.world.player.location).name;presence(s);return; }
+      if(reusable && JSON.stringify(s.world.authorCanon)===JSON.stringify(config)) { bind(s,s.world.activeNpcId);s.place=byLoc(s,s.world.player.location).name;presence(s);scenes.init(s,p,config);for(const e of s.entities){annotate(s,e,p);syncEntityTruth(s,e,'canon');}return; }
       const old=s.world;const previousPlace=s.place;
       const w={schema:4,authorCanon:clone(config),locations:[],edges:[],npcs:{},activeNpcId:null,player:{location:null,previousLocation:null,counters:{},variants:{},money:0},facts:{},events:[],nextEvent:1,plans:[],deferred:[],loops:{work:{status:'idle',serial:0},exploration:{visited:[],discoveries:[]},social:{contacts:[]}},storyUsed:{}};
       s.world=w;
@@ -84,12 +84,13 @@
       } else if(supplied) {
         const nodes=w.locations;for(let i=1;i<nodes.length;i++)edge(w,nodes[i-1],nodes[i]);
       } else {
-        const outside=addLocation(w,'улица',['наружу','снаружи','улицу']);edge(w,start,outside);
-        const garden=addLocation(w,'сад',['саду']);edge(w,start,garden);
-        const city=addLocation(w,'город',['городу','городе']);edge(w,outside,city);
-        for(const name of ['рынок','мастерская','площадь'])edge(w,city,addLocation(w,name));
+        const labels=p.genre==='space'?['коридор','смотровой отсек','центральный модуль','сектор снабжения','ремонтный отсек','узел связи']:p.genre==='sea'?['корабельный проход','смотровая палуба','общая палуба','кладовая','корабельная мастерская','капитанский мостик']:p.genre==='survival'?['переход убежища','двор убежища','общая зона','склад','ремонтная','пост наблюдения']:['улица','сад','город','рынок','мастерская','площадь'];
+        const outside=addLocation(w,labels[0],['наружу','снаружи']);outside.role='street';edge(w,start,outside);
+        const garden=addLocation(w,labels[1]);garden.role='garden';edge(w,start,garden);
+        const city=addLocation(w,labels[2]);city.role='city';edge(w,outside,city);
+        for(const [i,role]of ['market','workshop','square'].entries()){const place=addLocation(w,labels[i+3]);place.role=role;edge(w,city,place);}
       }
-      w.outdoorId=(w.locations.find(l=>norm(l.name)==='улица')||w.locations.find(l=>l.id!==start.id))?.id||start.id;
+      w.outdoorId=(w.locations.find(l=>l.role==='street'||norm(l.name)==='улица')||w.locations.find(l=>l.id!==start.id))?.id||start.id;
       const current=findLocation(s,previousPlace)||start;w.player.location=current.id;current.visits++;
       if(previousPlace&&previousPlace!==current.name) {s.previousPlace=null;}s.place=current.name;
       const owner=/(?:^|[^а-я])(?:хозяйк|владел|хранител|сторож)/.test(norm(config.character));
@@ -107,7 +108,7 @@
         const node=findLocation(s,place);if(!name||!node)continue;
         const value=makeNpc(name,node.id,name+' — местный житель',motive||'найти надёжного союзника',cherished||'',[]);w.npcs[value.id]=value;
       }
-      if(!extra.length) {
+      if(!extra.length&&!supplied&&!routes&&!['space','survival','sea'].includes(p.genre)) {
         for(const [name,place,motive,cherished]of [['Илья','мастерская','починить инструменты','молоток'],['Ника','рынок','доставить письма','письмо'],['Лея','площадь','собрать городские истории','книга']]) {
           const node=findLocation(s,place);if(!node)continue;const n=makeNpc(name,node.id,name+' — доброжелательный житель города',motive,cherished,[]);if(!w.npcs[n.id])w.npcs[n.id]=n;
         }
@@ -134,7 +135,7 @@
         addEntity(s,label,{id:'stock:'+hash(label),location:merchant.id,source:'stock',kind:'tool',portable:true,price,stockOwner:merchant.id});
       }
       for(const e of s.entities){annotate(s,e,p);syncEntityTruth(s,e,'canon');}
-      w.loops.exploration.visited.push(current.id);bind(s,main.id);presence(s);
+      w.loops.exploration.visited.push(current.id);bind(s,main.id);presence(s);scenes.init(s,p,config);for(const e of s.entities){annotate(s,e,p);syncEntityTruth(s,e,'canon');}
     }
     function annotate(s,e,p) {
       if(e.portable===undefined)e.portable=!['fixed','barrier'].includes(e.kind)||/ларец|сундук|ящик|шкатулк/.test(norm(e.label));
@@ -180,7 +181,7 @@
       emit(s,'reconciliation',n.id,null,n.reconciliations.at(-1));log(s,'reconciliation',n.name+': причина конфликта признана и выполнено условие примирения.');return true;
     }
     function syncEntityTruth(s,e,source='event') {
-      for(const key of ['location','opened','locked','destroyed','hidden'])truth(s,'entity:'+e.id+':'+key,e[key]??false,source);
+      for(const key of ['location','opened','locked','destroyed','hidden','condition','pinInstalled','moved'])truth(s,'entity:'+e.id+':'+key,e[key]??false,source);
     }
     function snapshot(s){return clone({entities:s.entities,inventory:s.inventory,clocks:s.clocks,stage:s.stage,player:s.world.player,relationships:Object.values(s.world.npcs).map(n=>({id:n.id,trust:n.trust,tension:n.tension,location:n.location})),facts:s.world.facts});}
     function observeProperty(s,e,key,value,action) {
@@ -204,7 +205,7 @@
         const old=before.entities.find(v=>v.id===e.id);if(!old){
           if(e.source==='magic'&&!e.lineage.length)e.lineage=before.entities.filter(v=>!v.destroyed&&s.entities.find(x=>x.id===v.id)?.destroyed).flatMap(v=>[v.id,...(v.lineage||[])]);
           emit(s,'entity_created',e.id,null,e,action.id);}
-        else for(const key of ['location','opened','locked','destroyed','hidden','label'])if(JSON.stringify(old[key])!==JSON.stringify(e[key])){emit(s,'item_'+key,e.id,old[key],e[key],action.id);observeProperty(s,e,key,e[key],action);}
+        else for(const key of ['location','opened','locked','destroyed','hidden','label','condition','pinInstalled','moved'])if(JSON.stringify(old[key])!==JSON.stringify(e[key])){emit(s,'item_'+key,e.id,old[key],e[key],action.id);observeProperty(s,e,key,e[key],action);}
         syncEntityTruth(s,e);
       }
       for(const n of Object.values(s.world.npcs)) {
@@ -213,6 +214,7 @@
       }
       for(const key of ['danger','discovery'])if(before.clocks[key]!==s.clocks[key]){emit(s,'clock_'+key,key,before.clocks[key],s.clocks[key],action.id);truth(s,'clock:'+key,s.clocks[key]);}
       if(before.player.location!==s.world.player.location)emit(s,'player_move','player',before.player.location,s.world.player.location,action.id);
+      scenes.changed(s,before,action);
       return s.world.events.filter(e=>e.cause===action.id);
     }
     function analyze(s,config,c,fullText=c.text) {
@@ -241,6 +243,9 @@
       const target=matchEntity(s,primary,true);
       if(intent===c.intent&&c.intent==='hide'&&target)intent='hide_item';
       if(/позже|когда вернемся|когда вернусь|через \d+ ход/.test(lower)&&intent!=='request_plan'&&['open','hide_item','carry'].includes(intent))intent='defer';
+      if(!c.question&&!c.speech&&/^(?:я )?(?:осмотр|осматр|огляд|исслед|изуч|рассматри|разгляды|обыски|слуш|прислуш|провер|читаю|прочита)/.test(lower))intent='inspect';
+      if(!c.question&&/устан[оа]в|вставля/.test(lower)&&/штифт/.test(lower))intent='repair_install';
+      if(!c.question&&/изгот[оа]в|сдела/.test(lower)&&/штифт/.test(lower))intent='repair_craft';
       if(c.hypothetical||c.negated)intent=c.intent;
       const explicitGoal=fullText.match(/(?:чтобы|с целью|ради того чтобы)\s+([^,.!?]+)/iu)?.[1];
       const goal=clean(explicitGoal||s.facts.goal||'');
@@ -266,7 +271,7 @@
       if(actor!=='player'){s.world.npcs[actor].location=destination.id;return ok('Персонаж переходит: '+destination.name+'.');}
       flush(s);s.world.player.previousLocation=from;s.world.player.location=destination.id;s.previousPlace=byLoc(s,from).name;s.place=destination.name;s.facts.hidden=false;destination.visits++;
       if(!s.world.loops.exploration.visited.includes(destination.id))s.world.loops.exploration.visited.push(destination.id);
-      presence(s);return ok(`Вы переходите: ${destination.name}. ${s.npcPresent?'Здесь: '+npc(s).name+'.':'Поблизости нет знакомого собеседника.'} Выходы: ${routeRefusal(s)}.`,'moved');
+      presence(s);return ok(`Вы переходите: ${destination.name}. ${s.npcPresent?'Здесь: '+npc(s).name+'.':'Поблизости нет знакомого собеседника.'} Выходы: ${routeRefusal(s)}.\n${scenes.entry(s)}`,'moved');
     }
     function destination(s,text) {
       if(/наружу|снаружи/.test(norm(text)))return byLoc(s,s.world.outdoorId);
@@ -364,13 +369,15 @@
         if(!here(s,receiver))return no('Персонаж '+receiver.name+' находится в другом месте. Разговор и передача отсюда невозможны.','npc_absent');
         flush(s);bind(s,receiver.id);n=receiver;p=npcProfile(s,config,p);
       }
+      const sceneResult=scenes.handle(s,p,c,config,a);if(sceneResult)return sceneResult;
       if(a.intent==='select_npc') {
         const target=findNpc(s,c.text,true);if(!target)return no('Здесь нет персонажа с таким именем.','npc_absent');
         flush(s);bind(s,target.id);return ok('Вы обращаетесь к '+target.name+'.','npc_selected');
       }
       if(a.intent==='move'||a.intent==='return') {
         if(/телепорт/.test(c.lower)&&!p.magic)return no('В этом мире магия не установлена.','magic_forbidden');
-        const target=a.intent==='return'?byLoc(s,s.world.player.previousLocation):destination(s,c.text)||(/ухожу|выхожу|покидаю|уйти|до свидания/.test(c.lower)?byLoc(s,s.world.outdoorId):null);
+        let target=a.intent==='return'?byLoc(s,s.world.player.previousLocation):destination(s,c.text);
+        if(!target&&/ухожу|выхожу|покидаю|уйти|до свидания/.test(c.lower)){const options=exits(s);target=options.find(l=>l.id===s.world.outdoorId)||options.find(l=>l.id===s.world.player.previousLocation)||(options.length===1?options[0]:null);}
         if(!target)return ask('Куда идти? Известные выходы: '+routeRefusal(s)+'.','unknown_destination');
         const r=moveActor(s,'player',target);if(r.status==='success')r.text+='\n'+observeHere(s).join('\n');return r;
       }
@@ -494,9 +501,10 @@
         if(!n||!here(s,n))return no('Здесь нет продавца.','no_seller');
         const item=s.entities.find(v=>v.stockOwner===n.id&&v.location===n.id&&namesMatch(v.label,c.text));
         if(!item)return ask('В продаже: '+s.entities.filter(v=>v.stockOwner===n.id&&v.location===n.id).map(v=>v.label+' — '+v.price).join(', ')+'.','unknown_product');
-        if(s.world.player.money<item.price)return no('Не хватает монет. Цена: '+item.price+'.','insufficient_money');
-        s.world.player.money-=item.price;item.location='inventory';if(!s.inventory.includes(item.label))s.inventory.push(item.label);
-        truth(s,'player:money',s.world.player.money);return ok('Вы покупаете «'+item.label+'» за '+item.price+' монеты.','purchased');
+        const discount=s.world.player.discounts?.[n.id]||0;const price=Math.max(1,item.price-discount);
+        if(s.world.player.money<price)return no('Не хватает монет. Цена: '+item.price+'.','insufficient_money');
+        s.world.player.money-=price;item.location='inventory';if(!s.inventory.includes(item.label))s.inventory.push(item.label);
+        truth(s,'player:money',s.world.player.money);return ok('Вы покупаете «'+item.label+'» за '+price+' монеты.','purchased');
       }
       if(a.intent==='find_job') {
         if(!n||!here(s,n)||!['рынок','мастерская','площадь'].some(v=>norm(s.place).includes(v)))return no('Работу предлагают на рынке, в мастерской или на площади. До них нужно дойти по карте.','no_employer_here');
@@ -504,14 +512,16 @@
         const work=s.world.loops.work;
         if(['accepted','ready','completed'].includes(work.status))return ask('У вас уже есть работа. Завершите или получите оплату, прежде чем брать следующую.','job_in_progress');
         const type=/мастерск/.test(norm(s.place))?'repair':'delivery';
-        Object.assign(work,{id:'job:'+ ++work.serial,employer:n.id,type,status:'offered',progress:0,reward:3,paid:false});s.pending={kind:'job-offer',id:work.id};
-        return ok(voice(s,p,type==='repair'?'Есть работа: две части ремонта инструментов. За обе — три монеты. Берётесь?':'Нужно отнести посылку Лее на площадь. За доставку — три монеты. Берётесь?'),'job_offered');
+        const repaired=s.entities.some(e=>e.localKey==='mechanism'&&e.location===s.place&&e.condition==='repaired');
+        Object.assign(work,{phase:repaired?'maintenance':'repair',id:'job:'+ ++work.serial,employer:n.id,type,status:'offered',progress:0,reward:3,paid:false});s.pending={kind:'job-offer',id:work.id};
+        return ok(voice(s,p,type==='repair'?(repaired?'Есть обслуживание: очистить и откалибровать исправный механизм. За результат — три монеты. Берётесь?':'Есть работа: изучить поломку механизма, изготовить и установить недостающий штифт, затем проверить ход. Материал нужно найти. За результат — три монеты. Берётесь?'):'Нужно отнести посылку Лее на площадь. За доставку — три монеты. Берётесь?'),'job_offered');
       }
       if(c.intent==='agree'&&s.pending?.kind==='job-offer') {
         const work=s.world.loops.work;if(work.employer!==n?.id)return no('Предложение относится к другому нанимателю.','wrong_participant');
         work.status='accepted';s.pending=null;
+        if(work.type==='repair'){scenes.grantPermission(s,n,'tools');if(work.phase==='maintenance'){const machine=s.entities.find(e=>e.localKey==='mechanism'&&e.location===s.place);if(machine){machine.cleaned=false;machine.calibrated=false;}}}
         if(work.type==='delivery'){const parcel=addEntity(s,'посылка '+work.id,{id:work.id+':parcel',location:'inventory',kind:'prop',portable:true,source:'job'});s.inventory.push(parcel.label);work.parcelId=parcel.id;}
-        return ok('Работа принята. '+(work.type==='repair'?'Начните ремонт в мастерской.':'Посылка при вас; получатель — Лея на площади.'),'job_accepted');
+        return ok('Работа принята. '+(work.type==='repair'?'Осмотрите механизм и проверьте комплект деталей. Верстак и инструменты вам доступны.':'Посылка при вас; получатель — Лея на площади.'),'job_accepted');
       }
       if(a.intent==='work') {
         const w=s.world.loops.work;
@@ -533,23 +543,16 @@
         if(!here(s,s.world.npcs[w.employer]))return no('За оплатой нужно вернуться к нанимателю.','employer_absent');
         w.paid=true;w.status='paid';s.world.player.money+=w.reward;truth(s,'player:money',s.world.player.money);return ok('Вы получаете '+w.reward+' монеты. Оплата этого договора выдана один раз.','job_paid');
       }
-      if(a.intent==='explore') {
-        const exploration=s.world.loops.exploration;
-        const id='discovery:'+s.world.player.location;
-        if(!exploration.discoveries.includes(id)){exploration.discoveries.push(id);log(s,'exploration','Исследовано место: '+s.place);}
-        const locals=Object.values(s.world.npcs).filter(v=>here(s,v));
-        for(const person of locals)if(!s.world.loops.social.contacts.includes(person.id)){s.world.loops.social.contacts.push(person.id);person.contacts++;}
-        return ok(`Место: ${s.place}. ${locals.length?'Здесь можно познакомиться: '+locals.map(v=>v.name).join(', ')+'.':'Знакомых здесь пока нет.'} Выходы: ${routeRefusal(s)}. Основная загадка не меняется от этого выбора.`,'area_explored');
-      }
       return null;
     }
     function after(s,p,c,a,r) {
+      scenes.sourceLearnedAfter(s,c,a,r);
       const n=npc(s);
       if(n&&here(s,n)&&!c.hypothetical&&!c.negated) {
         if(/меня зовут|мое имя|зови меня/.test(c.lower)&&s.facts.name){n.memory.playerName=s.facts.name;hear(s,n,{key:'player:name',value:s.facts.name,text:'Игрок представился: '+s.facts.name},'player:identity',.6);}
         if(/хочу|моя цель|мне нужно|собираюсь/.test(c.lower)&&s.facts.goal&&!c.question)n.memory.playerGoal=s.facts.goal;
         if(['insult','threat','attack'].includes(c.intent)&&r.status!=='clarification'&&r.status!=='refused'&&!r.text.includes('не нападение на собеседника'))conflict(s,n,c.intent,c.text);
-        if((['greet','identity','talk','comfort'].includes(c.intent)||['select_npc','find_job'].includes(a.intent))&&!s.world.loops.social.contacts.includes(n.id))s.world.loops.social.contacts.push(n.id);
+        if((['greet','identity','talk','comfort'].includes(c.intent)||['select_npc','find_job','show','buy','give','bargain'].includes(a.intent))&&!s.world.loops.social.contacts.includes(n.id))s.world.loops.social.contacts.push(n.id);
       }
       if(c.intent==='open'&&r.status==='success')for(const task of s.world.deferred)if(task.targetId===a.targetId&&task.actor==='player'&&task.status==='pending'&&s.entities.find(e=>e.id===task.targetId)?.opened){task.status='completed';task.completedTurn=s.turn;}
       flush(s);presence(s);
@@ -576,6 +579,7 @@
       return {status:achieved?'achieved':'pending',goal:relevant[0].action.goal,recipientId:recipient,observedTrust:n?.trust??null,openConflicts:openGrievances(n).map(g=>g.id),reason:achieved?'Достигнуты условия сотрудничества.':'Предмет мог быть передан, но требуемое доверие пока не достигнуто.'};
     }
     function map(s){return {current:s.world.player.location,locations:s.world.locations.map(v=>({...v,people:Object.values(s.world.npcs).filter(n=>n.location===v.id).map(n=>n.name)})),edges:clone(s.world.edges),exits:exits(s)};}
-    return {init,analyze,handle,after,flush,bind,presence,npc,npcProfile,openGrievances,snapshot,effects,runDue,map,assessGoal,proposition,emit,truth,annotate,statuses,result};
+    const scenes=root.StoryScenes.create({...H,npc,here,findLocation,openGrievances,emit,truth});
+    return {inspectScene:scenes.inspect,openedText:scenes.openedText,init,analyze,handle,after,flush,bind,presence,npc,npcProfile,openGrievances,snapshot,effects,runDue,map,assessGoal,proposition,emit,truth,annotate,statuses,result};
   }};
 })(globalThis);

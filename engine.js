@@ -7,7 +7,7 @@
   const clone = value => JSON.parse(JSON.stringify(value));
   const clamp = (value, min = -5, max = 5) => Math.max(min, Math.min(max, value));
   const words = text => norm(text).match(/[a-zа-я0-9-]+/g) || [];
-  const stem = word => norm(word).replace(/(?:иями|ями|ами|ого|ему|ому|ыми|ими|ов|ев|ей|ия|ие|ий|ый|ой|ая|яя|ую|юю|ам|ям|ах|ях|ом|ем|а|я|ы|и|у|ю|е|о)$/u, '');
+  const stem = word => norm(word).replace(/(?:иями|ями|ами|ого|ему|ому|ыми|ими|ов|ев|ей|ия|ию|ие|ий|ый|ой|ая|яя|ую|юю|ам|ям|ах|ях|ом|ем|а|я|ы|и|у|ю|е|о)$/u, '');
   const hash = value => [...value].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 17).toString(36);
   const fields = text => Object.fromEntries(clean(text).split(/\n|;/).map(line => {
     const i = line.indexOf(':'); return i > 0 ? [norm(line.slice(0, i)), clean(line.slice(i + 1))] : [];
@@ -30,7 +30,7 @@
     ['стол', 'стол', 'fixed'], ['стул', 'стул|стуль', 'prop'], ['дверь', 'двер', 'barrier'],
     ['окно', 'окн', 'fixed'], ['ларец', 'ларец|ларц|сундук', 'barrier'], ['сейф', 'сейф', 'barrier'],
     ['шлюз', 'шлюз', 'barrier'], ['терминал', 'терминал|компьютер', 'fixed'], ['архив', 'архив', 'barrier'],
-    ['гитара', 'гитар|лютн', 'instrument'], ['бумага', 'бумаг|лист', 'prop'], ['мел', 'мел[аоу]?$', 'tool'], ['шкаф', 'шкаф', 'barrier'], ['сумка', 'сумк|рюкзак', 'prop'], ['свеча', 'свеч', 'tool'], ['зажигалка', 'зажигалк|спичк', 'tool'], ['цепочка', 'цепочк|шнурок', 'tool'], ['молоток', 'молоток|молотк', 'tool'], ['инструменты', 'инструмент', 'tool']
+    ['гитара', 'гитар|лютн', 'instrument'], ['бумага', 'бумаг|лист', 'prop'], ['мел', 'мел[аоу]?$', 'tool'], ['шкаф', 'шкаф', 'barrier'], ['сумка', 'сумк|рюкзак', 'prop'], ['свеча', 'свеч', 'tool'], ['зажигалка', 'зажигалк|спичк', 'tool'], ['цепочка', 'цепочк|шнурок', 'tool'], ['молоток', 'молоток|молотк', 'tool'], ['инструменты', 'инструмент', 'tool'], ['проволока', 'проволок', 'tool'], ['штифт', 'штифт', 'tool']
   ];
   const PLACES = [
     ['космическая станция', /станци|орбит/], ['корабль', /корабл/], ['школа', /школ/], ['университет', /университет|кампус/],
@@ -326,24 +326,13 @@
       s.facts.goal = goal.slice(0,180); thread(s, s.facts.goal, 'player-goal'); log(s, 'goal', `Цель героя: ${s.facts.goal}`);
     }
   }
-  function inspect(s, p, item) {
-    if (item?.destroyed) return verdict(s,'refused','destroyed',`«${item.label}» уже разрушен; прежнее состояние не восстановилось.`);
-    if (item && ![s.place,'inventory',npcHolder(s)].includes(item.location)) return verdict(s,'refused','target_not_present',`«${item.label}» остался в другом месте. Здесь его нет.`);
-    if (item) s.focus = item.id;
-    const hidden = s.entities.filter(e => !e.known && e.location === s.place && !e.destroyed);
-    hidden.forEach(e => { e.known = true; });
-    s.stage = Math.max(s.stage,1);
-    if (item?.kind === 'clue' || !item && s.clocks.discovery === 0 && knownHere(s).some(e=>e.kind==='clue')) {
-      advance(s); s.facts.clue = p.clue; log(s, 'clue', p.clue); thread(s,'Кто изменил или спрятал свидетельство?', 'evidence');
-    }
-    const detail = item ? item.opened ? `«${item.label}» уже открыт. ${s.facts.revelation || 'Ничто не мешает исследовать содержимое.'}` : item.kind === 'clue' ? p.clue : item.kind === 'barrier' ? `«${item.label}»: ${item.locked ? 'замок держит; можно искать ключ, отмычку или обход' : 'ничто не запирает его'}.` : `«${item.label}» можно ${item.kind === 'fixed' ? 'изучить или использовать как опору' : item.kind === 'food' ? 'взять, предложить собеседнику или попробовать' : item.kind === 'weapon' ? 'использовать как угрозу или инструмент; шум привлечёт внимание' : 'взять, показать, передать или применить в своём плане'}.` : `Место: ${s.place}. Вы замечаете: ${knownHere(s).map(e => `«${e.label}»`).join(', ') || 'следы недавнего присутствия'}.`;
-    return detail + (hidden.length ? `\nПри внимательном осмотре обнаруживается: ${hidden.map(e => `«${e.label}»`).join(', ')}.` : '') + (!item && s.facts.clue ? '\n' + s.facts.clue : '');
-  }
+  function inspect(s,p,item) { const r=simulation.inspectScene(s,item?'Осматриваю '+item.label:'Осматриваюсь');if(s.currentResolution)s.currentResolution.information=r.information;return verdict(s,r.status,r.code,r.text); }
   function resolveBarrier(s, p, barrier, method) {
     const bypass=method==='обход';
-    if(bypass)barrier.bypassed=true;else {barrier.opened = true; barrier.locked = false;} s.stage = Math.max(s.stage,3); advance(s,2);
-    const reveal = bypass ? `Путь за «${barrier.label}» найден. Прежний замок остаётся заперт, но теперь есть обход.` : barrier.source === 'scene' ? p.reveal : `За «${barrier.label}» обнаруживается след недавнего вмешательства: кто-то был здесь раньше вас.`;
-    s.facts.revelation = reveal; fromText(s,reveal,s.place,'revelation'); log(s, 'consequence', `Открыто: ${barrier.label}. Способ: ${method}.`);
+    const used=s.entities.find(e=>!e.destroyed&&e.location==='inventory'&&e.label===method);if(used)barrier.openedWith=used.id;
+    if(bypass)barrier.bypassed=true;else {barrier.opened = true; barrier.locked = false;} s.stage = Math.max(s.stage,3); if(!barrier.revelationKnown){advance(s,2);barrier.revelationKnown=true;}
+    const reveal = bypass ? `Путь за «${barrier.label}» найден. Прежний замок остаётся заперт, но теперь есть обход.` : barrier.revelationSpec || `Вы открываете «${barrier.label}». Преграда больше не мешает доступу; содержимое определяется заданными предметами.`;
+    barrier.revelationText=reveal;s.facts.revelation = reveal; fromText(s,reveal,s.place,'revelation'); log(s, 'consequence', `Открыто: ${barrier.label}. Способ: ${method}.`);
     thread(s, 'Выяснить, кому предназначалась находка', 'aftermath');
     return reveal;
   }
@@ -368,7 +357,7 @@
         s.pending = { kind: 'offer', text: `попробовать открыть «${item.label}»`, action: 'Открываю ' + item.label };
         return voice(s,p,`Можно искать подходящий инструмент, попросить меня помочь или попробовать иной путь. Силой тоже можно, но шум станет ценой.`);
       }
-      if (item.kind === 'clue') return voice(s,p,p.clue + ' Не будем считать это всей правдой: кто-то мог оставить след намеренно.');
+      if (item.kind === 'clue') return voice(s,p,'Я могу судить только по источникам, которые сам видел или которые вы мне показали.');
       return voice(s,p,`«${item.label}» ${item.opened ? 'уже открыт' : item.location === 'inventory' ? 'у вас' : 'пока здесь'}. ${p.pragmatic ? 'Скажите, какую пользу вы хотите из этого извлечь.' : 'Важнее то, что вы собираетесь с этим сделать.'}`);
     }
     if (/^(?:а )?(?:почему|зачем|как)[?! ]*$/.test(c.lower) && ['attack','threat','insult'].includes(s.lastIntent))return voice(s,p,'Потому что после угроз и оскорблений мне нужно защищать свои границы. Извинение или спокойный разговор могут изменить ситуацию.');
@@ -378,7 +367,7 @@
     return voice(s,p,choose(s,'question',[
       `Вы спрашиваете о «${topic || 'происходящем'}». Я могу судить по тому, что видел здесь. ${origin} важнее проверить свидетельства, чем принять первое объяснение. Что вы уже знаете об этом?`,
       `У меня нет подтверждённого ответа о «${topic || 'происходящем'}». Но это может стать зацепкой. Вы хотите спросить кого-то, поискать следы или предложить свою версию?`,
-      `Давайте отделим известное от догадок. ${s.facts.clue || 'Пока у нас есть только эта встреча и ваши слова.'} Как «${topic || 'этот вопрос'}» связано с тем, зачем вы пришли?`
+      `Давайте отделим известное от догадок. Пока у нас есть только этот разговор и доступные мне источники. Как «${topic || 'этот вопрос'}» связано с тем, зачем вы пришли?`
     ]));
   }
   function execute(s, p, c, config) {
@@ -445,7 +434,7 @@
         if(item.location==='inventory')return `«${item.label}» уже у вас.`;
         if(['barrier','fixed'].includes(item.kind) && !item.portable)return verdict(s,'refused','not_portable',`«${item.label}» не получится просто унести. Его можно исследовать или использовать на месте.`);
         if(item.location===npcHolder(s) && s.trust<2)return verdict(s,'refused','item_not_owned',voice(s,p,'Теперь эта вещь у меня. Попросите вернуть или предложите обмен.'));
-        addInventory(s,item);s.focus=item.id;s.stage=Math.max(s.stage,2);log(s,'item','Получено: '+item.label);return `Вы берёте «${item.label}». Предмет теперь при вас.`;
+        addInventory(s,item);s.focus=item.id;if(item.unlocks?.length)s.stage=Math.max(s.stage,2);log(s,'item','Получено: '+item.label);return `Вы берёте «${item.label}». Предмет теперь при вас.`;
       }
       case 'drop': case 'give': {
         if(!available || item.location!=='inventory')return verdict(s,'refused','item_not_owned',`Нельзя ${c.intent==='give'?'передать':'бросить'} вещь, которой у вас нет. ${s.inventory.length?'При вас: '+s.inventory.join(', ')+'.':'Сначала найдите или укажите предмет.'}`);
@@ -463,8 +452,8 @@
         if(!available && item)return inspect(s,p,item);
         s.focus=barrier.id;
         if(c.intent==='close'){barrier.opened=false;log(s,'action','Закрыто: '+barrier.label);return `Вы закрываете «${barrier.label}». ${barrier.locked?'Замок остаётся заперт.':'Предмет закрыт, но не заперт.'}`;}
-        if(barrier.opened)return `«${barrier.label}» уже открыт. ${s.facts.revelation || 'Можно исследовать содержимое.'}`;
-        if(barrier.kind==='clue'){barrier.opened=true;advance(s);s.facts.clue=p.clue;return `Вы раскрываете «${barrier.label}». ${p.clue}`;}
+        if(barrier.opened)return `«${barrier.label}» уже открыт. ${barrier.revelationText || 'Можно исследовать содержимое.'}`;
+        if(barrier.kind==='clue'){barrier.opened=true;return `Вы раскрываете «${barrier.label}». ${simulation.openedText(s,barrier)}`;}
         const key=s.entities.find(e=>!e.destroyed && e.location==='inventory' && (e.unlocks?.includes(barrier.id) || e.kind==='tool' && /отмыч/.test(norm(e.label))));
         if(!barrier.locked || key)return resolveBarrier(s,p,barrier,key?.label || 'без замка');
         s.pending={kind:'offer',text:'осмотреть запор',action:'Осматриваю '+barrier.label};
@@ -504,7 +493,7 @@
       }
       case 'show':
         if(!available)return verdict(s,'clarification','missing_target','Что именно вы показываете? Предмет должен быть у вас или находиться рядом.');
-        s.focus=item.id;advance(s);if(count<2)s.trust++;return voice(s,p,`«${item.label}» меняет разговор. ${item.kind==='clue'?p.clue:'Вы хотите воспользоваться этой вещью или предложить её в обмен?'} ${p.pragmatic?'Давайте обсудим условия.':'Откуда она у вас?'}`);
+        s.focus=item.id;advance(s);if(count<2)s.trust++;return voice(s,p,`Вы показываете «${item.label}». Вы хотите воспользоваться этой вещью или предложить её в обмен? ${p.pragmatic?'Давайте обсудим условия.':'Откуда она у вас?'}`);
       case 'bargain': s.facts.proposal=c.text.slice(0,200);s.pending={kind:'bargain',text:s.facts.proposal};thread(s,'Условия сделки: '+s.facts.proposal,'bargain');if(s.trust>=1){advance(s);s.trust++;return voice(s,p,`Я готов обсуждать это. Моя сторона сделки — помочь с вашей целью; ваша — помочь мне ${p.motive}. Уточните, что именно вы предлагаете.`);}return voice(s,p,`Предложение услышано. Я хочу ${p.motive}. Что убедит меня, что вы выполните свою часть?`);
       case 'lie': s.facts.claim=c.text.slice(0,200);danger(s);return voice(s,p,s.clocks.discovery>=2?'Ваш рассказ расходится с найденным следом. Я не могу принять его без объяснения.':'Допустим. Я пока не могу это проверить — но запомню вашу версию.');
       case 'attack': case 'threat': {
@@ -625,14 +614,15 @@
     const p=simulation.npcProfile(s,config,profile(config));
     const event=director(s,p,intents);simulation.flush(s);
     const due=simulation.runDue(s,p);results.push(...due);
-    const opening=s.turn===1?`${clean(config.world)||'История начинается.'}\n\n`:'';
+    const opening=s.turn===1&&!results.some(r=>clean(config.world)&&r.text.includes(clean(config.world)))?`${clean(config.world)||'История начинается.'}\n\n`:'';
     let output=opening+results.map(r=>r.text).filter(Boolean).join('\n\n')+(event?'\n\n'+event:'');
     const statuses=results.map(r=>r.status);
     let status=statuses.every(v=>v==='success')?'success':statuses.includes('partial_success')||statuses.includes('success')?'partial_success':statuses.includes('refused')?'refused':'clarification';
     const goalAssessment=simulation.assessGoal(s,results);
     if(goalAssessment?.status==='pending' && ['success','partial_success'].includes(status)){status='partial_success';output+='\n\n'+goalAssessment.reason;}
     const effects=results.flatMap(r=>r.effects||[]);
-    const outcome={status,goalAssessment,results:results.map(r=>({status:r.status,code:r.code,reason:r.text,action:r.action,effects:r.effects})),effects};
+    const information={novel:results.some(r=>r.information?.novel),discoveries:[...new Set(results.flatMap(r=>r.information?.discoveries||[]))],opportunities:[...new Set(results.flatMap(r=>r.information?.opportunities||[]))]};
+    const outcome={status,goalAssessment,information,results:results.map(r=>({status:r.status,code:r.code,reason:r.text,information:r.information||null,action:r.action,effects:r.effects})),effects};
     if(results.length>1) {
       const plan={id:'turn-plan:'+s.turn,actor:'player',goal:results[0].action.goal,expectedEffect:results[0].action.expectedEffect,steps:outcome.results,status,goalAssessment,causes:effects.map(e=>e.id)};
       s.world.plans.push(plan);s.world.plans=s.world.plans.slice(-40);
@@ -641,7 +631,7 @@
     delete s.currentResolution;delete s.currentActionId;
     return {text:output,memory:s,outcome,results:outcome.results,analysis:outcome.results.map(r=>r.action)};
   }
-  const simulation=root.StorySimulation.create({clean,norm,words,stem,hash,clone,profile,matchEntity,addEntity,log,voice,resolveBarrier});
+  const simulation=root.StorySimulation.create({clean,norm,normalizedInput,words,stem,hash,clone,profile,matchEntity,addEntity,log,voice,resolveBarrier});
   root.StoryEngine={version:VERSION,fresh,reply,profile,restore:init,reframe,parse,clauses,
     analyze(config,memory,text){const s=init(config,memory);return clauses(text).map(t=>simulation.analyze(s,config,parse(t),text));},
     map(memory){return simulation.map(memory);}};

@@ -29,6 +29,7 @@ with sync_playwright() as p:
     page.locator('[name=character]').fill('Мира — хозяйка лавки. Хочет вернуть компас.')
     page.locator('[name=player]').fill('Путник с компасом')
     page.locator('[name=canon]').fill('Истина: виновник = Антон\nЦенный предмет: компас')
+    page.locator('#debug-view').check()
     page.locator('#settings button').tap()
     send('Лгу: виновник = Борис');send('Беру письмо');send('Незаметно подбрасываю письмо: виновник = Борис')
     assert 'Я считаю' in send('Кто виноват?')
@@ -52,8 +53,8 @@ with sync_playwright() as p:
     send('Прости');assert page.locator('article.assistant .outcome-label').last.inner_text()=='Частичный успех'
     send('Дарю компас');send('Помоги открыть ларец');send('Да')
     m=data();assert m['world']['npcs'][m['world']['primaryNpcId']]['grievances'][0]['resolved']
-    reset();go('улица');go('город');go('мастерская')
-    send('Ищу работу');send('Да');send('Работаю');send('Работаю');send('Забираю плату')
+    reset();go('улица');send('Осматриваю решётку');send('Приподнимаю решётку');send('Беру проволоку');go('город');go('мастерская')
+    send('Ищу работу');send('Да');send('Осматриваю механизм');send('Проверяю хватает ли деталей');send('Изготавливаю штифт');send('Устанавливаю штифт');send('Проверяю ход механизма');send('Забираю плату')
     assert data()['world']['player']['money']==3
     go('город');go('рынок');send('Покупаю цепочку')
     assert data()['world']['player']['money']==1

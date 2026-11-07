@@ -10,6 +10,9 @@ const engine = globalThis.StoryEngine;
 const key = 'between-lines-offline-v2';
 const outcomeLabels={success:'Успех',partial_success:'Частичный успех',refused:'Отказ',clarification:'Нужно уточнение'};
 const intentLabels={claim:'сообщить версию',plant_evidence:'подбросить улику',request_plan:'предложить план',carry:'перенести',hide_item:'спрятать предмет',defer:'отложить действие',craft_gift:'сделать подарок',give:'передать предмет',move:'перейти',return:'вернуться',open:'открыть',close:'закрыть',take:'взять',inspect:'осмотреть',agree:'согласиться',help:'попросить помощи',apology:'извиниться',insult:'оскорбить',greet:'поздороваться',find_job:'найти работу',work:'выполнить работу',collect_pay:'получить плату',deliver_job:'доставить посылку',explore:'исследовать',buy:'купить',select_npc:'обратиться к персонажу',magic:'магия',use:'использовать',destroy:'сломать',drop:'оставить предмет',goal:'обозначить цель',question:'задать вопрос',remember:'вспомнить',custom:'уточнить замысел'};
+let debugView=false;
+try {debugView=localStorage.getItem('between-lines-debug')==='true';}catch{}
+document.querySelector('#debug-view').checked=debugView;
 let busy = false;
 let state = { config: Object.fromEntries(new FormData(settings)), messages: [], memory: engine.fresh() };
 try {
@@ -39,7 +42,7 @@ function render() {
     const label = document.createElement('small'); label.textContent = message.role === 'user' ? 'ВЫ' : 'РАССКАЗЧИК';
     const text = document.createElement('p'); text.textContent = message.content;
     item.append(label, text);
-    if(message.outcome?.status) {
+    if(debugView&&message.outcome?.status) {
       const result = document.createElement('small');result.className='outcome-label';result.dataset.status=message.outcome.status;
       result.textContent=outcomeLabels[message.outcome.status]||'Результат';item.append(result);
       if(message.outcome.steps?.length) {
@@ -54,7 +57,7 @@ function render() {
     list.append(item);
   }
   const profile = engine.profile(state.config);
-  document.querySelector('#badge').textContent = '● Локально · 4.0';
+  document.querySelector('#badge').textContent = '● Локально · 4.1';
   const currentNpc=state.memory.world.npcs[state.memory.world.activeNpcId];
   const title = state.memory.place || profile.title || 'Ваша история';
   document.querySelector('#story-title').textContent = title[0].toUpperCase() + title.slice(1);
@@ -101,7 +104,7 @@ chat.addEventListener('submit', async event => {
     const result = engine.reply(state.config, state.memory, text);
     state.memory = result.memory;
     const answer = result.text;
-    state.messages.push({ role: 'assistant', content: answer, outcome: { status:result.outcome.status, steps:result.results.map(r=>({status:r.status,intent:r.action.intent,target:r.action.targetLabel,goal:r.action.goal,method:r.action.method,expectedEffect:r.action.expectedEffect})) } }); status.textContent = ''; save();
+    state.messages.push({ role: 'assistant', content: answer, outcome: { status:result.outcome.status, information:result.outcome.information, steps:result.results.map(r=>({status:r.status,intent:r.action.intent,target:r.action.targetLabel,goal:r.action.goal,method:r.action.method,expectedEffect:r.action.expectedEffect})) } }); status.textContent = ''; save();
   } catch (error) {
     state.messages.pop(); field.value = text; status.textContent = `${error.message} Сообщение возвращено в поле ввода — попробуйте снова.`; save();
   } finally { busy = false; send.disabled = false; settings.querySelector('button').disabled = false; render(); }
@@ -130,6 +133,7 @@ document.querySelector('#import').addEventListener('change', async event => {
   finally { event.target.value = ''; }
 });
 
+document.querySelector('#debug-view').addEventListener('change',event=>{debugView=event.target.checked;try{localStorage.setItem('between-lines-debug',String(debugView));}catch{}render();});
 function showPage(page) {
   for(const name of ['settings','world','chat'])document.querySelector('#'+name+'-page').hidden=name!==page;
   const focus=page==='settings'?'#close-settings':page==='world'?'#close-world':'#open-settings';document.querySelector(focus).focus();
@@ -150,6 +154,13 @@ function renderWorld() {
   for(const exit of map.exits) {const b=document.createElement('button');b.type='button';b.textContent=exit.name+(exit.blocked?' · заперто':' →');b.disabled=exit.blocked;b.addEventListener('click',()=>issueCommand('Иду в '+exit.name));exits.append(b);}
   const people=document.querySelector('#nearby-people');people.replaceChildren();
   for(const person of Object.values(world.npcs).filter(n=>n.location===world.player.location)){const b=document.createElement('button');b.type='button';b.textContent=person.name;b.addEventListener('click',()=>issueCommand('Говорю с '+person.name));people.append(b);}
+  const research=world.player.research;
+  const discoveries=document.querySelector('#learned-facts');discoveries.replaceChildren();
+  for(const knowledge of Object.values(research.knowledge)){const row=document.createElement('li');const source=memory.entities.find(e=>e.id===knowledge.sourceId)?.label||world.npcs[knowledge.sourceId]?.name||world.locations.find(l=>l.id===knowledge.locationId)?.name;row.textContent=knowledge.text+(source?' · Источник: '+source:'');discoveries.append(row);}
+  const properties=document.querySelector('#known-properties');properties.replaceChildren();
+  const methods={examine:'изучение',read:'чтение',search:'поиск',listen:'прослушивание',check:'проверка',use:'использование'};
+  for(const [id,property]of Object.entries(research.properties)){const entity=memory.entities.find(e=>e.id===id);if(!entity)continue;const row=document.createElement('li');const locks=property.unlocks.map(key=>memory.entities.find(e=>e.id===key)?.label).filter(Boolean);row.textContent=`${entity.label}: ${property.destroyed?'разрушен; ':''}${property.material?'материал — '+property.material+'; ':''}${locks.length?'открывает '+locks.join(', ')+'; ':''}проверено: ${(property.testedMethods||[]).map(m=>methods[m]||m).join(', ')}`;properties.append(row);}
+  document.querySelector('#exploration-progress').textContent=`Посещено: ${world.loops.exploration.visited.length} · Осмотрено: ${world.loops.exploration.observed.length} · Изучено: ${world.loops.exploration.understood.length}`;
   const workLabels={idle:'Работа пока не выбрана',offered:'Есть предложение работы',accepted:'Работа принята',completed:'Работа завершена, можно забрать плату',paid:'За работу получена плата'};
   document.querySelector('#world-work').textContent=`${workLabels[world.loops.work.status]||'Работа'} · Монеты: ${world.player.money} · Знакомства: ${world.loops.social.contacts.length}`;
   const tasks=document.querySelector('#deferred-actions');tasks.replaceChildren();
