@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import '../simulation.js';
 import '../engine.js';
 const {fresh,reply}=globalThis.StoryEngine;
 const config={world:'Космическая станция',character:'Лея — добрая механик',player:'Пилот'};
@@ -20,7 +21,7 @@ test('quest requires discovery and tool, then stays completed',()=>{
 });
 test('threats, apology and refusal have consequences',()=>{
  let r=reply(config,fresh(),'Ударю тебя');assert.ok(r.memory.tension>0);
- r=reply(config,r.memory,'Извини');assert.equal(r.memory.tension,0);
+ r=reply(config,r.memory,'Извини');assert.equal(r.memory.tension,1);assert.equal(r.memory.world.npcs[r.memory.world.primaryNpcId].grievances[0].resolved,false);
  r=reply(config,r.memory,'Не хочу идти');assert.equal(r.memory.lastIntent,'refuse');
 });
 test('genre and personality follow supplied inputs',()=>{

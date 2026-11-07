@@ -1,30 +1,39 @@
 <!doctype html>
-<html lang="ru" data-version="3.0">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content"><title>Между строк — локальная история</title><link rel="stylesheet" href="style.css"><script defer src="engine.js"></script><script defer src="app.js"></script></head>
+<html lang="ru" data-version="4.0">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content"><title>Между строк — локальная история</title><link rel="stylesheet" href="style.css"><script defer src="simulation.js"></script><script defer src="engine.js"></script><script defer src="app.js"></script></head>
 <body>
 <aside id="settings-page" hidden aria-label="Настройки истории">
-  <div class="page-top"><span class="eyebrow">НАСТРОЙКИ</span><button id="close-settings" type="button" class="secondary">К чату ✕</button></div>
+  <div class="page-top"><span class="eyebrow">НАСТРОЙКИ АВТОРА</span><button id="close-settings" type="button" class="secondary">К чату ✕</button></div>
   <div class="eyebrow">ИНТЕРАКТИВНАЯ ИСТОРИЯ</div><h1>Между<br>строк<span>✦</span></h1>
   <p class="muted">Ваши слова меняют историю.</p>
   <form id="settings">
-    <label>Мир и ситуация<textarea name="world" maxlength="4000" rows="3">Ночной город, где воспоминания продаются в стеклянных флаконах. Я прихожу в закрытую лавку за своим потерянным прошлым.</textarea></label>
+    <label>Мир и ситуация · авторский канон<textarea name="world" maxlength="4000" rows="3">Ночной город, где воспоминания продаются в стеклянных флаконах. Я прихожу в закрытую лавку за своим потерянным прошлым.</textarea></label>
     <label>Персонаж<textarea name="character" maxlength="4000" rows="3">Мира — хозяйка лавки воспоминаний. Сдержанная, наблюдательная, с сухим юмором. Она знает обо мне больше, чем говорит.</textarea></label>
     <label>Мой герой<input name="player" maxlength="1000" value="Путник без воспоминаний, с треснувшим компасом в кармане."></label>
-    <label>Опоры истории · необязательно<textarea name="canon" maxlength="4000" rows="6" placeholder="Место: мастерская
+    <label>Канон, карта и персонажи · необязательно<textarea name="canon" maxlength="4000" rows="6" placeholder="Место: мастерская
 Предметы: ложка, фонарь, закрытый шкаф
 Цель персонажа: вернуть пропавшего друга
 Секрет: другу угрожает прежний союзник
 Правила: магии нет"></textarea></label>
     <button class="secondary" type="submit">Сохранить вводные</button>
   </form>
-  <p class="hint">Работает без интернета. Сценарный движок распознаёт намерения и помнит события; это не языковая модель. Изменение вводных обновляет сцену без удаления переписки. Для чистого старта используйте «Начать заново». Явные опоры важнее жанровых заготовок.</p>
+  <p class="hint">Работает без интернета. Сценарный движок распознаёт намерения и помнит события; это не языковая модель. Изменение вводных обновляет сцену без удаления переписки. Для чистого старта используйте «Начать заново». Канон изменяется только здесь. Реплики «у меня есть…» и «запомни…» в чате считаются заявлениями игрока и могут быть ложью.</p>
   <label>Загрузить сохранение<input id="import" type="file" accept="application/json,.json"></label>
   <button id="export" class="text-button">Скачать сохранение</button><br>
   <button id="reset" class="text-button">Начать заново</button>
-  <section class="memory-panel"><h2>Память истории</h2><p id="remembered-goal" class="hint"></p><h3>Факты и последствия</h3><ul id="journal"></ul><h3>Открытые зацепки</h3><ul id="threads"></ul></section>
+  <section class="memory-panel"><h2>Память истории</h2><p id="remembered-goal" class="hint"></p><h3>Журнал и заявления</h3><ul id="journal"></ul><h3>Открытые зацепки</h3><ul id="threads"></ul></section>
+</aside>
+<aside id="world-page" hidden aria-label="Мир и персонажи">
+  <div class="page-top"><span class="eyebrow">МИР И ПЕРСОНАЖИ</span><button id="close-world" type="button" class="secondary">К чату ✕</button></div>
+  <h2 id="map-title">Карта</h2><p class="hint">Переход выполняется отдельным ходом. Доступны только соединённые места.</p><div id="map-exits" class="world-buttons"></div>
+  <h3>Рядом</h3><div id="nearby-people" class="world-buttons"></div>
+  <h3>Дела и деньги</h3><p id="world-work"></p><p class="hint">На рынке и в мастерской можно искать работу. Загадку лавки для этого решать не требуется.</p>
+  <h3>Отложенные действия</h3><ul id="deferred-actions"></ul>
+  <h3>Отношения и причины конфликтов</h3><ul id="relationship-records"></ul>
+  <details><summary>Убеждения персонажей · просмотр автора</summary><ul id="belief-records"></ul><p class="hint">Убеждение персонажа может быть ошибочным. Истина мира задаётся автором и событиями, отдельно от этих версий.</p></details>
 </aside>
 <main id="chat-page">
-  <header><div><span class="eyebrow">МЕЖДУ СТРОК · 3.0</span><h2 id="story-title">Ваша история</h2></div><div class="header-actions"><span id="badge">● Офлайн</span><button id="open-settings" type="button" aria-label="Открыть настройки">Настройки ⚙</button></div></header>
+  <header><div><span class="eyebrow">МЕЖДУ СТРОК · 4.0</span><h2 id="story-title">Ваша история</h2></div><div class="header-actions"><span id="badge">● Офлайн</span><button id="open-world" type="button">Мир</button><button id="open-settings" type="button" aria-label="Открыть настройки">⚙</button></div></header>
   <p id="memory" class="hint" aria-live="polite"></p>
   <section id="messages" aria-label="Диалог" aria-live="polite"></section>
   <div class="compose"><p id="status" role="status">Запуск… Если кнопки не отвечают, откройте файл в браузере, а не в предпросмотре мессенджера.</p><form id="chat"><textarea id="message" aria-label="Ваш ответ" placeholder="Что вы скажете или сделаете?" rows="2" maxlength="6000" required></textarea><button id="send" type="submit">Отправить</button></form><p class="hint">Enter — отправить · Shift + Enter — новая строка</p></div>

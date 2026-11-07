@@ -1,6 +1,6 @@
 """Offline browser fixture: verifies the shipped HTML, storage, settings and saves."""
 from pathlib import Path
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import sync_playwright, expect
 import json
 
 root = Path(__file__).resolve().parents[1]
@@ -31,10 +31,13 @@ with sync_playwright() as p:
     assert page.locator('#story-title').inner_text()=='Кухня'
     assert 'ложка' in send('Беру ложку')
     assert 'магия не установлена' in send('Превращаю ложку в дракона')
+    assert 'Алекс' not in send('Помнишь меня?')  # New NPC has not heard the earlier introduction.
+    assert json.loads(page.evaluate("localStorage.getItem('between-lines-offline-v2')"))['memory']['facts']['name']=='Алекс'
+    send('Меня зовут Алекс')
     assert 'Алекс' in send('Помнишь меня?')
     count=page.locator('article').count()
     saved=json.loads(page.evaluate("localStorage.getItem('between-lines-offline-v2')"))
-    assert saved['memory']['version']==3
+    assert saved['memory']['version']==4
     assert 'ложка' in saved['memory']['inventory']
     page.reload()
     assert page.locator('article').count()==count
@@ -52,7 +55,7 @@ with sync_playwright() as p:
     assert page.locator('article').count()==0
     page.locator('#open-settings').tap()
     page.locator('#import').set_input_files(path)
-    assert page.locator('#status').inner_text()=='История загружена.'
+    expect(page.locator('#status')).to_have_text('История загружена.')
     page.locator('#close-settings').tap()
     assert page.locator('article').count()==count
     page.locator('#message').fill('Беру чашку')

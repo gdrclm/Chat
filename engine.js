@@ -1,7 +1,7 @@
 /* Original narrative rules. See NARRATIVE.md for design references and limits. */
 (function (root) {
   'use strict';
-  const VERSION = 3;
+  const VERSION = 4;
   const clean = value => String(value || '').trim();
   const norm = value => clean(value).toLowerCase().replace(/ё/g, 'е').replace(/[«»“”"*]/g, '');
   const clone = value => JSON.parse(JSON.stringify(value));
@@ -30,7 +30,7 @@
     ['стол', 'стол', 'fixed'], ['стул', 'стул|стуль', 'prop'], ['дверь', 'двер', 'barrier'],
     ['окно', 'окн', 'fixed'], ['ларец', 'ларец|ларц|сундук', 'barrier'], ['сейф', 'сейф', 'barrier'],
     ['шлюз', 'шлюз', 'barrier'], ['терминал', 'терминал|компьютер', 'fixed'], ['архив', 'архив', 'barrier'],
-    ['гитара', 'гитар|лютн', 'instrument'], ['бумага', 'бумаг|лист', 'prop'], ['мел', 'мел[аоу]?$', 'tool'], ['шкаф', 'шкаф', 'barrier'], ['сумка', 'сумк|рюкзак', 'prop'], ['свеча', 'свеч', 'tool'], ['зажигалка', 'зажигалк|спичк', 'tool']
+    ['гитара', 'гитар|лютн', 'instrument'], ['бумага', 'бумаг|лист', 'prop'], ['мел', 'мел[аоу]?$', 'tool'], ['шкаф', 'шкаф', 'barrier'], ['сумка', 'сумк|рюкзак', 'prop'], ['свеча', 'свеч', 'tool'], ['зажигалка', 'зажигалк|спичк', 'tool'], ['цепочка', 'цепочк|шнурок', 'tool'], ['молоток', 'молоток|молотк', 'tool'], ['инструменты', 'инструмент', 'tool']
   ];
   const PLACES = [
     ['космическая станция', /станци|орбит/], ['корабль', /корабл/], ['школа', /школ/], ['университет', /университет|кампус/],
@@ -71,9 +71,10 @@
   function objectKind(label) { return OBJECTS.find(([, re]) => new RegExp(re, 'i').test(norm(label)))?.[2] || 'prop'; }
   function addEntity(s, label, options = {}) {
     label = clean(label).slice(0, 100); if (!label) return null;
-    const id = hash(norm(label));
+    const id = options.id || hash(norm(label));
     let item = s.entities.find(e => e.id === id);
     if (!item) { item = { id, label, kind: objectKind(label), location: s.place, known: true, opened: false, locked:/заперт|под замком/.test(norm(label)), destroyed: false, ...options }; s.entities.push(item); }
+    if(item && options.kind==='barrier' && options.locked===true){item.kind='barrier';item.locked=true;}
     return item;
   }
   function fromText(s, text, location, source) {
@@ -137,6 +138,7 @@
       }
       s.configSig = signature(config);
     }
+    simulation.init(s,p,config);
     return s;
   }
   function reframe(previous, oldConfig, newConfig) {
@@ -145,7 +147,7 @@
     const playerChanged = clean(oldConfig.player) !== clean(newConfig.player);
     if (!worldChanged && !actorChanged && !playerChanged) return init(newConfig, previous);
     const keep = init(oldConfig, previous); const base = fresh();
-    base.turn = keep.turn; base.facts = clone(keep.facts); base.journal = keep.journal.slice(); base.notes=keep.notes.slice();
+    base.turn = keep.turn; base.facts = clone(keep.facts); base.journal = keep.journal.slice(); base.notes=keep.notes.slice();base.world=keep.world;
     if(worldChanged)for(const key of ['clue','secret','revelation','topic','claim'])delete base.facts[key];
     if (playerChanged) { delete base.facts.name; delete base.facts.goal; }
     else base.inventory = keep.inventory.slice();
@@ -155,7 +157,8 @@
       result = keep; result.configSig = signature(newConfig);
       if (actorChanged) { result.trust = 0; result.tension = 0; result.npcPresent = true; result.pending = null; result.secretRevealed = false; delete result.facts.secret; delete result.facts.lastGift; }
     } else result = init(newConfig, base);
-    log(result, 'canon', 'Вводные обновлены: ' + profile(newConfig).place + '.');
+    simulation.init(result,profile(newConfig),newConfig);
+    log(result, 'canon', 'Авторские вводные обновлены: ' + profile(newConfig).place + '.');
     return result;
   }
 
@@ -253,14 +256,20 @@
     if (speech && intent==='custom') intent='talk';
     if(/ты врешь|ты лжешь|я тебе не верю/.test(lower))intent='question';
     if(/смеюсь над тобой/.test(lower))intent='insult';
-    if (/^\s*(?:я\s+)?(?:не\s+)?(?:оскорбля|дурак|идиот|заткни|ненавиж)/.test(lower)) intent = 'insult';
+    if (/^\s*(?:я\s+)?(?:ты\s+)?(?:не\s+)?(?:оскорбля|дурак|идиот|заткни|ненавиж)/.test(lower)) intent = 'insult';
     if (/показыва|демонстриру/.test(lower) && !question) intent = 'show';
     const negated = /(?:^|\s)не\s+(?:(?:буду|стану|хочу|собираюсь|могу)\s+)?(?:откры|закры|бер|брат|возьм|даю|отда|брос|напад|уби|убью|бить|бью|удар|использ|трога|иду|пойду|ухожу|выхожу|колду|превращ|лома|ломат|разбива|поджиг|ем|пью|целу|обнима|угрожа|пряч|говор)/.test(actionText);
     return { text, lower, intent, hypothetical, question, speech, negated };
   }
+  function knownPlayer(s,key) { const n=s.world?.npcs[s.world.activeNpcId];return n?.memory[key==='name'?'playerName':'playerGoal']; }
+  function npcHolder(s) { return s.world?.activeNpcId || 'npc:absent'; }
+  function verdict(s,status,code,text) {
+    if(s.currentResolution){s.currentResolution.status=status;s.currentResolution.code=code;}
+    return text;
+  }
   function matchEntity(s, text, includeAbsent = false) {
     const lower = normalizedInput(text).replace(/(?:,?\s+а|,?\s+но)\s+не[\s\S]*$/, ''); const tokens = words(lower).map(stem);
-    const candidates = s.entities.filter(e => includeAbsent || !e.destroyed && (e.location === s.place || e.location === 'inventory' || e.location === 'npc'));
+    const candidates = s.entities.filter(e => includeAbsent || !e.destroyed && (e.location === s.place || e.location === 'inventory' || e.location === npcHolder(s)));
     const scored = candidates.map(e => {
       let score = 0;
       if (lower.includes(norm(e.label))) score += 12;
@@ -270,7 +279,7 @@
       return [e, score];
     }).filter(([, score]) => score > 0).sort((a, b) => b[1] - a[1]);
     if (scored.length) return scored[0][0];
-    if (/(?:^|\s)(?:его|ее|это|этот|этим|им|ней|ним|туда)(?:\s|[.!?]|$)/.test(lower)) return candidates.find(e => e.id === s.focus) || null;
+    if (/(?:^|\s)(?:его|ее|это|этот|этим|им|ней|ним|туда)(?:\s|[,.!?;:]|$)/.test(lower)) return candidates.find(e => e.id === s.focus) || null;
     return null;
   }
   function choose(s, key, choices) {
@@ -318,8 +327,8 @@
     }
   }
   function inspect(s, p, item) {
-    if (item?.destroyed) return `«${item.label}» уже разрушен; прежнее состояние не восстановилось.`;
-    if (item && ![s.place,'inventory','npc'].includes(item.location)) return `«${item.label}» остался в другом месте. Здесь его нет.`;
+    if (item?.destroyed) return verdict(s,'refused','destroyed',`«${item.label}» уже разрушен; прежнее состояние не восстановилось.`);
+    if (item && ![s.place,'inventory',npcHolder(s)].includes(item.location)) return verdict(s,'refused','target_not_present',`«${item.label}» остался в другом месте. Здесь его нет.`);
     if (item) s.focus = item.id;
     const hidden = s.entities.filter(e => !e.known && e.location === s.place && !e.destroyed);
     hidden.forEach(e => { e.known = true; });
@@ -340,14 +349,14 @@
   }
   function question(s, p, c, item) {
     if(/о себе|твое прошлое|о чем (?:ты )?думаешь/.test(c.lower))return voice(s,p,`Я — ${p.name}. Сейчас меня занимает одно: ${p.motive}. ${s.trust>=2?'С вами я могу говорить об этом откровеннее.':'Пока я не знаю, насколько могу быть откровенен.'}`);
-    if (item && (item.destroyed || ![s.place,'inventory','npc'].includes(item.location))) return inspect(s,p,item);
+    if (item && (item.destroyed || ![s.place,'inventory',npcHolder(s)].includes(item.location))) return inspect(s,p,item);
     if (/где/.test(c.lower)) {
-      if (item) return `«${item.label}»: ${item.location === 'inventory' ? 'у вас' : item.location === 'npc' ? 'у собеседника' : item.known ? `здесь, место — ${item.location}` : 'пока не обнаружен. Поможет внимательный осмотр'}.`;
-      return voice(s,p,`Мы сейчас здесь: ${s.place}. ${s.facts.goal ? 'Вы искали: ' + s.facts.goal + '.' : 'Направление ещё можно выбрать.'}`);
+      if (item) return `«${item.label}»: ${item.location === 'inventory' ? 'у вас' : item.location === npcHolder(s) ? 'у собеседника' : item.known ? `здесь, место — ${item.location}` : 'пока не обнаружен. Поможет внимательный осмотр'}.`;
+      return voice(s,p,`Мы сейчас здесь: ${s.place}. ${knownPlayer(s,'goal') ? 'Вы искали: ' + knownPlayer(s,'goal') + '.' : 'Направление ещё можно выбрать.'}`);
     }
     if (/хочешь|твоя цель|тебе нужно|добиваешь|мотив/.test(c.lower)) return voice(s,p,`Я хочу ${p.motive}. Если наши цели совпадут, мы сможем помочь друг другу.`);
     if (/довер|секрет|скрыва|лжешь|врешь/.test(c.lower)) {
-      if (s.trust >= 2 || s.clocks.discovery >= 2) { s.secretRevealed = true; s.facts.secret = p.secret; log(s,'secret',p.secret); return voice(s,p,`Хорошо. Вот что я скрывал от этого разговора: ${p.secret}. Теперь это касается и вас.`); }
+      if (s.trust >= 2 && !simulation.openGrievances(simulation.npc(s)).length) { s.secretRevealed = true; s.facts.secret = p.secret; log(s,'secret',p.secret); return voice(s,p,`Хорошо. Вот что я скрывал от этого разговора: ${p.secret}. Теперь это касается и вас.`); }
       return voice(s,p,`Сначала скажите, зачем вам это знать. Я хочу ${p.motive}; мне нужен повод рискнуть.`);
     }
     if (item) {
@@ -365,7 +374,7 @@
     if (/^(?:а )?(?:почему|зачем|как)[?! ]*$/.test(c.lower) && ['attack','threat','insult'].includes(s.lastIntent))return voice(s,p,'Потому что после угроз и оскорблений мне нужно защищать свои границы. Извинение или спокойный разговор могут изменить ситуацию.');
     const topic = (/^(?:а )?(?:почему|зачем|как)[?! ]*$/.test(c.lower) && s.facts.topic) || c.text.replace(/^(?:а\s+)?(?:расскажи(?: мне)?|что (?:ты )?думаешь|ты знаешь|скажи(?: мне)?|почему|зачем|как|кто|что)\s*/iu,'').replace(/[?!.]+$/,'').slice(0,140);
     s.facts.topic = topic;
-    const origin = s.facts.goal ? `Для вашей цели «${s.facts.goal}»` : `В ситуации «${s.place}»`;
+    const origin = knownPlayer(s,'goal') ? `Для вашей цели «${knownPlayer(s,'goal')}»` : `В ситуации «${s.place}»`;
     return voice(s,p,choose(s,'question',[
       `Вы спрашиваете о «${topic || 'происходящем'}». Я могу судить по тому, что видел здесь. ${origin} важнее проверить свидетельства, чем принять первое объяснение. Что вы уже знаете об этом?`,
       `У меня нет подтверждённого ответа о «${topic || 'происходящем'}». Но это может стать зацепкой. Вы хотите спросить кого-то, поискать следы или предложить свою версию?`,
@@ -378,9 +387,9 @@
     if (c.hypothetical) return voice(s,p,`Пока это только план. ${/маг|превращ|телепорт/.test(c.lower) && !p.magic ? 'В этом мире магия не подтверждена; понадобится обычный способ.' : item?.kind === 'barrier' ? 'Можно попробовать, но замок, инструмент и шум повлияют на результат.' : 'Результат будет зависеть от способа и того, что есть рядом.'} Само действие ещё не произошло.`);
     if (c.negated) { log(s,'boundary',c.text); return voice(s,p,'Хорошо. Вы этого не делаете. Можно выбрать другой способ; я не стану решать за вас.'); }
     learnFacts(s,c);
-    if (!s.npcPresent && ['greet','thanks','apology','comfort','joke','insult','bargain','lie','threat','attack','perform','identity'].includes(c.intent))return 'Здесь нет прежнего собеседника. Можно вернуться к нему или установить нового участника через вводные.';
+    if (!s.npcPresent && ['greet','thanks','apology','comfort','joke','insult','bargain','lie','threat','attack','perform','identity'].includes(c.intent))return verdict(s,'refused','npc_absent','Здесь нет прежнего собеседника. Можно вернуться к нему или установить нового участника через вводные.');
     const count = s.seen[c.intent] || 0; s.seen[c.intent] = count + 1;
-    const available = item && !item.destroyed && [s.place,'inventory','npc'].includes(item.location);
+    const available = item && !item.destroyed && [s.place,'inventory',npcHolder(s)].includes(item.location);
     const targetText = c.text.replace(/^\s*(?:я\s+)?\S+\s*/u,'').replace(/[.!?]+$/,'').slice(0,100);
     switch (c.intent) {
       case 'name': return voice(s,p,s.facts.name ? `${s.facts.name}. Запомню. ${s.facts.goal ? 'Вы всё ещё хотите ' + s.facts.goal + '?' : 'Что привело вас сюда?'}` : 'Как мне к вам обращаться?');
@@ -388,11 +397,11 @@
         const tokens=words(c.text).map(stem).filter(w=>w.length>3);
         const recalled=s.notes.map(note=>[note,words(note).map(stem).filter(w=>tokens.includes(w)).length]).filter(([,score])=>score>0).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([note])=>note);
         const extra=recalled.filter(note=>note!==s.facts.note).map(note=>'Вы говорили: '+note+'.');
-        return voice(s,p,[s.facts.name ? 'Вас зовут ' + s.facts.name + '.' : 'О себе вы рассказали: ' + (config.player || 'пока немного') + '.', s.facts.goal ? 'Ваша цель — ' + s.facts.goal + '.' : '', s.facts.secret ? 'Вы уже знаете: ' + s.facts.secret + '.' : '', s.facts.promise ? 'Вы обещали: ' + s.facts.promise + '.' : '', s.facts.note ? 'Вы просили запомнить: ' + s.facts.note + '.' : '', s.facts.lastGift ? 'Вы передали мне: ' + s.facts.lastGift + '.' : ''].filter(Boolean).concat(extra).join(' '));
+        return voice(s,p,[knownPlayer(s,'name') ? 'Вы представились как ' + knownPlayer(s,'name') + '.' : 'О себе вы рассказали: ' + (config.player || 'пока немного') + '.', knownPlayer(s,'goal') ? 'Ваша цель — ' + knownPlayer(s,'goal') + '.' : '', s.facts.secret ? 'Вы уже знаете: ' + s.facts.secret + '.' : '', s.facts.promise ? 'Вы обещали: ' + s.facts.promise + '.' : '', s.facts.note ? 'Вы просили запомнить: ' + s.facts.note + '.' : '', s.facts.lastGift ? 'Вы передали мне: ' + s.facts.lastGift + '.' : ''].filter(Boolean).concat(extra).join(' '));
       }
       case 'identity': return voice(s,p,`Я — ${p.name}. Сейчас для меня важно ${p.motive}. А вы решаете, говорить со мной начистоту или держать дистанцию.`);
       case 'inventory': return s.inventory.length ? 'При вас: ' + s.inventory.map(v=>'«'+v+'»').join(', ') + '.' : 'При вас нет учтённых предметов. Можно добавить стартовые вещи в описание героя или явно сказать: «У меня есть …».';
-      case 'greet': if (count === 0) s.trust++; return voice(s,p,choose(s,'greeting',[`Здравствуйте${s.facts.name ? ', ' + s.facts.name : ''}. ${s.facts.goal ? 'Вы ищете: ' + s.facts.goal + '?' : 'С чем вы пришли?'}`, 'Я здесь. Продолжим с того, на чём остановились?', 'Снова здравствуйте. За это время вы ничего не обязаны были решить.']));
+      case 'greet': if (count === 0) s.trust++; return voice(s,p,choose(s,'greeting',[`Здравствуйте${knownPlayer(s,'name') ? ', ' + knownPlayer(s,'name') : ''}. ${knownPlayer(s,'goal') ? 'Вы ищете: ' + knownPlayer(s,'goal') + '?' : 'С чем вы пришли?'}`, 'Я здесь. Продолжим с того, на чём остановились?', 'Снова здравствуйте. За это время вы ничего не обязаны были решить.']));
       case 'thanks': if (count < 2) s.trust++; return voice(s,p,choose(s,'thanks',[p.ironic ? 'Благодарность принята. Сдачи, правда, не будет.' : 'Спасибо, что сказали. Это не прошло незамеченным.', 'Я рад, что помощь оказалась кстати. Дальше решение за вами.', 'Мы можем обойтись без церемоний. Но я вас услышал.']));
       case 'apology': s.trust = clamp(s.trust+1);s.tension=Math.max(0,s.tension-2);return voice(s,p,'Принимаю извинение. Последствия не исчезнут, но разговор можно продолжить иначе.');
       case 'refuse': s.pending=null;log(s,'boundary',c.text);return voice(s,p,'Нет — значит нет. Этот путь закрыт по вашему решению, а не вся история. Что вы предложите вместо него?');
@@ -409,32 +418,7 @@
         s.tension=Math.max(0,s.tension-1);log(s,'gesture',c.text);return voice(s,p,choose(s,'gesture',[p.ironic?'Этот взгляд красноречивее длинной речи. Что за ним стоит?':'Я замечаю ваш жест. Не буду додумывать за вас — хотите продолжить?', 'Я понял, что вы отреагировали. Если это согласие или сомнение, скажите, к чему именно оно относится.', 'Пауза и жест меняют тон разговора. Можно обойтись без спешки.']));
       case 'joke': if (s.tension>2) {s.tension--;return voice(s,p,'Не лучшее время для шутки. Но напряжение вы всё-таки немного сбили.');}if(count<2)s.trust++;return voice(s,p,choose(s,'joke',[p.ironic ? 'Неплохо. Я бы даже рассмеялся, если бы не берег репутацию.' : 'Серьёзность на мгновение отступает. Спасибо за эту паузу.', 'В нужный момент такая шутка могла бы нас выдать. Хорошо, что сейчас никто не прячется.', 'Эту версию событий стоит сохранить. Хотя бы ради финальной реплики.']));
       case 'goal': thread(s,s.facts.goal || c.text,'player-goal');return voice(s,p,`Значит, вы хотите ${s.facts.goal || 'изменить ситуацию'}. Я хочу ${p.motive}. Давайте искать, где наши интересы совпадают.`);
-      case 'canon': {
-        const fact=c.text.replace(/^(?:запомни|факт|правило)\s*[:—-]\s*/iu,'').slice(0,240);s.facts.note=fact;
-        if(!s.notes.includes(fact))s.notes.push(fact);s.notes=s.notes.slice(-50);
-        if (/у меня (?:есть|в кармане)/.test(c.lower)) {
-          const labels=c.text.replace(/^.*?у меня (?:есть|в кармане)\s*/iu,'').replace(/[.!]+$/,'').split(/,| и /iu);
-          for(const label of labels) {const e=addEntity(s,label,{location:'inventory',source:'declared'});if(e)addInventory(s,e);}
-        } else if (/рядом (?:есть|стоит|лежит)/.test(c.lower)) {
-          const label=c.text.replace(/^.*?рядом (?:есть|стоит|лежит)\s*/iu,'').replace(/[.!]+$/,'');addEntity(s,label,{source:'declared'});
-        }
-        if(/без магии|магии нет|магия не существует|магия существует|существует магия|магия есть|магия работает/.test(norm(fact))) {
-          s.runtimeRules=fact; p.magic=!/без магии|магии нет|магия не существует/.test(norm(fact));p.rules=fact;
-        }
-        const newPlace=fact.match(/(?:на самом деле\s+|теперь\s+)?(?:мы|я)\s+(?:находимся\s+)?(?:в|на)\s+([^.!?]+)/iu)?.[1];
-        if(newPlace) {
-          s.previousPlace=s.place;s.place=newPlace.trim().slice(0,100);s.startPlace=s.place;s.npcPresent=true;s.focus=null;s.pending=null;s.runtimeWorld=fact;
-          Object.assign(p,profile({...config,world:fact}));log(s,'place','Уточнено место: '+s.place);
-        }
-        const changed=matchEntity(s,fact);
-        if(changed) {
-          if(/открыт|не заперт/.test(norm(fact)) && !/не открыт/.test(norm(fact))){changed.opened=true;changed.locked=false;}
-          else if(/закрыт|заперт/.test(norm(fact))){changed.opened=false;changed.locked=/заперт/.test(norm(fact));}
-          if(/потерян|исчез|больше нет/.test(norm(fact)) && !/не потерян|не исчез/.test(norm(fact)))removeInventory(s,changed,'lost');
-          if(/сломан|сгорел|уничтожен/.test(norm(fact)) && !/не сломан|не сгорел|не уничтожен/.test(norm(fact))){changed.destroyed=true;s.inventory=s.inventory.filter(v=>v!==changed.label);}
-        }
-        log(s,'canon',fact);return `Установленный факт: ${fact}.\nОн сохранён в памяти истории. Явные изменения правил и состава сцены можно также внести в «Опоры истории».`;
-      }
+      case 'canon': return verdict(s,'refused','author_settings_required','Канон меняется в настройках автора; реплика игрока не переписывает мир.');
       case 'question': return question(s,p,c,item);
       case 'inspect': return inspect(s,p,item);
       case 'help':
@@ -457,68 +441,69 @@
           const group=s.entities.filter(e=>matchEntity({...s,entities:[e]},c.text));
           if(group.length>1)return group.map(e=>execute(s,p,{...parse('Беру '+e.label),single:true},config)).join('\n');
         }
-        if(!available || !item.known) return item?.destroyed ? 'Эта вещь разрушена. Взять её в прежнем виде нельзя.' : `Не удаётся найти здесь ${item ? '«'+item.label+'»' : 'такой предмет'}. Можно осмотреться или явно добавить вещь в исходные вводные.`;
+        if(!available || !item.known) return verdict(s,item?'refused':'clarification',item?'target_not_present':'missing_target',item?.destroyed ? 'Эта вещь разрушена. Взять её в прежнем виде нельзя.' : `Не удаётся найти здесь ${item ? '«'+item.label+'»' : 'такой предмет'}. Можно осмотреться или изменить авторские вводные.`);
         if(item.location==='inventory')return `«${item.label}» уже у вас.`;
-        if(['barrier','fixed'].includes(item.kind))return `«${item.label}» не получится просто унести. Его можно исследовать или использовать на месте.`;
-        if(item.location==='npc' && s.trust<2)return voice(s,p,'Теперь эта вещь у меня. Попросите вернуть или предложите обмен.');
+        if(['barrier','fixed'].includes(item.kind) && !item.portable)return verdict(s,'refused','not_portable',`«${item.label}» не получится просто унести. Его можно исследовать или использовать на месте.`);
+        if(item.location===npcHolder(s) && s.trust<2)return verdict(s,'refused','item_not_owned',voice(s,p,'Теперь эта вещь у меня. Попросите вернуть или предложите обмен.'));
         addInventory(s,item);s.focus=item.id;s.stage=Math.max(s.stage,2);log(s,'item','Получено: '+item.label);return `Вы берёте «${item.label}». Предмет теперь при вас.`;
       }
       case 'drop': case 'give': {
-        if(!available || item.location!=='inventory')return `Нельзя ${c.intent==='give'?'передать':'бросить'} вещь, которой у вас нет. ${s.inventory.length?'При вас: '+s.inventory.join(', ')+'.':'Сначала найдите или укажите предмет.'}`;
-        if(c.intent==='give' && !s.npcPresent)return 'Рядом нет собеседника, которому можно передать вещь.';
+        if(!available || item.location!=='inventory')return verdict(s,'refused','item_not_owned',`Нельзя ${c.intent==='give'?'передать':'бросить'} вещь, которой у вас нет. ${s.inventory.length?'При вас: '+s.inventory.join(', ')+'.':'Сначала найдите или укажите предмет.'}`);
+        if(c.intent==='give' && !s.npcPresent)return verdict(s,'refused','npc_absent','Рядом нет собеседника, которому можно передать вещь.');
         const away=/в окно|в пропасть|в реку|в огонь|сжечь/.test(c.lower);
-        removeInventory(s,item,c.intent==='give'?'npc':away?'lost':s.place);s.focus=item.id;
+        removeInventory(s,item,c.intent==='give'?npcHolder(s):away?'lost':s.place);s.focus=item.id;
         if(c.intent==='give'){s.trust++;s.facts.lastGift=item.label;advance(s);log(s,'item','Передано собеседнику: '+item.label);return voice(s,p,`Вы передали мне «${item.label}». Я это учту. Это подарок или ваша часть сделки?`);}
         log(s,'item',(away?'Потеряно: ':'Оставлено: ')+item.label);return `«${item.label}» ${away?'оказывается вне досягаемости':'остаётся здесь'}. ${away?'Теперь нужен другой способ действовать.':'Вы сможете подобрать предмет снова, пока он здесь.'}`;
       }
       case 'open': case 'close': {
         const implicit=/^(?:я )?(?:открываю|открыть|закрываю|закрыть)[.! ]*$/.test(c.lower);
         const barrier=item || (implicit ? knownHere(s).find(e=>e.kind==='barrier') : null);
-        if(!barrier)return 'Неясно, что именно открыть или закрыть. Назовите предмет из сцены.';
-        if(!['barrier','clue'].includes(barrier.kind))return `У «${barrier.label}» нет очевидной запирающейся части. Можно осмотреть предмет или описать способ подробнее.`;
+        if(!barrier)return verdict(s,'clarification','missing_target','Неясно, что именно открыть или закрыть. Назовите предмет из сцены.');
+        if(!['barrier','clue'].includes(barrier.kind))return verdict(s,'refused','not_openable',`У «${barrier.label}» нет очевидной запирающейся части. Можно осмотреть предмет или описать способ подробнее.`);
         if(!available && item)return inspect(s,p,item);
         s.focus=barrier.id;
         if(c.intent==='close'){barrier.opened=false;log(s,'action','Закрыто: '+barrier.label);return `Вы закрываете «${barrier.label}». ${barrier.locked?'Замок остаётся заперт.':'Предмет закрыт, но не заперт.'}`;}
         if(barrier.opened)return `«${barrier.label}» уже открыт. ${s.facts.revelation || 'Можно исследовать содержимое.'}`;
         if(barrier.kind==='clue'){barrier.opened=true;advance(s);s.facts.clue=p.clue;return `Вы раскрываете «${barrier.label}». ${p.clue}`;}
-        const key=s.entities.find(e=>e.location==='inventory' && (e.label===p.tool || e.kind==='tool' && /отмыч/.test(norm(e.label))));
+        const key=s.entities.find(e=>!e.destroyed && e.location==='inventory' && (e.unlocks?.includes(barrier.id) || e.kind==='tool' && /отмыч/.test(norm(e.label))));
         if(!barrier.locked || key)return resolveBarrier(s,p,barrier,key?.label || 'без замка');
         s.pending={kind:'offer',text:'осмотреть запор',action:'Осматриваю '+barrier.label};
-        return `«${barrier.label}» заперт. Подходящего инструмента пока нет. Можно искать «${p.tool}», договориться о помощи, сломать запор с риском или придумать обход.`;
+        return verdict(s,'refused','locked',`«${barrier.label}» заперт. Подходящего инструмента пока нет. Можно искать «${p.tool}», договориться о помощи, сломать запор с риском или придумать обход.`);
       }
       case 'destroy': case 'burn': {
-        if(!available)return 'Сначала нужно понять, что вы собираетесь повредить и где оно находится.';
+        if(!available)return verdict(s,item?'refused':'clarification',item?'target_not_present':'missing_target','Сначала нужно понять, что вы собираетесь повредить и где оно находится.');
         const fuel=c.intent==='burn' && !s.inventory.some(v=>/огонь|спич|зажиг|факел/.test(norm(v))) && !p.magic;
-        if(fuel)return 'Без источника огня поджечь предмет не выходит. Можно найти огонь или выбрать другой способ.';
+        if(fuel)return verdict(s,'refused','missing_fire','Без источника огня поджечь предмет не выходит. Можно найти огонь или выбрать другой способ.');
         danger(s,2);s.tension++;s.focus=item.id;
-        if(item.kind==='barrier'){item.destroyed=true;const outcome=resolveBarrier(s,p,item,'силой');log(s,'cost','Шум привлёк внимание.');return `Запор поддаётся, но треск слышен далеко. Тихо уйти теперь сложнее.\n${outcome}`;}
+        if(item.kind==='barrier'){item.destroyed=true;const outcome=resolveBarrier(s,p,item,'силой');log(s,'cost','Шум привлёк внимание.');return verdict(s,'partial_success','noise_cost',`Запор поддаётся, но треск слышен далеко. Тихо уйти теперь сложнее.\n${outcome}`);}
         item.destroyed=true;s.inventory=s.inventory.filter(v=>v!==item.label);log(s,'cost','Разрушено: '+item.label);return `«${item.label}» больше нельзя использовать в прежнем виде. Шум и следы останутся частью этой сцены.`;
       }
       case 'use': case 'combine': {
-        if(!available)return 'Назовите инструмент и то, на что хотите им воздействовать. Вещи должны быть здесь или при вас.';
-        if(item.location!=='inventory' && !['fixed','barrier'].includes(item.kind))return `«${item.label}» ещё не у вас. Его можно взять или использовать на месте, описав как.`;
+        if(!available)return verdict(s,item?'refused':'clarification',item?'target_not_present':'missing_target','Назовите инструмент и то, на что хотите им воздействовать. Вещи должны быть здесь или при вас.');
+        if(item.location!=='inventory' && !['fixed','barrier'].includes(item.kind))return verdict(s,'refused','item_not_owned',`«${item.label}» ещё не у вас. Его можно взять или использовать на месте, описав как.`);
         s.focus=item.id;
         const locks=knownHere(s).filter(e=>e.kind==='barrier'&&!e.opened&&!e.destroyed);
         const lock=locks.find(e=>matchEntity({...s,entities:[e]},c.text)) || (/запор|преград|замок/.test(c.lower) ? locks[0] : null);
         const keyLock=lock || (locks.length===1 && !/двер|ларец|сейф|шлюз|архив|сундук|ящик|окно/.test(c.lower) ? locks[0] : null);
-        if(keyLock && (item.label===p.tool || /отмыч/.test(norm(item.label))))return resolveBarrier(s,p,keyLock,item.label);
+        if(keyLock && (item.unlocks?.includes(keyLock.id) || /отмыч/.test(norm(item.label))))return resolveBarrier(s,p,keyLock,item.label);
         if(lock && /нож|меч|лом/.test(norm(item.label)) && /подд|взлом|вскры|вскрыть|запор/.test(c.lower)) {
-          danger(s);return `С помощью «${item.label}» запор поддаётся, но остаются заметные следы.\n${resolveBarrier(s,p,lock,'импровизация')}`;
+          danger(s);return verdict(s,'partial_success','trace_cost',`С помощью «${item.label}» запор поддаётся, но остаются заметные следы.\n${resolveBarrier(s,p,lock,'импровизация')}`);
         }
         if(lock && /веревк|стул/.test(norm(item.label)) && /обойти|обход|окно|влез/.test(c.lower)) {
           const window=knownHere(s).find(e=>/окно/.test(norm(e.label)));
-          if(!window || /ларец|сейф|сундук|ящик|шкаф/.test(norm(lock.label)))return 'Так можно обойти проход, если есть реальный путь рядом. Сам запертый контейнер от этого не откроется.';
-          danger(s);return `Вы используете «${item.label}» и соседнее окно. Обход оставляет заметный след.\n${resolveBarrier(s,p,lock,'обход')}`;
+          if(!window || /ларец|сейф|сундук|ящик|шкаф/.test(norm(lock.label)))return verdict(s,'refused','no_physical_bypass','Так можно обойти проход, если есть реальный путь рядом. Сам запертый контейнер от этого не откроется.');
+          danger(s);return verdict(s,'partial_success','trace_cost',`Вы используете «${item.label}» и соседнее окно. Обход оставляет заметный след.\n${resolveBarrier(s,p,lock,'обход')}`);
         }
         if(c.intent==='combine') {
           const second=s.entities.find(e=>e.id!==item.id && e.location==='inventory' && matchEntity({...s,entities:[e]},c.text));
-          if(!second)return 'Для комбинации нужны два доступных предмета. Назовите оба и цель: что должна сделать новая конструкция?';
+          if(!second)return verdict(s,'clarification','missing_second_item','Для комбинации нужны два доступных предмета. Назовите оба и цель: что должна сделать новая конструкция?');
           const label=`${item.label} + ${second.label}`;const made=addEntity(s,label,{location:'inventory',source:'crafted'});addInventory(s,made);log(s,'creation',label);return `Вы собираете конструкцию «${label}». Она пригодна для проверки вашего замысла; какой эффект вы хотите получить?`;
         }
+        if(!/фонар|зеркал|телефон|раци|терминал/.test(norm(item.label)))return verdict(s,'clarification','unsupported_method','Уточните, как этот предмет должен изменить цель. До уточнения эффект не наступил.');
         advance(s);log(s,'action',c.text);return `Вы пробуете свой способ с «${item.label}». ${/фонар|зеркал/.test(norm(item.label))?'Изменив свет, удаётся заметить след на поверхности.':/телефон|раци|терминал/.test(norm(item.label))?'Устройство откликается; теперь можно попытаться связаться с кем-то или проверить запись.':'Предмет реагирует обычным для него образом. Для необычного эффекта нужно уточнить, на что и как вы воздействуете.'}`;
       }
       case 'show':
-        if(!available)return 'Что именно вы показываете? Предмет должен быть у вас или находиться рядом.';
+        if(!available)return verdict(s,'clarification','missing_target','Что именно вы показываете? Предмет должен быть у вас или находиться рядом.');
         s.focus=item.id;advance(s);if(count<2)s.trust++;return voice(s,p,`«${item.label}» меняет разговор. ${item.kind==='clue'?p.clue:'Вы хотите воспользоваться этой вещью или предложить её в обмен?'} ${p.pragmatic?'Давайте обсудим условия.':'Откуда она у вас?'}`);
       case 'bargain': s.facts.proposal=c.text.slice(0,200);s.pending={kind:'bargain',text:s.facts.proposal};thread(s,'Условия сделки: '+s.facts.proposal,'bargain');if(s.trust>=1){advance(s);s.trust++;return voice(s,p,`Я готов обсуждать это. Моя сторона сделки — помочь с вашей целью; ваша — помочь мне ${p.motive}. Уточните, что именно вы предлагаете.`);}return voice(s,p,`Предложение услышано. Я хочу ${p.motive}. Что убедит меня, что вы выполните свою часть?`);
       case 'lie': s.facts.claim=c.text.slice(0,200);danger(s);return voice(s,p,s.clocks.discovery>=2?'Ваш рассказ расходится с найденным следом. Я не могу принять его без объяснения.':'Допустим. Я пока не могу это проверить — но запомню вашу версию.');
@@ -526,7 +511,7 @@
         const targetPart=c.text.match(/(?:по|в)\s+([^.!?]+)/iu)?.[1];
         const physical=targetPart ? matchEntity(s,targetPart,true) : item;
         if(c.intent==='attack' && physical && !physical.destroyed && [s.place,'inventory'].includes(physical.location)) {
-          if(/стреля/.test(c.lower) && !s.entities.some(e=>e.location==='inventory'&&e.kind==='weapon'))return 'Для выстрела нужно оружие при вас. Пока его нет, выстрела не происходит.';
+          if(/стреля/.test(c.lower) && !s.entities.some(e=>e.location==='inventory'&&e.kind==='weapon'))return verdict(s,'refused','missing_weapon','Для выстрела нужно оружие при вас. Пока его нет, выстрела не происходит.');
           if(physical.kind==='barrier')return execute(s,p,parse('Ломаю '+physical.label),config);
           danger(s);s.tension++;log(s,'conflict','Удар по предмету: '+physical.label);
           return `Удар приходится по «${physical.label}». Шум меняет обстановку, но это не нападение на собеседника. Предмет можно осмотреть, чтобы решить следующий шаг.`;
@@ -538,29 +523,29 @@
       case 'defend': danger(s,-1);log(s,'action','Выбрана защита.');return 'Вы выбираете защиту и сохраняете пространство для отступления. Непосредственный риск ниже, но причина конфликта остаётся.';
       case 'hide': danger(s,-1);s.facts.hidden=true;log(s,'action','Герой скрывается.');return `Вы находите укрытие, пользуясь тем, что есть в месте «${s.place}». Пока вы не шумите, можно наблюдать. ${s.npcPresent?p.name+' теряет вас из виду.':'Преследование не подтверждено.'}`;
       case 'magic': {
-        if(!p.magic)return `В правилах этого мира магия не установлена${p.rules?': '+p.rules:''}. Попытка не меняет предметы сама по себе. Можно использовать трюк, технологию или изменить канон в настройках.`;
-        if(/(?:без|не может|невозмож|нельзя|запрещ)/.test(norm(p.rules)) && /бессмер|смерт|воскреш|врем/.test(c.lower))return `Заклинание упирается в заданное ограничение: ${p.rules}. Нужен другой способ.`;
+        if(!p.magic)return verdict(s,'refused','magic_forbidden',`В правилах этого мира магия не установлена${p.rules?': '+p.rules:''}. Попытка не меняет предметы сама по себе. Можно использовать трюк, технологию или изменить канон в настройках.`);
+        if(/(?:без|не может|невозмож|нельзя|запрещ)/.test(norm(p.rules)) && /бессмер|смерт|воскреш|врем/.test(c.lower))return verdict(s,'refused','world_rule',`Заклинание упирается в заданное ограничение: ${p.rules}. Нужен другой способ.`);
         danger(s);advance(s);log(s,'magic',c.text);
         if(/телепорт/.test(c.lower))return move(s,p,c,true);
         if(/превращаюсь|превращаю себя/.test(c.lower)) {
           const form=c.text.match(/\sв\s+([^.!?]+)/iu)?.[1];
-          if(!form)return 'Какую форму вы принимаете?';
+          if(!form)return verdict(s,'clarification','missing_form','Какую форму вы принимаете?');
           s.facts.form=form;log(s,'magic','Новая форма героя: '+form);return `Вы принимаете форму «${form}». Ваши вещи не исчезают из учёта, но способ обращения с ними теперь нужно соотносить с новой формой.`;
         }
         if(item && /превращ/.test(c.lower)) {
-          if(!available)return 'Нужный предмет сейчас недоступен: заклинанию не на что опереться.';
+          if(!available)return verdict(s,'refused','target_not_present','Нужный предмет сейчас недоступен: заклинанию не на что опереться.');
           const form=c.text.match(/\sв\s+([^.!?]+)/iu)?.[1]?.trim();
-          if(!form)return 'Во что вы превращаете предмет? Назовите форму — от неё будут зависеть последствия.';
+          if(!form)return verdict(s,'clarification','missing_form','Во что вы превращаете предмет? Назовите форму — от неё будут зависеть последствия.');
           const loc=item.location;item.destroyed=true;s.inventory=s.inventory.filter(v=>v!==item.label);
           const next=addEntity(s,form,{location:loc,source:'magic'});if(loc==='inventory')addInventory(s,next);s.focus=next.id;
           return `«${item.label}» меняет форму: теперь это «${form}». Магия оставляет заметный след. Нельзя одновременно пользоваться прежней вещью и новой формой.`;
         }
         const lock=knownHere(s).find(e=>e.kind==='barrier'&&!e.opened);
         if(lock && /откры|отпер|замок|ларец|двер|снять/.test(c.lower))return `Заклинание снимает преграду; его след можно обнаружить.\n${resolveBarrier(s,p,lock,'магия')}`;
-        return 'Заклинание оставляет видимый след в сцене. Его эффект нужно направить: на какой предмет, препятствие или цель вы воздействуете?';
+        return verdict(s,'clarification','missing_effect','Уточните цель и ожидаемый эффект заклинания. До уточнения физический эффект не наступил.');
       }
       case 'decision': {
-        if(s.stage<3)return 'Это решение пока не к чему применить: воспоминание ещё не получено.';
+        if(s.stage<3)return verdict(s,'refused','missing_memory','Это решение пока не к чему применить: воспоминание ещё не получено.');
         const release=/отпус/.test(c.lower);s.facts.decision=release?'отпустить':'сохранить';
         log(s,'decision','Решение о воспоминании: '+s.facts.decision);
         for(const t of s.threads)if(t.id==='aftermath')t.status='resolved';
@@ -570,13 +555,14 @@
       case 'move': case 'return': return move(s,p,c,false);
       case 'perform': if(count<2)s.trust++;danger(s,s.clocks.danger>2?1:0);s.facts.performance=c.text.slice(0,180);log(s,'performance',c.text);return voice(s,p,choose(s,'performance',[p.ironic?'План неожиданен. Но пока вы выступали, я перестал ждать подвоха. Это уже достижение.':'Неожиданное выступление меняет настроение. Я отвлёкся от своих подозрений. Вы хотите развеселить меня или выиграть время?', 'Внимание теперь на вас. Если вы кого-то отвлекаете, это подходящий момент для следующего шага.', 'Это придаёт нашей встрече совсем другой ритм. Расскажите, почему вы выбрали именно это.']));
       case 'rest': danger(s,s.clocks.danger>0?1:0);s.tension=Math.max(0,s.tension-1);return 'Вы даёте себе передышку. Напряжение спадает; незавершённые дела остаются. В безопасной обстановке можно поговорить без спешки.';
-      case 'eat': if(!available || item.kind!=='food')return 'Назовите доступную еду или напиток. От желания поесть предметы не появляются.';removeInventory(s,item,'consumed');item.destroyed=true;s.tension=Math.max(0,s.tension-1);log(s,'item','Использовано: '+item.label);return `Вы пробуете «${item.label}». Небольшая пауза помогает собраться; этот запас уже израсходован.`;
+      case 'eat': if(!available || item.kind!=='food')return verdict(s,'refused','missing_food','Назовите доступную еду или напиток. От желания поесть предметы не появляются.');removeInventory(s,item,'consumed');item.destroyed=true;s.tension=Math.max(0,s.tension-1);log(s,'item','Использовано: '+item.label);return `Вы пробуете «${item.label}». Небольшая пауза помогает собраться; этот запас уже израсходован.`;
       case 'write': {const note=c.text.replace(/^\s*(?:я\s+)?(?:пишу|рисую|черчу|записываю)\s*/iu,'').slice(0,180);s.facts.writing=note;log(s,'creation',note);return `На месте остаётся ваша запись или рисунок: «${note}». Это след, к которому можно вернуться или который можно показать собеседнику.`;}
       case 'knock': if(!s.npcPresent)return 'Стук расходится в тишине. Известный вам собеседник остался в другом месте; ответа пока нет.';return voice(s,p,choose(s,'knock',['Я слышу. Входите в разговор — что вам нужно?', 'Вы не обязаны стучать снова. Я уже здесь и жду ваших слов.', 'Стук привлёк внимание. Теперь тихо наблюдать будет сложнее.']));
       case 'wait': if(s.clocks.danger)danger(s);return s.npcPresent?voice(s,p,choose(s,'wait',[`Не буду заполнять паузу за вас. Для меня по-прежнему важно ${p.motive}.`, 'Можно не отвечать сразу. Иногда пауза честнее обещания.', 'Пока мы молчим, решение остаётся открытым.'])):'Вы ждёте. Необычных изменений пока не видно; можно осмотреть новое место или вернуться.';
-      case 'talk': s.facts.topic=c.text.slice(0,160);return voice(s,p,`Я услышал вашу версию. ${s.facts.goal?'Как это поможет вам '+s.facts.goal+'?':'Чего вы хотите добиться этим разговором?'}`);
+      case 'talk': s.facts.topic=c.text.slice(0,160);return voice(s,p,`Я услышал вашу версию. ${knownPlayer(s,'goal')?'Как это поможет вам '+knownPlayer(s,'goal')+'?':'Чего вы хотите добиться этим разговором?'}`);
       default: {
-        if(/обещаю|клянусь/.test(c.lower)){s.facts.promise=c.text.slice(0,180);log(s,'promise',s.facts.promise);return voice(s,p,'Я запомню обещание. Доверие будет зависеть от того, что вы сделаете дальше.');}
+        verdict(s,'clarification','unknown_intent','');
+        if(/обещаю|клянусь/.test(c.lower)){verdict(s,'success','promise_recorded','');s.facts.promise=c.text.slice(0,180);log(s,'promise',s.facts.promise);return voice(s,p,'Я запомню обещание. Доверие будет зависеть от того, что вы сделаете дальше.');}
         if(item && available) {
           s.focus=item.id;log(s,'attempt',c.text);
           return `Вы пробуете необычный подход к «${item.label}». ${item.opened?'Доступ уже открыт; способ не отменяет найденного.':item.kind==='barrier'?'Преграда остаётся на месте: опишите, как ваш способ должен обойти запор.':'Предмет остаётся в сцене. Уточните ожидаемый эффект, и можно будет проверить способ.'}\n${s.npcPresent?voice(s,p,p.ironic?'Я такого ещё не видел. Объясните замысел — возможно, в нём есть смысл.':'Любопытно. Вы хотите что-то проверить или показать мне?'):''}`;
@@ -584,63 +570,79 @@
         s.facts.topic=c.text.slice(0,140);thread(s,c.text,'player-topic');
         return voice(s,p,choose(s,'unfamiliar',[
           `Похоже, вы предлагаете другой ход. Я пока не понимаю его цели. Это поступок, новая деталь мира или реплика мне? Можно описать желаемый результат своими словами.`,
-          `Мы ещё не пробовали такой путь. ${s.facts.goal?'Ваша цель — '+s.facts.goal+'. ':''}Что должно измениться после этого? Если нужна новая вещь или правило, задайте это как факт: «Запомни: …».`,
+          `Мы ещё не пробовали такой путь. ${s.facts.goal?'Ваша цель — '+s.facts.goal+'. ':''}Что должно измениться после этого? Новые вещи и правила задаёт автор в настройках; в игре нужно уточнить доступный способ.`,
           `Я не хочу приписать вам чужой замысел. Что в вашем предложении главное — изменить обстановку, повлиять на меня или установить факт истории?`
         ]));
       }
     }
   }
   function move(s,p,c,magic) {
-    if(c.intent==='return') {
-      if(!s.previousPlace)return 'Пока некуда возвращаться: вы ещё не покидали исходную сцену.';
-      [s.place,s.previousPlace]=[s.previousPlace,s.place];s.npcPresent=s.place===s.startPlace;log(s,'place','Место: '+s.place);return `Вы возвращаетесь. Место: ${s.place}. ${s.npcPresent?p.name+' здесь; разговор можно продолжить.':'Здесь можно осмотреться.'}`;
-    }
-    const explicit=c.text.match(/(?:иду|пойду|направляюсь|бегу|вхожу|телепортируюсь|прыгаю|лезу)\s+(?:я\s+)?(?:в|на|к|за|через)\s+([^.!?]+)/iu)?.[1];
-    const next=explicit?.trim().slice(0,100) || 'снаружи: '+s.place;
-    s.previousPlace=s.place;s.place=next;s.focus=null;s.pending=null;s.npcPresent=false;s.facts.hidden=false;
-    if(/следую|вместе/.test(c.lower))s.npcPresent=true;
-    log(s,'place','Место: '+next);thread(s,'Исследовать: '+next,'place-'+hash(next));
-    return `${magic?'Магия переносит вас':'Вы меняете место'}. Теперь: ${next}. ${s.npcPresent?p.name+' рядом.':'Прежний собеседник остаётся позади.'} Старые предметы не переносятся вслед за вами; с собой — только ваши вещи. Можно осмотреться, задать новые детали места или вернуться.`;
+    const command={...c,intent:'move'};
+    const action=simulation.analyze(s,s.world.authorCanon,command,c.text);action.intent='move';
+    const r=simulation.handle(s,p,command,s.world.authorCanon,action);
+    return verdict(s,r.status,r.code,r.text);
   }
   function director(s,p,intents) {
     // Storylets have eligibility conditions and fire once, rather than hijacking every turn.
     const events=[
       {id:'pressure',when:s.clocks.danger>=4 && !s.facts.hidden, text:p.pressure,kind:'danger'},
-      {id:'connection',when:s.trust>=3 && s.npcPresent && !s.secretRevealed && !intents.includes('question'), text:`${p.name} решается сказать больше: «${p.secret}».`,kind:'secret'},
+      {id:'connection',when:s.trust>=3 && !simulation.openGrievances(simulation.npc(s)).length && s.npcPresent && !s.secretRevealed && !intents.includes('question'), text:`${p.name} решается сказать больше: «${p.secret}».`,kind:'secret'},
       {id:'discovery',when:s.clocks.discovery>=4 && s.stage<3, text:'Зацепки начинают сходиться. Есть основания попробовать другой способ, а не повторять прежний.',kind:'clue'}
     ];
-    const event=events.find(e=>e.when&&!s.used['event:'+e.id]);
+    const eventKey=e=>'event:'+e.id+(e.id==='connection'?':'+s.world.activeNpcId:'');
+    const event=events.find(e=>e.when&&!s.world.storyUsed[eventKey(e)]);
     if(!event)return '';
-    s.used['event:'+event.id]=1;log(s,event.kind,event.text);
+    s.world.storyUsed[eventKey(event)]=1;log(s,event.kind,event.text);
     if(event.kind==='secret'){s.secretRevealed=true;s.facts.secret=p.secret;}
     return event.text;
   }
   function reply(config, previous, input) {
-    let s=init(config,previous); const p=profile({...config,world:s.runtimeWorld || config.world});
+    let s=init(config,previous);
     if(s.configSig!==signature(config)) {
-      // Public API callers may edit config without going through the settings form.
-      const preserved={...fresh(),turn:s.turn,facts:s.facts,journal:s.journal,inventory:s.inventory};
-      s=init(config,preserved);log(s,'canon','Сцена согласована с обновлёнными вводными.');
+      s=init(config,{...fresh(),turn:s.turn,facts:s.facts,journal:s.journal,inventory:s.inventory,world:s.world});
+      log(s,'canon','Сцена согласована с авторскими вводными.');
     }
-    if(s.runtimeRules) {
-      if(/без магии|магии нет|магия не существует/.test(norm(s.runtimeRules)))p.magic=false;
-      else if(/магия существует|существует магия|магия есть|магия работает/.test(norm(s.runtimeRules)))p.magic=true;
-      p.rules=[p.rules,s.runtimeRules].filter(Boolean).join('; ');
-    }
-    const text=clean(input).slice(0,6000);
-    if(!text)return {text:'Что вы хотите сказать или сделать?',memory:s};
-    s.turn++;const parsed=clauses(text).map(parse);const replies=[];const intents=[];
+    const text=clean(input).slice(0,6000);s.turn++;
+    const wholeRequest=(/^(?:я )?(?:прошу|договариваюсь|предлагаю|попросить)/.test(norm(text))||/^[а-я-]+[:,]\s*(?:вынеси|перенеси|унеси|спрячь|открой)/.test(norm(text)))&&/вынест|вынеси|перенест|перенеси|унест|унеси|спрят|спряч|откр/.test(norm(text));
+    const parsed=(wholeRequest?[text]:clauses(text)).map(parse);const results=[];const intents=[];
+    if(!parsed.length)parsed.push(parse(''));
     for(const c of parsed) {
-      intents.push(c.intent);replies.push(execute(s,p,c,config));s.lastIntent=c.negated?'refuse':c.intent;
+      simulation.presence(s);
+      let p=simulation.npcProfile(s,config,profile(config));
+      const action=simulation.analyze(s,config,c,text);s.currentActionId=action.id;
+      const before=simulation.snapshot(s);s.currentResolution={status:'success',code:'completed'};
+      let r=simulation.handle(s,p,c,config,action);
+      if(!r) {
+        p=simulation.npcProfile(s,config,profile(config));
+        const answer=execute(s,p,c,config);r={...s.currentResolution,text:answer};
+      }
+      if(['refused','clarification'].includes(r.status)){s.entities=clone(before.entities);s.inventory=clone(before.inventory);s.clocks=clone(before.clocks);s.stage=before.stage;}
+      r.reason=r.code;
+      simulation.after(s,p,c,action,r);
+      r.action=action;r.effects=simulation.effects(s,before,action);
+      results.push(r);intents.push(c.intent);s.lastIntent=c.negated?'refuse':action.intent;
     }
-    s.trust=clamp(s.trust);s.tension=clamp(s.tension,0,5);
-    s.facts.activePlace=s.place;
-    const event=director(s,p,intents);if(event)replies.push(event);
-    // No obligatory flavour sentence or repeated task list on every line.
-    const opening=s.turn===1 ? `${clean(config.world) || 'История начинается.'}\n\n` : '';
-    const output=opening+replies.filter(Boolean).join('\n\n');
-    s.lastReply=output;log(s,'turn',text);s.version=VERSION;
-    return {text:output,memory:s};
+    const p=simulation.npcProfile(s,config,profile(config));
+    const event=director(s,p,intents);simulation.flush(s);
+    const due=simulation.runDue(s,p);results.push(...due);
+    const opening=s.turn===1?`${clean(config.world)||'История начинается.'}\n\n`:'';
+    let output=opening+results.map(r=>r.text).filter(Boolean).join('\n\n')+(event?'\n\n'+event:'');
+    const statuses=results.map(r=>r.status);
+    let status=statuses.every(v=>v==='success')?'success':statuses.includes('partial_success')||statuses.includes('success')?'partial_success':statuses.includes('refused')?'refused':'clarification';
+    const goalAssessment=simulation.assessGoal(s,results);
+    if(goalAssessment?.status==='pending' && ['success','partial_success'].includes(status)){status='partial_success';output+='\n\n'+goalAssessment.reason;}
+    const effects=results.flatMap(r=>r.effects||[]);
+    const outcome={status,goalAssessment,results:results.map(r=>({status:r.status,code:r.code,reason:r.text,action:r.action,effects:r.effects})),effects};
+    if(results.length>1) {
+      const plan={id:'turn-plan:'+s.turn,actor:'player',goal:results[0].action.goal,expectedEffect:results[0].action.expectedEffect,steps:outcome.results,status,goalAssessment,causes:effects.map(e=>e.id)};
+      s.world.plans.push(plan);s.world.plans=s.world.plans.slice(-40);
+    }
+    s.facts.activePlace=s.place;s.lastReply=output;s.lastOutcome=outcome;log(s,'turn',text);s.version=VERSION;
+    delete s.currentResolution;delete s.currentActionId;
+    return {text:output,memory:s,outcome,results:outcome.results,analysis:outcome.results.map(r=>r.action)};
   }
-  root.StoryEngine={version:VERSION,fresh,reply,profile,restore:init,reframe,parse,clauses};
+  const simulation=root.StorySimulation.create({clean,norm,words,stem,hash,clone,profile,matchEntity,addEntity,log,voice,resolveBarrier});
+  root.StoryEngine={version:VERSION,fresh,reply,profile,restore:init,reframe,parse,clauses,
+    analyze(config,memory,text){const s=init(config,memory);return clauses(text).map(t=>simulation.analyze(s,config,parse(t),text));},
+    map(memory){return simulation.map(memory);}};
 })(globalThis);

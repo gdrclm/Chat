@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import '../simulation.js';
 import '../engine.js';
 const E=globalThis.StoryEngine;
 const base={world:'Магическая лавка воспоминаний.',character:'Мира — сдержанная, с сухим юмором. Хочет защитить сестру.',player:'Путник с компасом'};
@@ -69,13 +70,13 @@ test('a dropped object can be recovered where it was left',()=>{
  const r=play(kitchen,'Беру ложку','Кладу ложку на стол','Беру ложку');assert.deepEqual(r.memory.inventory,['ложка']);
 });
 test('gift changes ownership and remains remembered',()=>{
- const r=play(base,'Отдаю компас','Помнишь меня?');assert.ok(!r.memory.inventory.includes('компас'));assert.equal(item(r.memory,'компас').location,'npc');assert.match(r.text,/компас/);
+ const r=play(base,'Отдаю компас','Помнишь меня?');assert.ok(!r.memory.inventory.includes('компас'));assert.equal(item(r.memory,'компас').location,r.memory.world.primaryNpcId);assert.match(r.text,/компас/);
 });
 test('improvised bypass has a cost and uses the named obstacle',()=>{
- const r=play(base,'У меня есть нож','Использую нож чтобы поддеть запор ларца');assert.equal(item(r.memory,'ларец').opened,true);assert.ok(r.memory.clocks.danger>0);
+ const r=play({...base,player:base.player+' с ножом'},'Использую нож чтобы поддеть запор ларца');assert.equal(item(r.memory,'ларец').opened,true);assert.ok(r.memory.clocks.danger>0);
 });
 test('an unrelated door must not secretly open the chest',()=>{
- const r=play(base,'У меня есть верёвка','Использую верёвку чтобы обойти дверь');assert.equal(item(r.memory,'ларец').opened,false);
+ const r=play({...base,player:base.player+' с верёвкой'},'Использую верёвку чтобы обойти дверь');assert.equal(item(r.memory,'ларец').opened,false);
 });
 test('opening a nonexistent object does not open the nearest barrier',()=>{
  const r=play(base,'Открываю окно');assert.equal(item(r.memory,'ларец').opened,false);
@@ -96,12 +97,14 @@ test('a magical transformation consumes the old form and preserves the new form'
  const config={...base,canon:'Предметы: ложка'};
  const r=play(config,'Беру ложку','Превращаю ложку в дракона');assert.ok(!r.memory.inventory.includes('ложка'));assert.ok(r.memory.inventory.includes('дракона'));assert.equal(item(r.memory,'ложка').destroyed,true);
 });
-test('an explicit runtime rule persists across turns',()=>{
+test('a player statement cannot override the author magic rule',()=>{
  const config={...base,canon:'Предметы: ложка'};
- const r=play(config,'Беру ложку','Запомни: магии нет','Превращаю ложку в дракона');assert.equal(item(r.memory,'ложка').destroyed,false);
+ const r=play(config,'Беру ложку','Запомни: магии нет','Превращаю ложку в дракона');assert.equal(item(r.memory,'ложка').destroyed,true);assert.equal(E.profile(r.memory.world.authorCanon).magic,true);
 });
-test('new objects can be declared, remembered, and then used',()=>{
- const r=play(kitchen,'Рядом лежит камертон','Беру камертон');assert.ok(r.memory.inventory.includes('камертон'));
+test('new objects authored in settings can then be used in play',()=>{
+ const updated={...kitchen,canon:kitchen.canon.replace('ложка, чашка','ложка, чашка, камертон')};
+ const memory=E.reframe(E.restore(kitchen,E.fresh()),kitchen,updated);
+ const r=E.reply(updated,memory,'Беру камертон');assert.ok(r.memory.inventory.includes('камертон'));
 });
 test('leaving and returning preserves spatial ownership',()=>{
  const r=play(kitchen,'Беру ложку','Иду в сад','Осматриваюсь','Возвращаюсь');assert.equal(r.memory.place,'кухня');assert.ok(r.memory.inventory.includes('ложка'));assert.equal(item(r.memory,'чашка').location,'кухня');assert.equal(r.memory.npcPresent,true);
@@ -117,7 +120,7 @@ test('help offer followed by yes acts on the earlier offer',()=>{
  const r=play(base,'Помоги','Да');assert.equal(r.memory.lastIntent,'agree');assert.ok(r.memory.stage>=1);
 });
 test('NPC help provides another route and creates an obligation',()=>{
- const r=play(base,'Привет','Помоги открыть ларец','Да');assert.equal(item(r.memory,'ларец').opened,true);assert.equal(r.memory.facts.debt,'защитить сестру');
+ const r=play({...base,canon:'Доступ персонажа: ларец'},'Привет','Помоги открыть ларец','Да');assert.equal(item(r.memory,'ларец').opened,true);assert.equal(r.memory.facts.debt,'защитить сестру');
 });
 test('motives and secrets come from author supplied canon',()=>{
  const config={...kitchen,canon:kitchen.canon+'\nЦель персонажа: вернуть дневник'};
@@ -157,7 +160,7 @@ test('replies do not mutate an input memory snapshot',()=>{
  const m=prepared();const snapshot=JSON.stringify(m);E.reply(base,m,'Беру ключ');assert.equal(JSON.stringify(m),snapshot);
 });
 test('more than four clauses are not silently discarded',()=>{
- const r=play(kitchen,'Меня зовут Алекс. Привет. Спасибо. Осматриваюсь. Беру ложку. Отдаю ложку.');assert.equal(item(r.memory,'ложка').location,'npc');
+ const r=play(kitchen,'Меня зовут Алекс. Привет. Спасибо. Осматриваюсь. Беру ложку. Отдаю ложку.');assert.equal(item(r.memory,'ложка').location,r.memory.world.primaryNpcId);
 });
 
 test('bypassing a door leaves the original lock closed',()=>{
@@ -198,13 +201,13 @@ test('a feeling receives an emotional response rather than a compulsory puzzle',
 test('a conversational goal changes the offered next step',()=>{
  const r=play(base,'Хочу просто поговорить','Что делать?');assert.match(r.text,/поговорить/);assert.doesNotMatch(r.text,/Пока закрыто/);
 });
-test('an explicit new location in chat changes spatial availability',()=>{
- const r=play(base,'На самом деле мы на корабле','Беру письмо');assert.equal(r.memory.place,'корабле');assert.ok(!r.memory.inventory.includes('запечатанное письмо'));
+test('a player assertion about location does not bypass graph movement',()=>{
+ const r=play(base,'На самом деле мы на корабле','Беру письмо');assert.equal(r.memory.place,'лавка');assert.ok(r.memory.inventory.includes('запечатанное письмо'));
 });
 
 test('recall finds an older established fact after new topics',()=>{
  const r=play(base,'Запомни: мою кошку зовут Луна','Запомни: я боюсь высоты','Помнишь кошку?');assert.match(r.text,/Луна/);
 });
-test('an explicit retcon of item loss changes later possibilities',()=>{
- const r=play(base,'Осматриваюсь','Беру ключ','Запомни: ключ потерян','Открываю ларец');assert.equal(item(r.memory,'ключ').location,'lost');assert.equal(item(r.memory,'ларец').opened,false);
+test('a player claim of item loss does not change actual possession',()=>{
+ const r=play(base,'Осматриваюсь','Беру ключ','Запомни: ключ потерян','Открываю ларец');assert.equal(item(r.memory,'ключ').location,'inventory');assert.equal(item(r.memory,'ларец').opened,true);
 });
