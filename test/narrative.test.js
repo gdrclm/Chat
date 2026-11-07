@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import '../semantic.js';
 import '../scenes.js';
 import '../simulation.js';
 import '../engine.js';

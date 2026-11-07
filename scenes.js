@@ -93,7 +93,7 @@
       s.world.sceneFlags||={};s.world.sceneVersion=1;
     }
     function node(s){return s.world.locations.find(l=>l.id===s.world.player.location);}
-    function local(s,e){return e&&(e.location===s.place||e.location==='inventory'||e.location===s.world.activeNpcId)&&!e.destroyed;}
+    function local(s,e){return e&&(e.location===s.place||e.location==='inventory'||e.location===s.world.activeNpcId)&&!e.destroyed&&H.containerAccess(s,e);}
     function isVisible(s,e){return !e.hidden&&e.known&&local(s,e);}
     function names(a,b){if(words(b).length===1&&stem(b).length>=3&&words(a).map(stem).includes(stem(b)))return true;const nouns=v=>words(v).filter(w=>!/(?:ый|ий|ая|ое|ые|ую|ой|ого|ыми|ную)$/.test(w)).map(stem);const tokens=nouns(a);return nouns(b).filter(w=>w.length>=3).some(w=>tokens.includes(w));}
     function method(text){const q=norm(text);return /слуш|прислуш/.test(q)?'listen':/загляд|под стол|под скам|обыск|ищу|поиск|обшар/.test(q)?'search':/провер|испыт|хватает|деталей/.test(q)?'check':/чита|прочита/.test(q)?'read':'examine';}
@@ -122,10 +122,10 @@
       return !d.method||d.method===m;
     }
     function fingerprint(s,where){
-      return hash(JSON.stringify({description:where.scene.description,objects:s.entities.filter(e=>e.location===where.name).map(e=>[e.id,e.known,e.hidden,e.opened,e.destroyed,e.condition,e.moved,e.pinInstalled]),actors:Object.values(s.world.npcs).filter(n=>n.location===where.id).map(n=>n.id),revision:where.scene.revision}));
+      return hash(JSON.stringify({description:where.scene.description,objects:s.entities.filter(e=>e.location===where.name).map(e=>[e.id,e.known,e.hidden,e.opened,e.openingDegree,e.containerId,e.supportId,e.destroyed,e.condition,e.moved,e.pinInstalled]),actors:Object.values(s.world.npcs).filter(n=>n.location===where.id).map(n=>n.id),revision:where.scene.revision}));
     }
     function entry(s){
-      const where=node(s);const seen=s.entities.filter(e=>e.location===s.place&&e.known&&!e.hidden&&!e.destroyed);
+      const where=node(s);const seen=s.entities.filter(e=>e.location===s.place&&e.known&&!e.hidden&&!e.destroyed&&H.containerAccess(s,e));
       const social=s.world.loops.social;
       for(const n of Object.values(s.world.npcs).filter(n=>n.location===where.id)){if(!social.noticed.includes(n.id))social.noticed.push(n.id);if(!social.encountered.includes(n.id))social.encountered.push(n.id);}
       const repaired=role(where)==='workshop'&&s.entities.some(e=>e.localKey==='mechanism'&&e.location===s.place&&e.condition==='repaired');
@@ -139,13 +139,13 @@
       if(e.destroyed)return 'Предмет разрушен.';
       if(e.writtenText)return 'На записи: «'+e.writtenText+'».';
       if(e.evidence)return 'На носителе записано: '+e.evidence.proposition.text+'. Это содержание улики, а не доказанная истина.';
-      if(e.kind==='barrier')return '«'+e.label+'» '+(e.opened?'открыт':e.locked?'заперт':'закрыт, но не заперт')+'.'+(e.opened&&e.revelationText?' '+e.revelationText:'');
+      if(e.kind==='barrier')return '«'+e.label+'» '+(e.openingDegree==='slightly'?'приоткрыт':e.opened?'открыт':e.locked?'заперт':'закрыт, но не заперт')+'.'+(e.opened&&e.openingDegree!=='slightly'?' '+H.containerText(s,e):'');
       return e.description||'«'+e.label+'»: '+(e.portable?'предмет можно переносить':'объект используется на месте')+'.';
     }
-    function sourceFacts(e){
+    function sourceFacts(s,e){
       if(e.evidence)return [{key:'text:'+e.id+':'+hash(e.evidence.proposition.text),text:'На «'+e.label+'» записано: '+e.evidence.proposition.text,topics:['содержание']}];
       if(e.writtenText)return [{key:'text:'+e.id+':'+hash(e.writtenText),text:'В записи: '+e.writtenText,topics:['запись']}];
-      if(e.kind==='barrier'&&e.opened&&e.revelationText)return [{key:'revelation:'+e.id,text:e.revelationText}];
+      if(e.kind==='barrier'&&e.opened&&e.openingDegree!=='slightly'&&e.revelationText)return [{key:'revelation:'+e.id,text:e.contentsDefined?H.containerText(s,e):e.revelationText}];
       if(e.localKey==='mechanism'&&e.condition==='repaired')return [{key:'repair.working',text:'Механизм исправен: установленный штифт удерживает шестерню.'}];
       return e.localFacts||[];
     }
@@ -154,18 +154,20 @@
       const material=/серебрян/.test(norm(e.label))?'серебро':/деревян/.test(norm(e.label))?'дерево':/медн/.test(norm(e.label))?'медь':old.material||null;
       r.properties[e.id]={...old,portable:e.portable,opened:e.opened,locked:e.locked,condition:e.condition,destroyed:e.destroyed,material,unlocks:old.unlocks||[],sourceLocationId:node(s).id,lastMethod:m,testedMethods:[...new Set([...(old.testedMethods||[]),m])]};
     }
-    function inspect(s,text){
-      const selection=resolve(s,text),where=node(s),r=research(s),m=selection.method;
+    function inspect(s,text,semantic){
+      const selected=semantic?.recognized&&(semantic.targetId||semantic.locationId||semantic.target==='current_location');
+      const selection=selected?{entity:semantic.targetId&&s.entities.find(e=>e.id===semantic.targetId),scene:semantic.locationId?s.world.locations.find(l=>l.id===semantic.locationId):semantic.target==='current_location'?node(s):null,method:semantic.method||'examine',target:semantic.target}:resolve(s,text),where=node(s),r=research(s),m=selection.method;
       if(selection.scene&&selection.scene.id!==where.id)return fail('refused','location_elsewhere','Для исследования места «'+selection.scene.name+'» сначала нужно туда перейти.');
       if(!selection.scene&&!selection.entity)return fail('clarification','unknown_research_target','Такого объекта здесь не установлено. Назовите существующую деталь или осмотритесь.');
       if(selection.scene){
         const before=fingerprint(s,where);const previous=where.scene.observed[m];let revealed=[];
-        for(const e of s.entities.filter(e=>e.location===s.place&&!e.destroyed&&!e.known))if(canReveal(s,e,m)){e.known=true;e.hidden=false;revealed.push(e.label);}
+        for(const e of s.entities.filter(e=>e.location===s.place&&!e.destroyed&&!e.known&&H.containerAccess(s,e)))if(canReveal(s,e,m)){e.known=true;e.hidden=false;revealed.push(e.label);}
         const stamp=fingerprint(s,where);
-        if(previous===stamp&&!revealed.length)return ok('Обстановка не изменилась.'+(s.entities.some(e=>e.location===s.place&&e.known&&!e.hidden&&!e.destroyed)?' Можно сосредоточиться на '+s.entities.filter(e=>e.location===s.place&&e.known&&!e.hidden&&!e.destroyed).map(e=>'«'+e.label+'»').slice(0,4).join(', ')+'.':' Доступных объектов для изучения нет.'),'already_observed',{novel:false,locationId:where.id,discoveries:[]});
+        const visible=s.entities.filter(e=>e.location===s.place&&isVisible(s,e));
+        if(previous===stamp&&!revealed.length)return ok('Обстановка не изменилась.'+(visible.length?' Можно сосредоточиться на '+visible.map(e=>'«'+e.label+'»').slice(0,4).join(', ')+'.':' Доступных объектов для изучения нет.'),'already_observed',{novel:false,locationId:where.id,discoveries:[]});
         const first=!Object.keys(where.scene.observed).length;const changed=where.scene.lastObservedState&&where.scene.lastObservedState!==stamp;where.scene.observed[m]=stamp;where.scene.lastObservedState=stamp;
         if(!s.world.loops.exploration.observed.includes(where.id))s.world.loops.exploration.observed.push(where.id);
-        const opportunities=s.entities.filter(e=>e.location===s.place&&e.known&&!e.hidden&&!e.destroyed).slice(0,6).map(e=>'изучить '+e.label);
+        const opportunities=visible.slice(0,6).map(e=>'изучить '+e.label);
         for(const cap of opportunities)if(!r.capabilities.includes(cap))r.capabilities.push(cap);
         const findings=[];
         for(const label of revealed){const e=s.entities.find(v=>v.label===label&&v.location===s.place);if(e&&know(s,{key:'noticed:'+e.id,text:'Замечен доступный предмет: '+e.label,unlocks:e.portable?['взять '+e.label]:[]},e,where.id))findings.push('noticed:'+e.id);}
@@ -189,9 +191,9 @@
       if(m==='check'&&/детал/.test(norm(selection.target))&&e.localKey==='mechanism'){
         if(!fact(s,'repair.diagnosis'))return fail('clarification','diagnosis_required','Сначала изучите механизм и определите поломку.');
         const spec={key:'repair.missing-pin',text:'В комплекте нет подходящего штифта. Его можно изготовить из проволоки.',unlocks:['изготовить штифт из проволоки']};if(know(s,spec,e,where.id))discoveries.push(spec.key);details.push(spec.text);
-      }else for(const spec of sourceFacts(e))if(availableFact(s,e,spec,m)){if(know(s,spec,e,where.id))discoveries.push(spec.key);details.push(spec.text);}
-      if(sourceFacts(e).some(f=>f.requiresOpen)&&!e.opened)details.push('Содержимое закрыто. Сначала раскройте источник, чтобы читать его.');
-      const key=e.id+':'+m;const state=hash(JSON.stringify([e.opened,e.destroyed,e.condition,e.moved,e.evidence,e.writtenText,details]));
+      }else for(const spec of sourceFacts(s,e))if(availableFact(s,e,spec,m)){if(know(s,spec,e,where.id))discoveries.push(spec.key);details.push(spec.text);}
+      if(sourceFacts(s,e).some(f=>f.requiresOpen)&&!e.opened)details.push('Содержимое закрыто. Сначала раскройте источник, чтобы читать его.');
+      const key=e.id+':'+m;const state=hash(JSON.stringify([e.opened,e.openingDegree,e.destroyed,e.condition,e.moved,e.evidence,e.writtenText,describe(s,e),details]));
       if(r.observations[key]===state&&!discoveries.length&&!(e.localKey==='lamp'&&fact(s,'guild.sign')&&!fact(s,'route.guild')))return ok('Новых сведений о «'+e.label+'» нет. Последние наблюдения не изменились.','already_observed',{novel:false,discoveries:[]});
       r.observations[key]=state;rememberProperties(s,e,m);
       if(discoveries.length&&!s.world.loops.exploration.understood.includes(where.id))s.world.loops.exploration.understood.push(where.id);
@@ -298,7 +300,7 @@
         if(c.question&&known.length)return ok(n.name+': «Я знаю из этого источника: '+known.map(f=>f.text).join(' ')+'»','npc_source_knowledge',{novel:false,discoveries:[]});
         if(c.question&&!e.localKey)return ok(n.name+': «Я не знаю содержимого этого источника. Ваше знание само по себе не становится моим».','npc_unknown_source',{novel:false,discoveries:[]});
         if(!local(s,e))return fail('refused','target_elsewhere','Источник не находится рядом.');
-        const visible=sourceFacts(e).filter(f=>availableFact(s,e,f,'read'));
+        const visible=sourceFacts(s,e).filter(f=>availableFact(s,e,f,'read'));
         if(!visible.length)return ok(n.name+': «Содержимое не доступно для чтения. Сначала откройте источник».','source_unreadable',{novel:false,discoveries:[]});
         for(const f of visible)n.researchKnowledge[f.key]={...clone(f),sourceId:e.id,turn:s.turn};
         emit(s,'npc_source_read',n.id,null,{sourceId:e.id,facts:visible.map(f=>f.key)});
@@ -371,13 +373,20 @@
       const reaction=npcInteraction(s,p,c,a);if(reaction)return reaction;
       const writing=a.intent!=='plant_evidence'?write(s,c):null;if(writing)return writing;
       const repairResult=repair(s,p,c);if(repairResult)return repairResult;
+      if(a.intent==='repair'){
+        const machine=s.entities.find(e=>e.id===a.targetId);
+        if(!machine)return fail('clarification','missing_repair_target','Что именно нужно починить? Назовите существующий предмет.');
+        if(!local(s,machine))return fail('refused','target_elsewhere','Предмет для ремонта находится в другом месте.');
+        if(machine.localKey!=='mechanism')return fail('clarification','unknown_repair_method','Для «'+machine.label+'» пока не известны поломка и способ ремонта. Уточните, что повреждено и как вы это исправляете.');
+        return fail('clarification','specific_work_step',machine.condition==='repaired'?'Механизм уже работает. Для обслуживания согласуйте очистку и калибровку.':!fact(s,'repair.diagnosis')?'Сначала изучите механизм и определите поломку.':!fact(s,'repair.missing-pin')?'Проверьте комплект деталей.':'Нужны проволока, верстак и разрешение: изготовьте штифт, установите его и проверьте ход.');
+      }
       const environmental=interact(s,c);if(environmental)return environmental;
       if(c.intent==='take'){
         const e=s.entities.find(v=>v.id===a.targetId);if(e?.private&&!permission(s,e,'private'))return privateReaction(s,e);
       }
       if(/осматр|осмотр|огляд|озир|изуч|исслед|рассматри|разгляды|провер|слуш|прочита|читаю|обыски/.test(c.lower)||a.intent==='explore'){
         if(c.intent==='question'||c.speech||['claim','plant_evidence','show'].includes(a.intent))return null;
-        return inspect(s,c.text);
+        return inspect(s,c.text,c.semantic);
       }
       return null;
     }
@@ -389,20 +398,20 @@
       }
       if(e.kind==='barrier'&&e.openedWith){const tool=s.entities.find(v=>v.id===e.openedWith);if(tool){rememberProperties(s,tool,'use');const known=research(s).properties[tool.id].unlocks;if(!known.includes(e.id))known.push(e.id);}}
       if(c.intent==='open'&&e.kind==='clue'&&e.opened){
-        const gained=[];for(const spec of sourceFacts(e))if(availableFact(s,e,spec,'read')&&know(s,spec,e,node(s).id))gained.push(spec.key);
+        const gained=[];for(const spec of sourceFacts(s,e))if(availableFact(s,e,spec,'read')&&know(s,spec,e,node(s).id))gained.push(spec.key);
         r.information={novel:gained.length>0,sourceId:e.id,discoveries:gained};
       }
     }
     function changed(s,before,action){
       const affected=new Set();
       for(const e of s.entities){const old=before.entities.find(v=>v.id===e.id);if(research(s).properties[e.id]&&(e.location===s.place||e.location==='inventory')){const prop=research(s).properties[e.id];prop.condition=e.condition;prop.opened=e.opened;prop.destroyed=e.destroyed;}
-        if(old&&['location','opened','destroyed','condition','moved','pinInstalled','tidy'].every(k=>JSON.stringify(old[k])===JSON.stringify(e[k])))continue;
+        if(old&&['location','opened','openingDegree','containerId','supportId','destroyed','condition','moved','pinInstalled','tidy'].every(k=>JSON.stringify(old[k])===JSON.stringify(e[k])))continue;
         for(const name of [old?.location,e.location]){const place=s.world.locations.find(n=>n.name===name);if(place)affected.add(place.id);}
       }
       for(const n of Object.values(s.world.npcs)){const old=before.relationships.find(v=>v.id===n.id);if(old&&old.location!==n.location){affected.add(old.location);affected.add(n.location);}}
       for(const id of affected){const place=s.world.locations.find(n=>n.id===id);if(!place.scene)continue;place.scene.revision++;place.scene.events.push({turn:s.turn,actionId:action.id,type:'physical_change'});place.scene.events=place.scene.events.slice(-20);}
     }
-    function openedText(s,e){return sourceFacts(e).filter(f=>availableFact(s,e,f,'read')).map(f=>f.text).join('\n')||'В этом источнике пока нет заданных сведений.';}
+    function openedText(s,e){return sourceFacts(s,e).filter(f=>availableFact(s,e,f,'read')).map(f=>f.text).join('\n')||'В этом источнике пока нет заданных сведений.';}
     return {init,handle,inspect,entry,sourceLearnedAfter,changed,openedText,fact,research,permission,grantPermission};
   }};
 })(globalThis);

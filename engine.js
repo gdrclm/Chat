@@ -89,6 +89,38 @@
       if (location === 'inventory' && !s.inventory.includes(item.label)) s.inventory.push(item.label);
     }
   }
+  const defaultContents={
+    fantasy:[['флакон с воспоминанием','prop'],['записка','clue','Правду можно сохранить или отпустить.']],
+    mystery:[['фотография','clue']],
+    everyday:[['неотправленное письмо','clue']],
+    sea:[['настоящая карта курса','clue']],
+    school:[['дело с пропавшей страницей','clue'],['копия страницы','clue']]
+  };
+  function containment(s,p,config) {
+    if(s.contentsVersion===1)return;
+    // Old prose-derived items are retained if a player actually acquired or used them.
+    s.entities=s.entities.filter(e=>e.source!=='world'||e.location!==s.startPlace||e.opened||e.destroyed||s.inventory.includes(e.label)||s.world?.events?.some(event=>event.subject===e.id||event.subjectId===e.id)||s.world?.player?.research?.properties?.[e.id]||s.journal.some(event=>event.kind!=='turn'&&norm(event.text).includes(norm(e.label))));
+    const addContents=(parent,items)=>{
+      if(!parent)return;
+      if(items.length)parent.contentsDefined=true;
+      for(const [label,kind,writtenText]of items){
+        const existing=s.entities.find(e=>norm(e.label)===norm(label)&&!e.containerId&&(e.location==='inventory'||e.source==='revelation'));
+        if(existing)continue;
+        const visible=Boolean(parent.destroyed||parent.opened&&parent.openingDegree!=='slightly');
+        addEntity(s,label,{id:parent.id+':content:'+hash(norm(label)),kind:kind||objectKind(label),source:'container-content',location:parent.location,containerId:parent.id,known:visible,hidden:!visible,portable:true,...(writtenText?{writtenText}:{})});
+      }
+    };
+    const main=s.entities.find(e=>e.kind==='barrier'&&e.source==='scene'&&norm(e.label)===norm(p.barrier));
+    if(main&&!p.canon['преграда']&&!p.canon['развязка'])addContents(main,defaultContents[p.genre]||[]);
+    for(const line of clean(config.canon).split('\n')){
+      const entry=line.match(/^\s*(содержимое|на поверхности)\s*:\s*([^|]+)\|\s*(.+)$/iu);if(!entry)continue;
+      const parent=s.entities.find(e=>norm(e.label)===norm(entry[2]));if(!parent)continue;
+      const items=entry[3].split(',').map(t=>[clean(t)]);
+      if(norm(entry[1])==='содержимое')addContents(parent,items);
+      else for(const [label]of items){const item=addEntity(s,label,{source:'canon',location:parent.location,supportId:parent.id});item.supportId=parent.id;}
+    }
+    s.contentsVersion=1;
+  }
   function log(s, kind, text) {
     if (s.journal.at(-1)?.text !== text) s.journal.push({ turn: s.turn, kind, text: clean(text).slice(0, 300) });
     s.journal = s.journal.slice(-60);
@@ -121,7 +153,7 @@
         addEntity(s, p.tool, { kind: 'tool', known: false, source: 'scene' });
         addEntity(s, p.canon['преграда'] || p.barrier, { kind: 'barrier', locked: true, source: 'scene' });
       }
-      fromText(s, config.world, s.place, 'world');
+      // Descriptive prose is background. Only authored scene data creates physical objects.
       fromText(s, config.player, 'inventory', 'player');
       for (const label of oldInventory) {
         const item = addEntity(s, label, { location: 'inventory', source: 'carried' });
@@ -138,7 +170,7 @@
       }
       s.configSig = signature(config);
     }
-    simulation.init(s,p,config);
+    containment(s,p,config);simulation.init(s,p,config);
     return s;
   }
   function reframe(previous, oldConfig, newConfig) {
@@ -301,9 +333,9 @@
   }
   function advance(s, amount = 1) { s.clocks.discovery = Math.min(6, s.clocks.discovery + amount); }
   function danger(s, amount = 1) { s.clocks.danger = Math.min(6, Math.max(0, s.clocks.danger + amount)); }
-  function knownHere(s) { return s.entities.filter(e => e.known && !e.destroyed && e.location === s.place); }
+  function knownHere(s) { return s.entities.filter(e => e.known && !e.hidden && !e.destroyed && e.location === s.place && simulation.containerAccess(s,e)); }
   function addInventory(s, item) {
-    item.location = 'inventory'; item.known = true;
+    delete item.containerId;delete item.supportId;item.location = 'inventory'; item.known = true;item.hidden=false;
     if (!s.inventory.includes(item.label)) s.inventory.push(item.label);
   }
   function removeInventory(s, item, destination) {
@@ -327,12 +359,20 @@
     }
   }
   function inspect(s,p,item) { const r=simulation.inspectScene(s,item?'Осматриваю '+item.label:'Осматриваюсь');if(s.currentResolution)s.currentResolution.information=r.information;return verdict(s,r.status,r.code,r.text); }
+  function containerText(s,parent){
+    if(!parent.contentsDefined)return parent.revelationText||'';
+    const items=s.entities.filter(e=>e.containerId===parent.id&&!e.destroyed);
+    return items.length?'Внутри: '+items.map(e=>'«'+e.label+'»').join(', ')+'.':'Внутри больше нет оставленных предметов.';
+  }
   function resolveBarrier(s, p, barrier, method) {
     const bypass=method==='обход';
     const used=s.entities.find(e=>!e.destroyed&&e.location==='inventory'&&e.label===method);if(used)barrier.openedWith=used.id;
-    if(bypass)barrier.bypassed=true;else {barrier.opened = true; barrier.locked = false;} s.stage = Math.max(s.stage,3); if(!barrier.revelationKnown){advance(s,2);barrier.revelationKnown=true;}
-    const reveal = bypass ? `Путь за «${barrier.label}» найден. Прежний замок остаётся заперт, но теперь есть обход.` : barrier.revelationSpec || `Вы открываете «${barrier.label}». Преграда больше не мешает доступу; содержимое определяется заданными предметами.`;
-    barrier.revelationText=reveal;s.facts.revelation = reveal; fromText(s,reveal,s.place,'revelation'); log(s, 'consequence', `Открыто: ${barrier.label}. Способ: ${method}.`);
+    const first=!barrier.revelationKnown;
+    if(bypass)barrier.bypassed=true;else {barrier.opened = true; barrier.locked = false;} s.stage = Math.max(s.stage,3); if(first){advance(s,2);barrier.revelationKnown=true;}
+    const reveal = bypass ? `Путь за «${barrier.label}» найден. Прежний замок остаётся заперт, но теперь есть обход.` : !first&&barrier.contentsDefined?`Вы открываете «${barrier.label}». `+containerText(s,barrier):barrier.revelationSpec || `Вы открываете «${barrier.label}». `+(barrier.contentsDefined?containerText(s,barrier):'Преграда больше не мешает доступу; содержимое определяется заданными предметами.');
+    barrier.revelationText=reveal;barrier.openingDegree=bypass?'bypassed':'open';s.facts.revelation = reveal;
+    if(!bypass)for(const e of s.entities.filter(e=>e.containerId===barrier.id)){e.known=true;e.hidden=false;}
+    log(s, 'consequence', `Открыто: ${barrier.label}. Способ: ${method}.`);
     thread(s, 'Выяснить, кому предназначалась находка', 'aftermath');
     return reveal;
   }
@@ -372,13 +412,13 @@
   }
   function execute(s, p, c, config) {
     const primary=['take','drop','give','use','combine'].includes(c.intent) ? c.text.split(/\s+(?:в|на|под|за|через|чтобы)\s+/iu)[0] : c.text;
-    const item = matchEntity(s,primary,true);
+    const item = c.semantic?.recognized&&!c.semantic.targetIds ? s.entities.find(e=>e.id===c.semantic.targetId)||null : matchEntity(s,primary,true);
     if (c.hypothetical) return voice(s,p,`Пока это только план. ${/маг|превращ|телепорт/.test(c.lower) && !p.magic ? 'В этом мире магия не подтверждена; понадобится обычный способ.' : item?.kind === 'barrier' ? 'Можно попробовать, но замок, инструмент и шум повлияют на результат.' : 'Результат будет зависеть от способа и того, что есть рядом.'} Само действие ещё не произошло.`);
     if (c.negated) { log(s,'boundary',c.text); return voice(s,p,'Хорошо. Вы этого не делаете. Можно выбрать другой способ; я не стану решать за вас.'); }
     learnFacts(s,c);
     if (!s.npcPresent && ['greet','thanks','apology','comfort','joke','insult','bargain','lie','threat','attack','perform','identity'].includes(c.intent))return verdict(s,'refused','npc_absent','Здесь нет прежнего собеседника. Можно вернуться к нему или установить нового участника через вводные.');
     const count = s.seen[c.intent] || 0; s.seen[c.intent] = count + 1;
-    const available = item && !item.destroyed && [s.place,'inventory',npcHolder(s)].includes(item.location);
+    const available = item && !item.destroyed && [s.place,'inventory',npcHolder(s)].includes(item.location)&&simulation.containerAccess(s,item);
     const targetText = c.text.replace(/^\s*(?:я\s+)?\S+\s*/u,'').replace(/[.!?]+$/,'').slice(0,100);
     switch (c.intent) {
       case 'name': return voice(s,p,s.facts.name ? `${s.facts.name}. Запомню. ${s.facts.goal ? 'Вы всё ещё хотите ' + s.facts.goal + '?' : 'Что привело вас сюда?'}` : 'Как мне к вам обращаться?');
@@ -452,7 +492,7 @@
         if(!available && item)return inspect(s,p,item);
         s.focus=barrier.id;
         if(c.intent==='close'){barrier.opened=false;log(s,'action','Закрыто: '+barrier.label);return `Вы закрываете «${barrier.label}». ${barrier.locked?'Замок остаётся заперт.':'Предмет закрыт, но не заперт.'}`;}
-        if(barrier.opened)return `«${barrier.label}» уже открыт. ${barrier.revelationText || 'Можно исследовать содержимое.'}`;
+        if(barrier.opened)return `«${barrier.label}» уже открыт. ${containerText(s,barrier) || 'Можно исследовать содержимое.'}`;
         if(barrier.kind==='clue'){barrier.opened=true;return `Вы раскрываете «${barrier.label}». ${simulation.openedText(s,barrier)}`;}
         const key=s.entities.find(e=>!e.destroyed && e.location==='inventory' && (e.unlocks?.includes(barrier.id) || e.kind==='tool' && /отмыч/.test(norm(e.label))));
         if(!barrier.locked || key)return resolveBarrier(s,p,barrier,key?.label || 'без замка');
@@ -585,6 +625,101 @@
     if(event.kind==='secret'){s.secretRevealed=true;s.facts.secret=p.secret;}
     return event.text;
   }
+  const semantic=root.StorySemantic;
+  const semanticIntents={MOVE:'move',INSPECT:'inspect',SEARCH:'inspect',TAKE:'take',OPEN:'open',CLOSE:'close',USE:'use',GIVE:'give',DROP:'drop',SHOW:'show',TALK:'talk',REPAIR:'repair'};
+  function legacyStarts(text) {
+    const head=normalizedInput(text).replace(/^(?:(?:я|мы|не|осторожно|быстро|медленно|теперь|сейчас)\s+)+/u,'');
+    const delegated=/^(?:приподнима|отодвига|сдвига|передвига|изгот[оа]в|устан[оа]в|делаю|сделать|вытач|согну|очища|чищу|смазыва|калибру|подбрасыва|подделыва|фабрикую|выношу|переношу|уношу|тащу|несу|покупаю|куплю|знакомлюсь)/u;
+    return delegated.test(head)||ACTIONS.some(([,re])=>new RegExp('^(?:'+re.source+')',re.flags).test(head));
+  }
+  function resolveInput(s,text) {
+    const plan=semantic.resolve(text,{...semantic.context(s),legacyStarts});
+    const pending=s.world.player.pendingAction;
+    if(pending&&plan.steps.length===1&&!plan.steps[0].recognized&&!legacyStarts(text)&&plan.steps[0].mode==='execute'&&words(text).length<=8){
+      const completed=clone(pending.step);completed[pending.slot]=clean(text).replace(/[.!?]+$/,'');
+      if(pending.slot==='actor')completed.recipient=completed.actor;
+      completed.raw=pending.step.raw+' → '+clean(text);completed.dependsOnPrevious=false;
+      delete completed.targetId;delete completed.destinationId;delete completed.targetLabel;
+      return {mode:completed.mode,resumed:true,steps:[completed,...pending.remaining].map((step,index)=>({...step,index}))};
+    }
+    return plan;
+  }
+  function semanticCommand(step,s) {
+    const bound=semantic.bind(step,s);
+    if(!step.recognized){
+      const c=parse(step.raw);
+      // Legacy narrative acts still need a real predicate, never a keyword in a description.
+      if(['move','open','close','take','drop','give','use','destroy','burn','magic','attack'].includes(c.intent)&&!legacyStarts(step.raw)&&!/^приподнима/.test(c.lower))c.intent='custom';
+      if(['intention','question','hypothetical','speech','report'].includes(step.mode)&&step.dependsOnPrevious){c.hypothetical=true;c.intent=step.mode==='intention'?'goal':'talk';}
+      return {...c,semantic:bound,originalText:step.raw};
+    }
+    const text=semantic.command(bound);const c=parse(text);
+    c.intent=semanticIntents[step.intent] || c.intent;
+    if(step.intent==='MOVE'&&step.variant==='return')c.intent='return';
+    if(step.intent==='TALK'){
+      c.intent=step.variant==='ask'?'question':step.recipient?'talk':'talk';
+      c.speech=true;c.question=step.variant==='ask';
+    }else {c.speech=false;c.question=false;c.hypothetical=false;c.negated=false;}
+    return {...c,semantic:bound,originalText:step.raw};
+  }
+  function semanticMode(s,c,action) {
+    const step=c.semantic;
+    if(step?.unsupportedVerb){
+      thread(s,'Не разобрано действие: '+step.raw,'unresolved:'+hash(step.raw));log(s,'intention',step.raw);
+      return {status:'clarification',code:'unsupported_action',performed:false,effects:[],text:'Не удалось разобрать действие «'+step.unsupportedVerb+'» в команде «'+step.raw+'». Замысел сохранён в журнале. Уточните, что должно измениться и каким способом.'};
+    }
+    if(!step?.recognized)return null;
+    const passive=['question','intention','hypothetical','negated','speech','report'];
+    if(!passive.includes(step.mode)||step.intent==='TALK'&&['speech','question'].includes(step.mode))return null;
+    const target=step.targetLabel||step.target||step.destination||'указанное действие';
+    const response={status:'success',effects:[],performed:false};
+    if(step.mode==='negated'){log(s,'boundary',step.raw);return {...response,code:'action_negated',text:'Вы не выполняете действие «'+step.raw+'». Состояние предметов и местоположение не изменились.'};}
+    if(step.mode==='intention'){
+      learnFacts(s,{...parse(step.raw),intent:'goal'});
+      s.world.player.intentions||=[];s.world.player.intentions.push({turn:s.turn,step:clone(step)});s.world.player.intentions=s.world.player.intentions.slice(-20);
+      return {...response,code:'intention_recorded',text:'Намерение сохранено: «'+step.raw+'». Для выполнения выберите действие; пока оно не произошло.'};
+    }
+    if(step.mode==='speech'||step.mode==='report')return {...response,code:'action_reported',text:'Это сообщение о действии, а не распоряжение выполнить его. Физическое состояние не изменилось.'};
+    if(step.mode==='hypothetical')return {...response,code:'hypothetical_action',text:'Пока это предположение о действии «'+step.raw+'». Само действие ещё не произошло.'};
+    let detail='Результат зависит от доступности предмета и выбранного способа.';
+    const entity=s.entities.find(e=>e.id===step.targetId);
+    if(step.intent==='MOVE'){
+      const path=s.world.edges.find(e=>e.from===s.world.player.location&&e.to===step.destinationId);
+      const barrier=path&&s.entities.find(e=>e.id===path.barrierId);
+      detail=!step.destinationId?'Нужно выбрать известное место назначения.':!path?'Прямого перехода туда нет.':barrier?.locked&&!barrier.opened&&!barrier.destroyed?'Сначала нужно открыть преграду.':'Такой переход есть на карте.';
+    }else if(step.intent==='OPEN'&&entity){
+      const key=s.entities.some(e=>e.location==='inventory'&&!e.destroyed&&e.unlocks?.includes(entity.id));
+      detail=entity.opened?'Предмет уже открыт.':entity.locked&&!key?'Замок требует подходящего ключа, доступа или другого способа.':'Открытие возможно, если предмет находится рядом.';
+    }
+    return {...response,code:'capability_question',text:'Вы спрашиваете о действии: «'+target+'». '+detail+' Действие не выполнено.'};
+  }
+  function semanticAccess(s,c) {
+    const step=c.semantic;if(!step?.recognized||!['execute','attempt','request'].includes(step.mode))return null;
+    if(step.intent==='TALK')return null;
+    if(step.ambiguous)return {status:'clarification',code:'ambiguous_target',text:'Какой именно предмет вы имеете в виду: «'+step.target+'»? Уточните название или источник.',effects:[]};
+    const e=s.entities.find(e=>e.id===step.targetId);
+    if(step.tool){
+      const tool=s.entities.find(e=>e.id===step.toolId);
+      const actor=step.mode==='request'?s.world.npcs[step.actorId]:null;
+      const holders=actor?[actor.id,s.world.locations.find(place=>place.id===actor.location)?.name]:['inventory',s.place];
+      if(!tool)return {status:'clarification',code:'unknown_tool',text:'Способ сохранён, но инструмент «'+step.tool+'» не найден. Уточните, чем вы хотите действовать.',effects:[]};
+      if(tool.destroyed||!holders.includes(tool.location)||!simulation.containerAccess(s,tool))return {status:'refused',code:'tool_unavailable',text:'Указанный инструмент «'+tool.label+'» сейчас недоступен исполнителю.',effects:[]};
+      if(step.intent==='OPEN'&&e?.locked&&!tool.unlocks?.includes(e.id)&&!/отмыч/.test(norm(tool.label)))return {status:'refused',code:'tool_does_not_fit',text:'Указанный инструмент не подходит к этому замку. Для другого способа нужно уточнить воздействие.',effects:[]};
+    }
+    if(step.intent==='SEARCH'&&e?.kind==='barrier'&&(!e.opened||e.openingDegree==='slightly')&&!e.destroyed)return {status:'refused',code:'container_closed',text:'Для поиска внутри «'+e.label+'» сначала нужно открыть его полностью.',effects:[]};
+    if(e?.containerId&&!simulation.containerAccess(s,e)){
+      const parent=s.entities.find(v=>v.id===e.containerId);
+      if(parent)return {status:'refused',code:'container_closed',text:'Содержимое «'+parent.label+'» недоступно: контейнер закрыт или открыт недостаточно. Сначала обеспечьте доступ.',effects:[]};
+    }
+    if(step.source&&!step.sourceId)return {status:'clarification',code:'unknown_source',text:'Источник «'+step.source+'» не найден. Уточните, откуда нужно получить или изучить предмет.',effects:[]};
+    if(step.sourceId){
+      const source=s.entities.find(e=>e.id===step.sourceId);
+      if(source&&source.kind==='barrier'&&!source.opened&&!source.destroyed)return {status:'refused',code:'container_closed',text:'Сначала нужно открыть «'+source.label+'». Содержимое пока недоступно.',effects:[]};
+      if(e&&source&&e.containerId!==source.id&&e.supportId!==source.id)return {status:'clarification',code:'source_mismatch',text:'Не установлено, что «'+e.label+'» находится в указанном источнике «'+source.label+'». Уточните источник или назовите предмет отдельно.',effects:[]};
+      if(e&&s.world.npcs[step.sourceId]&&e.location!==step.sourceId)return {status:'clarification',code:'source_mismatch',text:'Этот предмет не находится у названного персонажа.',effects:[]};
+    }
+    return null;
+  }
   function reply(config, previous, input) {
     let s=init(config,previous);
     if(s.configSig!==signature(config)) {
@@ -592,25 +727,40 @@
       log(s,'canon','Сцена согласована с авторскими вводными.');
     }
     const text=clean(input).slice(0,6000);s.turn++;
-    const wholeRequest=(/^(?:я )?(?:прошу|договариваюсь|предлагаю|попросить)/.test(norm(text))||/^[а-я-]+[:,]\s*(?:вынеси|перенеси|унеси|спрячь|открой)/.test(norm(text)))&&/вынест|вынеси|перенест|перенеси|унест|унеси|спрят|спряч|откр/.test(norm(text));
-    const parsed=(wholeRequest?[text]:clauses(text)).map(parse);const results=[];const intents=[];
-    if(!parsed.length)parsed.push(parse(''));
-    for(const c of parsed) {
+    const semanticPlan=resolveInput(s,text);delete s.world.player.pendingAction;
+    const results=[];const intents=[];let pendingAction=null;
+    for(const step of semanticPlan.steps) {
       simulation.presence(s);
+      const c=semanticCommand(step,s);
       let p=simulation.npcProfile(s,config,profile(config));
       const action=simulation.analyze(s,config,c,text);s.currentActionId=action.id;
+      action.text=step.raw;action.semantic=c.semantic;action.dependsOnPrevious=step.dependsOnPrevious;
+      const previousResult=results.at(-1);
+      if(step.dependsOnPrevious&&previousResult&&(previousResult.status!=='success'||previousResult.performed===false&&['execute','attempt','request'].includes(step.mode))){
+        results.push({status:'refused',code:'dependency_failed',reason:'dependency_failed',skipped:true,performed:false,text:'Шаг «'+step.raw+'» не выполнен: предыдущее действие не завершено.',action,effects:[]});continue;
+      }
       const before=simulation.snapshot(s);s.currentResolution={status:'success',code:'completed'};
-      let r=simulation.handle(s,p,c,config,action);
+      let r=semanticMode(s,c,action)||semanticAccess(s,c)||simulation.handle(s,p,c,config,action);
       if(!r) {
         p=simulation.npcProfile(s,config,profile(config));
         const answer=execute(s,p,c,config);r={...s.currentResolution,text:answer};
       }
+      if(c.hypothetical||c.negated||['intention','question','hypothetical','negated','speech','report'].includes(c.semantic?.mode)&&c.semantic?.intent!=='TALK')r.performed=false;
+      if(['refused','clarification'].includes(r.status))r.performed=false;
       if(['refused','clarification'].includes(r.status)){s.entities=clone(before.entities);s.inventory=clone(before.inventory);s.clocks=clone(before.clocks);s.stage=before.stage;}
       r.reason=r.code;
-      simulation.after(s,p,c,action,r);
+      if(r.performed!==false)simulation.after(s,p,c,action,r);
+      else if(action.intent==='goal'&&s.npcPresent&&s.facts.goal){const person=simulation.npc(s);if(person)person.memory.playerGoal=s.facts.goal;}
       r.action=action;r.effects=simulation.effects(s,before,action);
-      results.push(r);intents.push(c.intent);s.lastIntent=c.negated?'refuse':action.intent;
+      results.push(r);intents.push(action.intent);s.lastIntent=c.negated?'refuse':action.intent;
+      if(c.semantic?.mode==='negated')s.lastIntent='refuse';
+      if(r.status==='clarification'&&step.recognized&&!pendingAction){
+        const remaining=semanticPlan.steps.slice(step.index+1).filter((v,i,a)=>v.dependsOnPrevious&&a.slice(0,i).every(t=>t.dependsOnPrevious));
+        const slot=r.code==='unknown_tool'?'tool':['unknown_source','source_mismatch'].includes(r.code)?'source':r.code==='unknown_recipient'?(step.mode==='request'?'actor':'recipient'):step.intent==='MOVE'?'destination':'target';
+        pendingAction={step:clone(step),slot,remaining,locationId:s.world.player.location};
+      }
     }
+    if(pendingAction)s.world.player.pendingAction=pendingAction;
     const p=simulation.npcProfile(s,config,profile(config));
     const event=director(s,p,intents);simulation.flush(s);
     const due=simulation.runDue(s,p);results.push(...due);
@@ -622,17 +772,18 @@
     if(goalAssessment?.status==='pending' && ['success','partial_success'].includes(status)){status='partial_success';output+='\n\n'+goalAssessment.reason;}
     const effects=results.flatMap(r=>r.effects||[]);
     const information={novel:results.some(r=>r.information?.novel),discoveries:[...new Set(results.flatMap(r=>r.information?.discoveries||[]))],opportunities:[...new Set(results.flatMap(r=>r.information?.opportunities||[]))]};
-    const outcome={status,goalAssessment,information,results:results.map(r=>({status:r.status,code:r.code,reason:r.text,information:r.information||null,action:r.action,effects:r.effects})),effects};
+    const outcome={status,goalAssessment,information,semanticPlan,results:results.map(r=>({status:r.status,code:r.code,reason:r.text,information:r.information||null,skipped:Boolean(r.skipped),performed:r.performed!==false,action:r.action,effects:r.effects})),effects};
     if(results.length>1) {
       const plan={id:'turn-plan:'+s.turn,actor:'player',goal:results[0].action.goal,expectedEffect:results[0].action.expectedEffect,steps:outcome.results,status,goalAssessment,causes:effects.map(e=>e.id)};
       s.world.plans.push(plan);s.world.plans=s.world.plans.slice(-40);
     }
     s.facts.activePlace=s.place;s.lastReply=output;s.lastOutcome=outcome;log(s,'turn',text);s.version=VERSION;
     delete s.currentResolution;delete s.currentActionId;
-    return {text:output,memory:s,outcome,results:outcome.results,analysis:outcome.results.map(r=>r.action)};
+    return {text:output,memory:s,outcome,semantic:semanticPlan,results:outcome.results,analysis:outcome.results.map(r=>r.action)};
   }
-  const simulation=root.StorySimulation.create({clean,norm,normalizedInput,words,stem,hash,clone,profile,matchEntity,addEntity,log,voice,resolveBarrier});
+  const simulation=root.StorySimulation.create({clean,norm,normalizedInput,words,stem,hash,clone,profile,matchEntity,addEntity,log,voice,resolveBarrier,containerText});
   root.StoryEngine={version:VERSION,fresh,reply,profile,restore:init,reframe,parse,clauses,
-    analyze(config,memory,text){const s=init(config,memory);return clauses(text).map(t=>simulation.analyze(s,config,parse(t),text));},
+    resolve(config,memory,text){const s=init(config,memory);return semantic.resolve(text,{...semantic.context(s),legacyStarts});},
+    analyze(config,memory,text){const s=init(config,memory);return resolveInput(s,text).steps.map(step=>simulation.analyze(s,config,semanticCommand(step,s),text));},
     map(memory){return simulation.map(memory);}};
 })(globalThis);

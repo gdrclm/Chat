@@ -1,6 +1,6 @@
 <!doctype html>
-<html lang="ru" data-version="4.1">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content"><title>Между строк — локальная история</title><link rel="stylesheet" href="style.css"><script defer src="scenes.js"></script><script defer src="simulation.js"></script><script defer src="engine.js"></script><script defer src="app.js"></script></head>
+<html lang="ru" data-version="4.2">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content"><title>Между строк — локальная история</title><link rel="stylesheet" href="style.css"><script defer src="semantic.js"></script><script defer src="scenes.js"></script><script defer src="simulation.js"></script><script defer src="engine.js"></script><script defer src="app.js"></script></head>
 <body>
 <aside id="settings-page" hidden aria-label="Настройки истории">
   <div class="page-top"><span class="eyebrow">НАСТРОЙКИ АВТОРА</span><button id="close-settings" type="button" class="secondary">К чату ✕</button></div>
@@ -35,7 +35,7 @@
   <details><summary>Убеждения персонажей · просмотр автора</summary><ul id="belief-records"></ul><p class="hint">Убеждение персонажа может быть ошибочным. Истина мира задаётся автором и событиями, отдельно от этих версий.</p></details>
 </aside>
 <main id="chat-page">
-  <header><div><span class="eyebrow">МЕЖДУ СТРОК · 4.1</span><h2 id="story-title">Ваша история</h2></div><div class="header-actions"><span id="badge">● Офлайн</span><button id="open-world" type="button">Мир</button><button id="open-settings" type="button" aria-label="Открыть настройки">⚙</button></div></header>
+  <header><div><span class="eyebrow">МЕЖДУ СТРОК · 4.2</span><h2 id="story-title">Ваша история</h2></div><div class="header-actions"><span id="badge">● Офлайн</span><button id="open-world" type="button">Мир</button><button id="open-settings" type="button" aria-label="Открыть настройки">⚙</button></div></header>
   <p id="memory" class="hint" aria-live="polite"></p>
   <section id="messages" aria-label="Диалог" aria-live="polite"></section>
   <div class="compose"><p id="status" role="status">Запуск… Если кнопки не отвечают, откройте файл в браузере, а не в предпросмотре мессенджера.</p><form id="chat"><textarea id="message" aria-label="Ваш ответ" placeholder="Что вы скажете или сделаете?" rows="2" maxlength="6000" required></textarea><button id="send" type="submit">Отправить</button></form><p class="hint">Enter — отправить · Shift + Enter — новая строка</p></div>

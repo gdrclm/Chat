@@ -121,7 +121,7 @@
         annotate(s,e,p);
       }
       const npcItems=field(config,'вещи персонажа');
-      if(npcItems)for(const label of npcItems.split(/[,|]/))addEntity(s,label,{location:main.id,source:'canon'});
+      if(npcItems)for(const label of npcItems.split(/[,|]/)){const item=addEntity(s,label,{location:main.id,source:'canon'});if(item){item.location=main.id;delete item.containerId;delete item.supportId;s.inventory=s.inventory.filter(value=>value!==item.label);}}
       for(const [,text]of rawFields(config.canon).filter(([k])=>k==='истина')) {const fact=proposition(s,text);truth(s,fact.key,fact.value,'canon');}
       for(const [key,text]of rawFields(config.canon).filter(([k])=>k.startsWith('знает '))) {
         const observer=findNpc(s,key.slice(6));if(observer){const fact=proposition(s,text);observer.beliefs[fact.key]={...fact,confidence:1,sources:{canon:1},certainty:'known'};}
@@ -140,7 +140,7 @@
     function annotate(s,e,p) {
       if(e.portable===undefined)e.portable=!['fixed','barrier'].includes(e.kind)||/ларец|сундук|ящик|шкатулк/.test(norm(e.label));
       if(!Array.isArray(e.lineage))e.lineage=[];
-      if(!Array.isArray(e.unlocks))e.unlocks=e.label===p.tool?s.entities.filter(v=>v.kind==='barrier'&&v.source==='scene').map(v=>v.id):[];
+      if(!Array.isArray(e.unlocks))e.unlocks=e.label===p.tool?s.entities.filter(v=>v.kind==='barrier'&&(v.source==='scene'||norm(v.label)===norm(p.canon['преграда']))).map(v=>v.id):[];
     }
     const memoryKeys=['secret','debt','lastGift','proposal','claim','topic','note','promise'];
     function flush(s) {
@@ -181,7 +181,7 @@
       emit(s,'reconciliation',n.id,null,n.reconciliations.at(-1));log(s,'reconciliation',n.name+': причина конфликта признана и выполнено условие примирения.');return true;
     }
     function syncEntityTruth(s,e,source='event') {
-      for(const key of ['location','opened','locked','destroyed','hidden','condition','pinInstalled','moved'])truth(s,'entity:'+e.id+':'+key,e[key]??false,source);
+      for(const key of ['location','opened','locked','destroyed','hidden','condition','pinInstalled','moved','containerId','supportId','openingDegree'])truth(s,'entity:'+e.id+':'+key,e[key]??false,source);
     }
     function snapshot(s){return clone({entities:s.entities,inventory:s.inventory,clocks:s.clocks,stage:s.stage,player:s.world.player,relationships:Object.values(s.world.npcs).map(n=>({id:n.id,trust:n.trust,tension:n.tension,location:n.location})),facts:s.world.facts});}
     function observeProperty(s,e,key,value,action) {
@@ -200,12 +200,14 @@
       }
     }
     function effects(s,before,action) {
+      for(const e of s.entities){const old=before.entities.find(v=>v.id===e.id);const parent=e.containerId&&s.entities.find(v=>v.id===e.containerId);const oldParent=parent&&before.entities.find(v=>v.id===parent.id);if(old&&parent&&e.location!==old.location&&parent.location===oldParent?.location)delete e.containerId;}
+      for(let depth=0;depth<8;depth++)for(const e of s.entities){const parent=e.containerId&&s.entities.find(v=>v.id===e.containerId);if(parent){e.location=parent.location;if(parent.destroyed||parent.opened&&parent.openingDegree!=='slightly'){e.hidden=false;e.known=true;}}}
       for(const e of s.entities) {
         annotate(s,e,profile(s.world.authorCanon));
         const old=before.entities.find(v=>v.id===e.id);if(!old){
           if(e.source==='magic'&&!e.lineage.length)e.lineage=before.entities.filter(v=>!v.destroyed&&s.entities.find(x=>x.id===v.id)?.destroyed).flatMap(v=>[v.id,...(v.lineage||[])]);
           emit(s,'entity_created',e.id,null,e,action.id);}
-        else for(const key of ['location','opened','locked','destroyed','hidden','label','condition','pinInstalled','moved'])if(JSON.stringify(old[key])!==JSON.stringify(e[key])){emit(s,'item_'+key,e.id,old[key],e[key],action.id);observeProperty(s,e,key,e[key],action);}
+        else for(const key of ['location','opened','locked','destroyed','hidden','label','condition','pinInstalled','moved','containerId','supportId','openingDegree'])if(JSON.stringify(old[key])!==JSON.stringify(e[key])){emit(s,'item_'+key,e.id,old[key],e[key],action.id);if(containerAccess(s,e))observeProperty(s,e,key,e[key],action);}
         syncEntityTruth(s,e);
       }
       for(const n of Object.values(s.world.npcs)) {
@@ -240,27 +242,44 @@
       if(/^(?:я )?(?:делаю|мастерю|изготавливаю|переделываю|превращаю).*?(?:кулон|украшение|браслет|ожерелье)/.test(lower))intent='craft_gift';
       let primary=['take','drop','give','use','combine'].includes(intent)?c.text.split(/\s+(?:в|на|под|за|через|чтобы)\s+/iu)[0]:c.text;
       if(intent==='craft_gift')primary=(c.text.match(/из\s+([^,.!?]+?)(?=\s+(?:на|с помощью|чтобы|как)|[,.;!?]|$)/iu)?.[1]||c.text.split(/\s+(?:в|как)\s+/iu)[0]).replace(/украшение|кулон|браслет|ожерелье/giu,'');
-      const target=matchEntity(s,primary,true);
+      let target=matchEntity(s,primary,true);
       if(intent===c.intent&&c.intent==='hide'&&target)intent='hide_item';
       if(/позже|когда вернемся|когда вернусь|через \d+ ход/.test(lower)&&intent!=='request_plan'&&['open','hide_item','carry'].includes(intent))intent='defer';
       if(!c.question&&!c.speech&&/^(?:я )?(?:осмотр|осматр|огляд|исслед|изуч|рассматри|разгляды|обыски|слуш|прислуш|провер|читаю|прочита)/.test(lower))intent='inspect';
       if(!c.question&&/устан[оа]в|вставля/.test(lower)&&/штифт/.test(lower))intent='repair_install';
       if(!c.question&&/изгот[оа]в|сдела/.test(lower)&&/штифт/.test(lower))intent='repair_craft';
       if(c.hypothetical||c.negated)intent=c.intent;
+      const semantic=c.semantic;
+      if(semantic?.recognized){
+        if(semantic.intent!=='TALK')target=semantic.targetId?s.entities.find(e=>e.id===semantic.targetId):null;
+        if(semantic.recipientId)receiver=s.world.npcs[semantic.recipientId];
+        intent=c.intent;
+        if(semantic.intent==='TALK'&&semantic.recipientId&&semantic.variant!=='ask')intent='select_npc';
+        if(semantic.mode==='request')intent='request_npc';
+        else if(semantic.mode==='intention')intent='goal';
+        else if(semantic.mode==='question')intent='question';
+        else if(semantic.mode==='negated')intent='refuse';
+      }
       const explicitGoal=fullText.match(/(?:чтобы|с целью|ради того чтобы)\s+([^,.!?]+)/iu)?.[1];
       const goal=clean(explicitGoal||s.facts.goal||'');
       const method=clean(c.text.match(/(?:с помощью|используя|посредством)\s+([^,.!?]+)/iu)?.[1]||(/^(?:прошу|договариваюсь)/.test(lower)?'договорённость':/незаметно/.test(lower)?'скрытно':intent==='craft_gift'?(/превращаю/.test(lower)&&profile(config).magic?'преобразование':'ремесло'):intent));
       let expectedEffect=/довер|располож|примир/.test(norm(goal))?'изменить отношение адресата':intent==='claim'||intent==='plant_evidence'?'изменить убеждение адресата':intent==='move'||intent==='return'?'оказаться в соседней локации':intent==='request_plan'?'согласовать перенос, укрытие и отложенный шаг':intent==='open'?'получить доступ к содержимому':goal||'получить результат указанного действия';
       if(c.negated)expectedEffect='воздержаться от действия';
-      return {id:'action:'+s.turn+':'+s.world.nextEvent+':'+hash(c.text),actor:'player',intent,intention:intent,targetId:target?.id||null,targetLabel:target?.label||null,recipientId:receiver?.id||s.world.activeNpcId,unresolvedRecipient,goal,goalSource:explicitGoal?'explicit':goal?'player-context':'unspecified',method,expectedEffect,text:c.text,scope:'play',hypothetical:c.hypothetical,negated:c.negated};
+      return {id:'action:'+s.turn+':'+s.world.nextEvent+':'+hash(c.originalText||c.text),actor:semantic?.mode==='request'?semantic.actorId||semantic.actor:'player',intent,intention:intent,targetId:target?.id||null,targetLabel:target?.label||null,recipientId:receiver?.id||s.world.activeNpcId,unresolvedRecipient:semantic?.recognized?Boolean(semantic.recipient&&!semantic.recipientId):unresolvedRecipient,destinationId:semantic?.destinationId||null,goal,goalSource:explicitGoal?'explicit':goal?'player-context':'unspecified',method:semantic?.manner?.length?semantic.manner.join(', '):method,expectedEffect,text:c.originalText||c.text,scope:'play',hypothetical:c.hypothetical,negated:c.negated,semantic};
+    }
+    function containerAccess(s,e,seen=new Set()){
+      if(!e?.containerId)return true;
+      if(seen.has(e.id))return false;seen.add(e.id);
+      const parent=s.entities.find(v=>v.id===e.containerId);
+      return Boolean(parent&&(parent.destroyed||parent.opened&&parent.openingDegree!=='slightly')&&containerAccess(s,parent,seen));
     }
     function accessible(s,e,actor='player') {
-      if(!e||e.destroyed)return false;
+      if(!e||e.destroyed||!containerAccess(s,e))return false;
       const actorLocation=actor==='player'?s.world.player.location:s.world.npcs[actor]?.location;
       return e.location===(actor==='player'?'inventory':actor) || e.location===byLoc(s,actorLocation)?.name;
     }
     function adjacent(s,from,to) {return s.world.edges.find(e=>e.from===from&&e.to===to);}
-    function blocked(s,e) {const item=e?.barrierId&&s.entities.find(v=>v.id===e.barrierId);return item&&!item.opened&&item.locked&&!item.destroyed&&!item.bypassed;}
+    function blocked(s,e) {const item=e?.barrierId&&s.entities.find(v=>v.id===e.barrierId);return item&&((!item.opened&&item.locked)||item.openingDegree==='slightly')&&!item.destroyed&&!item.bypassed;}
     function exits(s,from=s.world.player.location) {return s.world.edges.filter(e=>e.from===from).map(e=>({...byLoc(s,e.to),blocked:blocked(s,e)}));}
     function routeRefusal(s) {return exits(s).map(l=>l.name+(l.blocked?' (заперто)':'')).join(', ')||'нет известных выходов';}
     function moveActor(s,actor,destination) {
@@ -369,6 +388,29 @@
         if(!here(s,receiver))return no('Персонаж '+receiver.name+' находится в другом месте. Разговор и передача отсюда невозможны.','npc_absent');
         flush(s);bind(s,receiver.id);n=receiver;p=npcProfile(s,config,p);
       }
+      if(a.intent==='request_npc'){
+        if(!a.semantic?.actorId||!n||!here(s,n))return ask('Кого из находящихся рядом персонажей вы просите выполнить действие?','unknown_recipient');
+        if(a.semantic.intent==='OPEN'){
+          if(!e)return ask('Какой предмет должен открыть персонаж?','missing_target');
+          return npcOpen(s,p,n,e,a.id);
+        }
+        if(a.semantic.intent==='MOVE'){
+          if(openGrievances(n).length)return no('Сначала нужно уладить конфликт с персонажем.','unresolved_conflict');
+          const destination=byLoc(s,a.destinationId);return destination?moveActor(s,n.id,destination):ask('Куда вы просите перейти персонажа?','unknown_destination');
+        }
+        return ask('Просьба адресована '+n.name+'. Для этого способа помощи пока нет исполнимого действия; уточните конкретный шаг.','unsupported_npc_action');
+      }
+      if(a.semantic?.intent==='OPEN'&&['unlock','slightly'].includes(a.semantic.variant)&&e){
+        if(!accessible(s,e)||!e.known||e.hidden)return no('Предмет сейчас недоступен.','target_not_present');
+        if(!['barrier','clue'].includes(e.kind))return no('У предмета нет открываемой части.','not_openable');
+        const key=s.entities.find(v=>v.location==='inventory'&&!v.destroyed&&v.unlocks?.includes(e.id));
+        if(e.locked&&!key)return no('Замок требует подходящего ключа или другого способа.','locked');
+        s.focus=e.id;
+        if(key)e.openedWith=key.id;e.locked=false;
+        if(a.semantic.variant==='unlock'){e.openingDegree='closed';e.opened=false;return ok('Вы отпираете «'+e.label+'». Замок снят, но предмет остаётся закрытым.','unlocked');}
+        e.opened=true;e.openingDegree='slightly';return ok('Вы приоткрываете «'+e.label+'». Щель узкая: содержимое целиком не видно, а для прохода нужно открыть шире.','slightly_opened');
+      }
+      if(a.semantic?.intent==='OPEN'&&e?.openingDegree==='slightly'){e.opened=false;e.openingDegree='open';}
       const sceneResult=scenes.handle(s,p,c,config,a);if(sceneResult)return sceneResult;
       if(a.intent==='select_npc') {
         const target=findNpc(s,c.text,true);if(!target)return no('Здесь нет персонажа с таким именем.','npc_absent');
@@ -376,7 +418,8 @@
       }
       if(a.intent==='move'||a.intent==='return') {
         if(/телепорт/.test(c.lower)&&!p.magic)return no('В этом мире магия не установлена.','magic_forbidden');
-        let target=a.intent==='return'?byLoc(s,s.world.player.previousLocation):destination(s,c.text);
+        let target=a.destinationId?byLoc(s,a.destinationId):a.intent==='return'?byLoc(s,s.world.player.previousLocation):destination(s,c.text);
+        if(!target&&a.semantic?.verb&&/^прой|прох/.test(a.semantic.verb)){const path=s.world.edges.find(edge=>edge.from===s.world.player.location&&edge.barrierId===s.focus);if(path)target=byLoc(s,path.to);}
         if(!target&&/ухожу|выхожу|покидаю|уйти|до свидания/.test(c.lower)){const options=exits(s);target=options.find(l=>l.id===s.world.outdoorId)||options.find(l=>l.id===s.world.player.previousLocation)||(options.length===1?options[0]:null);}
         if(!target)return ask('Куда идти? Известные выходы: '+routeRefusal(s)+'.','unknown_destination');
         const r=moveActor(s,'player',target);if(r.status==='success')r.text+='\n'+observeHere(s).join('\n');return r;
@@ -579,7 +622,7 @@
       return {status:achieved?'achieved':'pending',goal:relevant[0].action.goal,recipientId:recipient,observedTrust:n?.trust??null,openConflicts:openGrievances(n).map(g=>g.id),reason:achieved?'Достигнуты условия сотрудничества.':'Предмет мог быть передан, но требуемое доверие пока не достигнуто.'};
     }
     function map(s){return {current:s.world.player.location,locations:s.world.locations.map(v=>({...v,people:Object.values(s.world.npcs).filter(n=>n.location===v.id).map(n=>n.name)})),edges:clone(s.world.edges),exits:exits(s)};}
-    const scenes=root.StoryScenes.create({...H,npc,here,findLocation,openGrievances,emit,truth});
-    return {inspectScene:scenes.inspect,openedText:scenes.openedText,init,analyze,handle,after,flush,bind,presence,npc,npcProfile,openGrievances,snapshot,effects,runDue,map,assessGoal,proposition,emit,truth,annotate,statuses,result};
+    const scenes=root.StoryScenes.create({...H,npc,here,findLocation,openGrievances,emit,truth,containerAccess});
+    return {containerAccess,inspectScene:scenes.inspect,openedText:scenes.openedText,init,analyze,handle,after,flush,bind,presence,npc,npcProfile,openGrievances,snapshot,effects,runDue,map,assessGoal,proposition,emit,truth,annotate,statuses,result};
   }};
 })(globalThis);
