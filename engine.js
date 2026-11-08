@@ -27,7 +27,7 @@
     ['журнал', 'журнал|дневник', 'clue'], ['фотография', 'фотограф|фото', 'clue'], ['документ', 'документ|досье|дело', 'clue'],
     ['монета', 'монет|деньг|золот', 'money'], ['кольцо', 'кольц|перстень', 'prop'], ['камень', 'камень|камня|камнем|кристалл', 'prop'],
     ['еда', 'ед[ауеы]|хлеб|яблок|бутерброд', 'food'], ['вода', 'вод[ауы]|водой', 'food'],
-    ['стол', 'стол', 'fixed'], ['стул', 'стул|стуль', 'prop'], ['дверь', 'двер', 'barrier'],
+    ['стол', 'стол', 'fixed'], ['стена','стен','fixed'], ['пол','(?:^|[^а-я])пол(?:[ауе]|[^а-я]|$)','fixed'], ['потолок','потолок|потолк','fixed'], ['лестница','лестниц','fixed'], ['стул', 'стул|стуль', 'prop'], ['дверь', 'двер', 'barrier'],
     ['окно', 'окн', 'fixed'], ['ларец', 'ларец|ларц|сундук', 'barrier'], ['сейф', 'сейф', 'barrier'],
     ['шлюз', 'шлюз', 'barrier'], ['терминал', 'терминал|компьютер', 'fixed'], ['архив', 'архив', 'barrier'],
     ['гитара', 'гитар|лютн', 'instrument'], ['бумага', 'бумаг|лист', 'prop'], ['мел', 'мел[аоу]?$', 'tool'], ['шкаф', 'шкаф', 'barrier'], ['сумка', 'сумк|рюкзак', 'prop'], ['свеча', 'свеч', 'tool'], ['зажигалка', 'зажигалк|спичк', 'tool'], ['цепочка', 'цепочк|шнурок', 'tool'], ['молоток', 'молоток|молотк', 'tool'], ['инструменты', 'инструмент', 'tool'], ['проволока', 'проволок', 'tool'], ['штифт', 'штифт', 'tool']
@@ -78,7 +78,8 @@
     return item;
   }
   function fromText(s, text, location, source) {
-    for (const [label, re] of OBJECTS) {
+    for (const [label, re, kind] of OBJECTS) {
+      if(source==='player'&&kind==='fixed')continue;
       const match = new RegExp(re, 'i').exec(norm(text));
       if (!match) continue;
       const before = norm(text).slice(Math.max(0, match.index - 22), match.index);
@@ -365,6 +366,7 @@
     return items.length?'Внутри: '+items.map(e=>'«'+e.label+'»').join(', ')+'.':'Внутри больше нет оставленных предметов.';
   }
   function resolveBarrier(s, p, barrier, method) {
+    if(s.currentResolution)s.currentResolution.completed=true;
     const bypass=method==='обход';
     const used=s.entities.find(e=>!e.destroyed&&e.location==='inventory'&&e.label===method);if(used)barrier.openedWith=used.id;
     const first=!barrier.revelationKnown;
@@ -430,7 +432,7 @@
       }
       case 'identity': return voice(s,p,`Я — ${p.name}. Сейчас для меня важно ${p.motive}. А вы решаете, говорить со мной начистоту или держать дистанцию.`);
       case 'inventory': return s.inventory.length ? 'При вас: ' + s.inventory.map(v=>'«'+v+'»').join(', ') + '.' : 'При вас нет учтённых предметов. Можно добавить стартовые вещи в описание героя или явно сказать: «У меня есть …».';
-      case 'greet': if (count === 0) s.trust++; return voice(s,p,choose(s,'greeting',[`Здравствуйте${knownPlayer(s,'name') ? ', ' + knownPlayer(s,'name') : ''}. ${knownPlayer(s,'goal') ? 'Вы ищете: ' + knownPlayer(s,'goal') + '?' : 'С чем вы пришли?'}`, 'Я здесь. Продолжим с того, на чём остановились?', 'Снова здравствуйте. За это время вы ничего не обязаны были решить.']));
+      case 'greet': if(simulation.openGrievances(simulation.npc(s)).length)return voice(s,p,'Здравствуйте. Я помню нашу ссору; приветствие само по себе её не уладит. Если хотите, обсудим, как её исправить.');if (count === 0) s.trust++; return voice(s,p,choose(s,'greeting',[`Здравствуйте${knownPlayer(s,'name') ? ', ' + knownPlayer(s,'name') : ''}. ${knownPlayer(s,'goal') ? 'Вы ищете: ' + knownPlayer(s,'goal') + '?' : 'С чем вы пришли?'}`, 'Я здесь. Продолжим с того, на чём остановились?', 'Снова здравствуйте. За это время вы ничего не обязаны были решить.']));
       case 'thanks': if (count < 2) s.trust++; return voice(s,p,choose(s,'thanks',[p.ironic ? 'Благодарность принята. Сдачи, правда, не будет.' : 'Спасибо, что сказали. Это не прошло незамеченным.', 'Я рад, что помощь оказалась кстати. Дальше решение за вами.', 'Мы можем обойтись без церемоний. Но я вас услышал.']));
       case 'apology': s.trust = clamp(s.trust+1);s.tension=Math.max(0,s.tension-2);return voice(s,p,'Принимаю извинение. Последствия не исчезнут, но разговор можно продолжить иначе.');
       case 'refuse': s.pending=null;log(s,'boundary',c.text);return voice(s,p,'Нет — значит нет. Этот путь закрыт по вашему решению, а не вся история. Что вы предложите вместо него?');
@@ -599,7 +601,7 @@
         s.facts.topic=c.text.slice(0,140);thread(s,c.text,'player-topic');
         return voice(s,p,choose(s,'unfamiliar',[
           `Похоже, вы предлагаете другой ход. Я пока не понимаю его цели. Это поступок, новая деталь мира или реплика мне? Можно описать желаемый результат своими словами.`,
-          `Мы ещё не пробовали такой путь. ${knownPlayer(s,'goal')?'Ваша цель — '+knownPlayer(s,'goal')+'. ':''}Что должно измениться после этого? Новые вещи и правила задаёт автор в настройках; в игре нужно уточнить доступный способ.`,
+          `Мы ещё не пробовали такой путь. ${knownPlayer(s,'goal')?'Ваша цель — '+knownPlayer(s,'goal')+'. ':''}Что должно измениться после этого? Объясните, с чем вы хотите взаимодействовать и каким способом.`,
           `Я не хочу приписать вам чужой замысел. Что в вашем предложении главное — изменить обстановку, повлиять на меня или установить факт истории?`
         ]));
       }
@@ -626,7 +628,7 @@
     return event.text;
   }
   const semantic=root.StorySemantic;
-  const semanticIntents={MOVE:'move',INSPECT:'inspect',SEARCH:'inspect',TAKE:'take',OPEN:'open',CLOSE:'close',USE:'use',GIVE:'give',DROP:'drop',SHOW:'show',TALK:'talk',REPAIR:'repair'};
+  const semanticIntents={MOVE:'move',APPROACH:'approach',GREET:'greet',INSPECT:'inspect',SEARCH:'inspect',TAKE:'take',OPEN:'open',CLOSE:'close',USE:'use',GIVE:'give',DROP:'drop',SHOW:'show',TALK:'talk',REPAIR:'repair'};
   function legacyStarts(text) {
     const head=normalizedInput(text).replace(/^(?:(?:я|мы|не|осторожно|быстро|медленно|теперь|сейчас)\s+)+/u,'');
     const delegated=/^(?:приподнима|отодвига|сдвига|передвига|изгот[оа]в|устан[оа]в|делаю|сделать|вытач|согну|очища|чищу|смазыва|калибру|подбрасыва|подделыва|фабрикую|выношу|переношу|уношу|тащу|несу|покупаю|куплю|знакомлюсь)/u;
@@ -637,7 +639,7 @@
     const pending=s.world.player.pendingAction;
     if(pending&&plan.steps.length===1&&!plan.steps[0].recognized&&!legacyStarts(text)&&plan.steps[0].mode==='execute'&&words(text).length<=8){
       const completed=clone(pending.step);completed[pending.slot]=clean(text).replace(/[.!?]+$/,'');
-      if(pending.slot==='actor')completed.recipient=completed.actor;
+      if(pending.slot==='actor'&&completed.recipient!== 'player')completed.recipient=null;
       completed.raw=pending.step.raw+' → '+clean(text);completed.dependsOnPrevious=false;
       delete completed.targetId;delete completed.destinationId;delete completed.targetLabel;
       return {mode:completed.mode,resumed:true,steps:[completed,...pending.remaining].map((step,index)=>({...step,index}))};
@@ -654,8 +656,8 @@
       return {...c,semantic:bound,originalText:step.raw};
     }
     const text=semantic.command(bound);const c=parse(text);
-    c.intent=semanticIntents[step.intent] || c.intent;
-    if(step.intent==='MOVE'&&step.variant==='return')c.intent='return';
+    c.intent=semanticIntents[bound.intent] || c.intent;
+    if(bound.intent==='MOVE'&&bound.variant==='return'&&bound.destination==='previous_location')c.intent='return';
     if(step.intent==='TALK'){
       c.intent=step.variant==='ask'?'question':step.recipient?'talk':'talk';
       c.speech=true;c.question=step.variant==='ask';
@@ -695,7 +697,7 @@
   }
   function semanticAccess(s,c) {
     const step=c.semantic;if(!step?.recognized||!['execute','attempt','request'].includes(step.mode))return null;
-    if(step.intent==='TALK')return null;
+    if(['TALK','GREET','APPROACH'].includes(step.intent)||step.targetRef&&!step.targetId)return null;
     if(step.ambiguous)return {status:'clarification',code:'ambiguous_target',text:'Какой именно предмет вы имеете в виду: «'+step.target+'»? Уточните название или источник.',effects:[]};
     const e=s.entities.find(e=>e.id===step.targetId);
     if(step.tool){
@@ -736,7 +738,7 @@
       const action=simulation.analyze(s,config,c,text);s.currentActionId=action.id;
       action.text=step.raw;action.semantic=c.semantic;action.dependsOnPrevious=step.dependsOnPrevious;
       const previousResult=results.at(-1);
-      if(step.dependsOnPrevious&&previousResult&&(previousResult.status!=='success'||previousResult.performed===false&&['execute','attempt','request'].includes(step.mode))){
+      if(step.dependsOnPrevious&&previousResult&&((previousResult.status!=='success'&&!(previousResult.status==='partial_success'&&previousResult.completed))||previousResult.performed===false&&['execute','attempt','request'].includes(step.mode))){
         results.push({status:'refused',code:'dependency_failed',reason:'dependency_failed',skipped:true,performed:false,text:'Шаг «'+step.raw+'» не выполнен: предыдущее действие не завершено.',action,effects:[]});continue;
       }
       const before=simulation.snapshot(s);s.currentResolution={status:'success',code:'completed'};
@@ -747,6 +749,7 @@
       }
       if(c.hypothetical||c.negated||['intention','question','hypothetical','negated','speech','report'].includes(c.semantic?.mode)&&c.semantic?.intent!=='TALK')r.performed=false;
       if(['refused','clarification'].includes(r.status))r.performed=false;
+      if(['refused','clarification'].includes(r.status))r.completed=false;else if(r.completed===undefined)r.completed=r.status==='success';
       if(['refused','clarification'].includes(r.status)){s.entities=clone(before.entities);s.inventory=clone(before.inventory);s.clocks=clone(before.clocks);s.stage=before.stage;}
       r.reason=r.code;
       if(r.performed!==false)simulation.after(s,p,c,action,r);
@@ -756,7 +759,7 @@
       if(c.semantic?.mode==='negated')s.lastIntent='refuse';
       if(r.status==='clarification'&&step.recognized&&!pendingAction){
         const remaining=semanticPlan.steps.slice(step.index+1).filter((v,i,a)=>v.dependsOnPrevious&&a.slice(0,i).every(t=>t.dependsOnPrevious));
-        const slot=r.code==='unknown_tool'?'tool':['unknown_source','source_mismatch'].includes(r.code)?'source':r.code==='unknown_recipient'?(step.mode==='request'?'actor':'recipient'):step.intent==='MOVE'?'destination':'target';
+        const slot=r.code==='unknown_actor'?'actor':r.code==='unknown_parent'?'parent':r.code==='unknown_tool'?'tool':['unknown_source','source_mismatch'].includes(r.code)?'source':r.code==='unknown_recipient'?(step.mode==='request'?'actor':'recipient'):step.intent==='MOVE'?'destination':'target';
         pendingAction={step:clone(step),slot,remaining,locationId:s.world.player.location};
       }
     }
@@ -764,22 +767,22 @@
     const p=simulation.npcProfile(s,config,profile(config));
     const event=director(s,p,intents);simulation.flush(s);
     const due=simulation.runDue(s,p);results.push(...due);
-    const opening=s.turn===1&&!results.some(r=>clean(config.world)&&r.text.includes(clean(config.world)))?`${clean(config.world)||'История начинается.'}\n\n`:'';
-    let output=opening+results.map(r=>r.text).filter(Boolean).join('\n\n')+(event?'\n\n'+event:'');
+    const narration=root.StoryNarrator.compose({intro:s.turn===1?clean(config.world)||'История начинается.':'',results,event});
+    let output=narration.text;
     const statuses=results.map(r=>r.status);
     let status=statuses.every(v=>v==='success')?'success':statuses.includes('partial_success')||statuses.includes('success')?'partial_success':statuses.includes('refused')?'refused':'clarification';
     const goalAssessment=simulation.assessGoal(s,results);
     if(goalAssessment?.status==='pending' && ['success','partial_success'].includes(status)){status='partial_success';output+='\n\n'+goalAssessment.reason;}
     const effects=results.flatMap(r=>r.effects||[]);
     const information={novel:results.some(r=>r.information?.novel),discoveries:[...new Set(results.flatMap(r=>r.information?.discoveries||[]))],opportunities:[...new Set(results.flatMap(r=>r.information?.opportunities||[]))]};
-    const outcome={status,goalAssessment,information,semanticPlan,results:results.map(r=>({status:r.status,code:r.code,reason:r.text,information:r.information||null,skipped:Boolean(r.skipped),performed:r.performed!==false,action:r.action,effects:r.effects})),effects};
+    const outcome={status,goalAssessment,information,semanticPlan,results:results.map(r=>({status:r.status,code:r.code,reason:r.text,information:r.information||null,skipped:Boolean(r.skipped),performed:r.performed!==false,completed:Boolean(r.completed),action:r.action,effects:r.effects})),effects};
     if(results.length>1) {
       const plan={id:'turn-plan:'+s.turn,actor:'player',goal:results[0].action.goal,expectedEffect:results[0].action.expectedEffect,steps:outcome.results,status,goalAssessment,causes:effects.map(e=>e.id)};
       s.world.plans.push(plan);s.world.plans=s.world.plans.slice(-40);
     }
     s.facts.activePlace=s.place;s.lastReply=output;s.lastOutcome=outcome;log(s,'turn',text);s.version=VERSION;
     delete s.currentResolution;delete s.currentActionId;
-    return {text:output,memory:s,outcome,semantic:semanticPlan,results:outcome.results,analysis:outcome.results.map(r=>r.action)};
+    return {text:output,narrative:narration.blocks,memory:s,outcome,semantic:semanticPlan,results:outcome.results,analysis:outcome.results.map(r=>r.action)};
   }
   const simulation=root.StorySimulation.create({clean,norm,normalizedInput,words,stem,hash,clone,profile,matchEntity,addEntity,log,voice,resolveBarrier,containerText});
   root.StoryEngine={version:VERSION,fresh,reply,profile,restore:init,reframe,parse,clauses,

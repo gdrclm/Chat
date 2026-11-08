@@ -67,7 +67,7 @@
     }
     function init(s,p,config){
       research(s);
-      if(s.world.sceneVersion===1)return;
+      if(s.world.sceneVersion===1){H.spatial.init(s);return;}
       rootFact(s,p,config);
       const urban=!['space','survival','sea'].includes(p.genre);
       for(const node of s.world.locations){
@@ -90,7 +90,7 @@
       }
       const oldWork=s.world.loops.work;
       if(oldWork.type==='repair'&&['completed','paid'].includes(oldWork.status)){const employer=s.world.npcs[oldWork.employer];const place=employer&&s.world.locations.find(l=>l.id===employer.location);const machine=place&&s.entities.find(e=>e.localKey==='mechanism'&&e.location===place.name);if(machine){machine.condition='repaired';machine.label='исправный механизм';machine.pinInstalled=true;machine.tested=true;}}
-      s.world.sceneFlags||={};s.world.sceneVersion=1;
+      s.world.sceneFlags||={};s.world.sceneVersion=1;H.spatial.init(s);
     }
     function node(s){return s.world.locations.find(l=>l.id===s.world.player.location);}
     function local(s,e){return e&&(e.location===s.place||e.location==='inventory'||e.location===s.world.activeNpcId)&&!e.destroyed&&H.containerAccess(s,e);}
@@ -124,14 +124,15 @@
     function fingerprint(s,where){
       return hash(JSON.stringify({description:where.scene.description,objects:s.entities.filter(e=>e.location===where.name).map(e=>[e.id,e.known,e.hidden,e.opened,e.openingDegree,e.containerId,e.supportId,e.destroyed,e.condition,e.moved,e.pinInstalled]),actors:Object.values(s.world.npcs).filter(n=>n.location===where.id).map(n=>n.id),revision:where.scene.revision}));
     }
-    function entry(s){
+    function entryBlocks(s,phase='observation'){
       const where=node(s);const seen=s.entities.filter(e=>e.location===s.place&&e.known&&!e.hidden&&!e.destroyed&&H.containerAccess(s,e));
       const social=s.world.loops.social;
       for(const n of Object.values(s.world.npcs).filter(n=>n.location===where.id)){if(!social.noticed.includes(n.id))social.noticed.push(n.id);if(!social.encountered.includes(n.id))social.encountered.push(n.id);}
       const repaired=role(where)==='workshop'&&s.entities.some(e=>e.localKey==='mechanism'&&e.location===s.place&&e.condition==='repaired');
       const description=repaired?'В мастерской на верстаке работает собранный механизм. Причина прежней поломки устранена; инструменты сложены рядом.':where.scene.description;
-      return description+(seen.length?' Видно: '+seen.map(e=>'«'+e.label+'»').slice(0,5).join(', ')+'.':'');
+      return [{kind:'location',locationId:where.id,phase,text:description},...(seen.length?[{kind:'visible',locationId:where.id,phase,text:'Видно: '+seen.map(e=>'«'+e.label+'»').slice(0,5).join(', ')+'.'}]:[])];
     }
+    function entry(s){return entryBlocks(s).map(block=>block.text).join(' ');}
     function describe(s,e){
       if(e.localKey==='mechanism')return e.condition==='repaired'?'Механизм собран и работает ровно. Штифт удерживает шестерню; прежней поломки больше нет.':e.pinInstalled?'Штифт установлен. Осталось проверить ход механизма.':e.description;
       if(e.localKey==='bench'&&s.entities.some(v=>v.localKey==='mechanism'&&v.location===s.place&&v.condition==='repaired'))return 'На верстаке лежат следы завершённой работы; механизм уже собран. Здесь можно выполнять обслуживание.';
@@ -155,6 +156,7 @@
       r.properties[e.id]={...old,portable:e.portable,opened:e.opened,locked:e.locked,condition:e.condition,destroyed:e.destroyed,material,unlocks:old.unlocks||[],sourceLocationId:node(s).id,lastMethod:m,testedMethods:[...new Set([...(old.testedMethods||[]),m])]};
     }
     function inspect(s,text,semantic){
+      if(semantic?.referenceError||semantic?.targetRef&&semantic.targetRef.kind!=='entity')return H.spatial.inspect(s,semantic);
       const selected=semantic?.recognized&&(semantic.targetId||semantic.locationId||semantic.target==='current_location');
       const selection=selected?{entity:semantic.targetId&&s.entities.find(e=>e.id===semantic.targetId),scene:semantic.locationId?s.world.locations.find(l=>l.id===semantic.locationId):semantic.target==='current_location'?node(s):null,method:semantic.method||'examine',target:semantic.target}:resolve(s,text),where=node(s),r=research(s),m=selection.method;
       if(selection.scene&&selection.scene.id!==where.id)return fail('refused','location_elsewhere','Для исследования места «'+selection.scene.name+'» сначала нужно туда перейти.');
@@ -173,7 +175,8 @@
         for(const label of revealed){const e=s.entities.find(v=>v.label===label&&v.location===s.place);if(e&&know(s,{key:'noticed:'+e.id,text:'Замечен доступный предмет: '+e.label,unlocks:e.portable?['взять '+e.label]:[]},e,where.id))findings.push('noticed:'+e.id);}
         const actors=Object.values(s.world.npcs).filter(n=>n.location===where.id);for(const person of actors)if(!s.world.loops.social.noticed.includes(person.id))s.world.loops.social.noticed.push(person.id);
         const ambient=m==='listen'?s.entities.filter(e=>e.location===s.place&&e.sound&&!e.destroyed).map(e=>e.sound).join(' ')||'Вы прислушиваетесь. Новых звуков не обнаружено.':entry(s);
-        return ok((changed?'С прошлого осмотра обстановка изменилась. ':'')+ambient+(revealed.length?'\nПри осмотре заметно: '+revealed.join(', ')+'.':''),'scene_observed',{novel:first||before!==stamp||previous!==stamp,locationId:where.id,discoveries:findings,opportunities});
+        const result=ok((changed?'С прошлого осмотра обстановка изменилась. ':'')+ambient+(revealed.length?'\nПри осмотре заметно: '+revealed.join(', ')+'.':''),'scene_observed',{novel:first||before!==stamp||previous!==stamp,locationId:where.id,discoveries:findings,opportunities});
+        result.narration=[...(changed?[{kind:'change',locationId:where.id,text:'С прошлого осмотра обстановка изменилась.'}]:[]),...(m==='listen'?[{kind:'observation',locationId:where.id,text:ambient}]:entryBlocks(s)),...(revealed.length?[{kind:'findings',locationId:where.id,text:'При осмотре заметно: '+revealed.join(', ')+'.'}]:[])];return result;
       }
       const e=selection.entity;
       if(e.destroyed){
@@ -384,7 +387,7 @@
       if(c.intent==='take'){
         const e=s.entities.find(v=>v.id===a.targetId);if(e?.private&&!permission(s,e,'private'))return privateReaction(s,e);
       }
-      if(/осматр|осмотр|огляд|озир|изуч|исслед|рассматри|разгляды|провер|слуш|прочита|читаю|обыски/.test(c.lower)||a.intent==='explore'){
+      if(c.semantic?.recognized?['INSPECT','SEARCH'].includes(c.semantic.intent):/осматр|осмотр|огляд|озир|изуч|исслед|рассматри|разгляды|провер|слуш|прочита|читаю|обыски/.test(c.lower)||a.intent==='explore'){
         if(c.intent==='question'||c.speech||['claim','plant_evidence','show'].includes(a.intent))return null;
         return inspect(s,c.text,c.semantic);
       }
@@ -412,6 +415,6 @@
       for(const id of affected){const place=s.world.locations.find(n=>n.id===id);if(!place.scene)continue;place.scene.revision++;place.scene.events.push({turn:s.turn,actionId:action.id,type:'physical_change'});place.scene.events=place.scene.events.slice(-20);}
     }
     function openedText(s,e){return sourceFacts(s,e).filter(f=>availableFact(s,e,f,'read')).map(f=>f.text).join('\n')||'В этом источнике пока нет заданных сведений.';}
-    return {init,handle,inspect,entry,sourceLearnedAfter,changed,openedText,fact,research,permission,grantPermission};
+    return {init,handle,inspect,entry,entryBlocks,sourceLearnedAfter,changed,openedText,fact,research,permission,grantPermission};
   }};
 })(globalThis);

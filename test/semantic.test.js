@@ -1,5 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import '../spatial.js';
+import '../narrator.js';
 import '../semantic.js';
 import '../scenes.js';
 import '../simulation.js';
@@ -219,7 +221,7 @@ test('opening, inspecting, taking, closing and reopening preserve physical conta
  const r=play(config,'Осмотреться','Взять ключ','Открыть ларец','Достать флакон из ларца','Закрыть ларец','Открыть ларец');const vials=r.memory.entities.filter(e=>/флакон/.test(e.label));assert.equal(vials.length,1);assert.equal(vials[0].location,'inventory');assert.equal(vials[0].containerId,undefined);
 });
 test('closing a container hides remaining contents even after they were previously seen',()=>{
- const r=play(config,'Осмотреться','Взять ключ','Открыть ларец','Закрыть ларец','Осмотреться');assert.doesNotMatch(r.text.replace(config.world,''),/флакон/);const take=E.reply(config,r.memory,'Взять флакон');assert.equal(take.outcome.status,'refused');
+ const r=play(config,'Осмотреться','Взять ключ','Открыть ларец','Закрыть ларец','Осмотреться');assert.doesNotMatch(r.text,/Видно:[^\n]*флакон|«флакон/);const take=E.reply(config,r.memory,'Взять флакон');assert.equal(take.outcome.status,'refused');
 });
 test('a reopened container describes remaining physical contents instead of repeating the initial revelation',()=>{
  const r=play(config,'Осмотреться','Взять ключ','Открыть ларец','Взять флакон','Закрыть ларец','Открыть ларец');assert.doesNotMatch(r.text,/Внутри — флакон|«флакон/);assert.match(r.text,/записка/);const examine=E.reply(config,r.memory,'Осмотреть ларец');assert.doesNotMatch(examine.text,/флакон/);

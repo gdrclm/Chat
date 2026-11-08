@@ -21,7 +21,7 @@
       const q=norm(text).replace(/^(?:в|на|к|из)\s+/,'').replace(/[.!?]+$/,'');
       if(/^(?:наружу|снаружи|улицу|выход)$/.test(q))return byLoc(s,s.world.outdoorId);
       const tokens=words(q).map(stem);
-      return s.world.locations.find(l=>norm(l.name)===q || l.aliases?.some(a=>norm(a)===q)) || s.world.locations.find(l=>words(l.name).map(stem).some(w=>w.length>=3&&tokens.includes(w)));
+      return s.world.locations.find(l=>[l.name,...(l.aliases||[])].some(name=>root.StorySpatial.same(q,name)))||null;
     }
     function addLocation(world,name,aliases=[]) {
       let value=world.locations.find(l=>norm(l.name)===norm(name));
@@ -252,7 +252,7 @@
       const semantic=c.semantic;
       if(semantic?.recognized){
         if(semantic.intent!=='TALK')target=semantic.targetId?s.entities.find(e=>e.id===semantic.targetId):null;
-        if(semantic.recipientId)receiver=s.world.npcs[semantic.recipientId];
+        if(semantic.recipientId&&semantic.recipientId!=='player')receiver=s.world.npcs[semantic.recipientId];
         intent=c.intent;
         if(semantic.intent==='TALK'&&semantic.recipientId&&semantic.variant!=='ask')intent='select_npc';
         if(semantic.mode==='request')intent='request_npc';
@@ -265,7 +265,7 @@
       const method=clean(c.text.match(/(?:с помощью|используя|посредством)\s+([^,.!?]+)/iu)?.[1]||(/^(?:прошу|договариваюсь)/.test(lower)?'договорённость':/незаметно/.test(lower)?'скрытно':intent==='craft_gift'?(/превращаю/.test(lower)&&profile(config).magic?'преобразование':'ремесло'):intent));
       let expectedEffect=/довер|располож|примир/.test(norm(goal))?'изменить отношение адресата':intent==='claim'||intent==='plant_evidence'?'изменить убеждение адресата':intent==='move'||intent==='return'?'оказаться в соседней локации':intent==='request_plan'?'согласовать перенос, укрытие и отложенный шаг':intent==='open'?'получить доступ к содержимому':goal||'получить результат указанного действия';
       if(c.negated)expectedEffect='воздержаться от действия';
-      return {id:'action:'+s.turn+':'+s.world.nextEvent+':'+hash(c.originalText||c.text),actor:semantic?.mode==='request'?semantic.actorId||semantic.actor:'player',intent,intention:intent,targetId:target?.id||null,targetLabel:target?.label||null,recipientId:receiver?.id||s.world.activeNpcId,unresolvedRecipient:semantic?.recognized?Boolean(semantic.recipient&&!semantic.recipientId):unresolvedRecipient,destinationId:semantic?.destinationId||null,goal,goalSource:explicitGoal?'explicit':goal?'player-context':'unspecified',method:semantic?.manner?.length?semantic.manner.join(', '):method,expectedEffect,text:c.originalText||c.text,scope:'play',hypothetical:c.hypothetical,negated:c.negated,semantic};
+      return {id:'action:'+s.turn+':'+s.world.nextEvent+':'+hash(c.originalText||c.text),actor:semantic?.recognized&&semantic.mode==='request'?semantic.actorId||semantic.actor:'player',intent,intention:intent,targetId:target?.id||null,targetLabel:target?.label||semantic?.targetLabel||null,recipientId:semantic?.recipientId||receiver?.id||s.world.activeNpcId,unresolvedActor:semantic?.recognized&&semantic.mode==='request'&&!semantic.actorId,unresolvedRecipient:semantic?.recognized?Boolean(semantic.recipient&&!semantic.recipientId):unresolvedRecipient,destinationId:semantic?.destinationId||null,goal,goalSource:explicitGoal?'explicit':goal?'player-context':'unspecified',method:semantic?.manner?.length?semantic.manner.join(', '):method,expectedEffect,text:c.originalText||c.text,scope:semantic?.scope||'play',hypothetical:c.hypothetical,negated:c.negated,semantic};
     }
     function containerAccess(s,e,seen=new Set()){
       if(!e?.containerId)return true;
@@ -287,10 +287,12 @@
       const link=adjacent(s,from,destination.id);
       if(!link)return no('Прямого перехода нет. Доступные выходы: '+(actor==='player'?routeRefusal(s):exits(s,from).map(l=>l.name).join(', '))+'.','no_route');
       if(blocked(s,link))return no('Переход заперт. Сначала откройте преграду или найдите реальный обход.','route_blocked');
-      if(actor!=='player'){s.world.npcs[actor].location=destination.id;return ok('Персонаж переходит: '+destination.name+'.');}
+      if(actor!=='player'){s.world.npcs[actor].location=destination.id;delete s.world.npcs[actor].position;delete s.world.npcs[actor].attention;return ok('Персонаж переходит: '+destination.name+'.');}
       flush(s);s.world.player.previousLocation=from;s.world.player.location=destination.id;s.previousPlace=byLoc(s,from).name;s.place=destination.name;s.facts.hidden=false;destination.visits++;
+      delete s.world.player.position;delete s.world.player.attention;
       if(!s.world.loops.exploration.visited.includes(destination.id))s.world.loops.exploration.visited.push(destination.id);
-      presence(s);return ok(`Вы переходите: ${destination.name}. ${s.npcPresent?'Здесь: '+npc(s).name+'.':'Поблизости нет знакомого собеседника.'} Выходы: ${routeRefusal(s)}.\n${scenes.entry(s)}`,'moved');
+      presence(s);const transition=`Вы переходите: ${destination.name}. ${s.npcPresent?'Здесь: '+npc(s).name+'.':'Поблизости нет знакомого собеседника.'} Выходы: ${routeRefusal(s)}.`;
+      const entry=scenes.entryBlocks(s,'arrival'),r=ok(transition+'\n'+entry.map(block=>block.text).join(' '),'moved');r.narration=[{kind:'transition',locationId:destination.id,text:transition},...entry];return r;
     }
     function destination(s,text) {
       if(/наружу|снаружи/.test(norm(text)))return byLoc(s,s.world.outdoorId);
@@ -382,14 +384,25 @@
     function handle(s,p,c,config,a) {
       let n=npc(s);const e=s.entities.find(v=>v.id===a.targetId);
       if(c.hypothetical||c.negated)return null;
+      if(a.unresolvedActor)return ask('Кого из существующих персонажей вы просите выполнить действие?','unknown_actor');
       if(a.unresolvedRecipient)return ask('К какому из существующих персонажей вы обращаетесь?','unknown_recipient');
-      if(a.recipientId&&a.recipientId!==s.world.activeNpcId) {
-        const receiver=s.world.npcs[a.recipientId];
+      const conversation=a.intent==='request_npc'?a.actor:a.recipientId;
+      if(conversation&&conversation!=='player'&&conversation!==s.world.activeNpcId) {
+        const receiver=s.world.npcs[conversation];
         if(!here(s,receiver))return no('Персонаж '+receiver.name+' находится в другом месте. Разговор и передача отсюда невозможны.','npc_absent');
         flush(s);bind(s,receiver.id);n=receiver;p=npcProfile(s,config,p);
       }
       if(a.intent==='request_npc'){
-        if(!a.semantic?.actorId||!n||!here(s,n))return ask('Кого из находящихся рядом персонажей вы просите выполнить действие?','unknown_recipient');
+        if(!a.semantic?.actorId||!n||!here(s,n))return ask('Кого из находящихся рядом персонажей вы просите выполнить действие?','unknown_actor');
+        if(a.semantic.intent==='GREET'){
+          if(openGrievances(n).length)return no(n.name+': «Я помню нашу ссору. Сначала давайте уладим её».','unresolved_conflict');
+          const recipient=a.semantic.recipientId||'player';const person=s.world.npcs[recipient];
+          if(recipient!=='player'&&!here(s,person))return no('Адресат приветствия находится в другом месте.','npc_absent');
+          n.memory.outgoingGreetings||={};n.memory.outgoingGreetings[recipient]=(n.memory.outgoingGreetings[recipient]||0)+1;
+          emit(s,'greeting',n.id,null,{actor:n.id,recipient});
+          return ok(n.name+' '+(n.memory.outgoingGreetings[recipient]>1?'снова ':'')+'приветствует '+(recipient==='player'?'вас':person.name)+': «Здравствуйте».','npc_greeted');
+        }
+        if(a.semantic.intent==='APPROACH')return spatial.approach(s,a.semantic,n.id);
         if(a.semantic.intent==='OPEN'){
           if(!e)return ask('Какой предмет должен открыть персонаж?','missing_target');
           return npcOpen(s,p,n,e,a.id);
@@ -400,6 +413,8 @@
         }
         return ask('Просьба адресована '+n.name+'. Для этого способа помощи пока нет исполнимого действия; уточните конкретный шаг.','unsupported_npc_action');
       }
+      if(a.intent==='approach')return spatial.approach(s,a.semantic);
+      if(a.intent==='greet'&&a.recipientId==='player')return ok('Вы приветствуете себя. На отношения с другими людьми это не влияет.','self_greeting');
       if(a.semantic?.intent==='OPEN'&&['unlock','slightly'].includes(a.semantic.variant)&&e){
         if(!accessible(s,e)||!e.known||e.hidden)return no('Предмет сейчас недоступен.','target_not_present');
         if(!['barrier','clue'].includes(e.kind))return no('У предмета нет открываемой части.','not_openable');
@@ -422,7 +437,7 @@
         if(!target&&a.semantic?.verb&&/^прой|прох/.test(a.semantic.verb)){const path=s.world.edges.find(edge=>edge.from===s.world.player.location&&edge.barrierId===s.focus);if(path)target=byLoc(s,path.to);}
         if(!target&&/ухожу|выхожу|покидаю|уйти|до свидания/.test(c.lower)){const options=exits(s);target=options.find(l=>l.id===s.world.outdoorId)||options.find(l=>l.id===s.world.player.previousLocation)||(options.length===1?options[0]:null);}
         if(!target)return ask('Куда идти? Известные выходы: '+routeRefusal(s)+'.','unknown_destination');
-        const r=moveActor(s,'player',target);if(r.status==='success')r.text+='\n'+observeHere(s).join('\n');return r;
+        const r=moveActor(s,'player',target);if(r.status==='success'){const evidence=observeHere(s).join('\n');if(evidence){r.text+='\n'+evidence;r.narration.push({kind:'event',locationId:target.id,text:evidence});}}return r;
       }
       if(a.intent==='claim') {
         const text=c.text.replace(/^(?:запомни|факт|правило|лгу|вру|обманываю|сообщаю|утверждаю|заявляю)\s*[:—-]?\s*(?:что\s+)?/iu,'');
@@ -622,7 +637,8 @@
       return {status:achieved?'achieved':'pending',goal:relevant[0].action.goal,recipientId:recipient,observedTrust:n?.trust??null,openConflicts:openGrievances(n).map(g=>g.id),reason:achieved?'Достигнуты условия сотрудничества.':'Предмет мог быть передан, но требуемое доверие пока не достигнуто.'};
     }
     function map(s){return {current:s.world.player.location,locations:s.world.locations.map(v=>({...v,people:Object.values(s.world.npcs).filter(n=>n.location===v.id).map(n=>n.name)})),edges:clone(s.world.edges),exits:exits(s)};}
-    const scenes=root.StoryScenes.create({...H,npc,here,findLocation,openGrievances,emit,truth,containerAccess});
+    const spatial=root.StorySpatial.create({...H,emit,containerAccess});
+    const scenes=root.StoryScenes.create({...H,npc,here,findLocation,openGrievances,emit,truth,containerAccess,spatial});
     return {containerAccess,inspectScene:scenes.inspect,openedText:scenes.openedText,init,analyze,handle,after,flush,bind,presence,npc,npcProfile,openGrievances,snapshot,effects,runDue,map,assessGoal,proposition,emit,truth,annotate,statuses,result};
   }};
 })(globalThis);

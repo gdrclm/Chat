@@ -1,5 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import '../spatial.js';
+import '../narrator.js';
 import '../semantic.js';
 import '../scenes.js';
 import '../simulation.js';
