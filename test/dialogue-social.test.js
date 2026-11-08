@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-for(const f of ['spatial','narrator','messages','dialogue','developer','social','conversation-topics','npc-personality','conversation-memory','npc-biography','conversation-engine','semantic','scenes','simulation','engine'])await import('../'+f+'.js');
+for(const f of ['spatial','narrator','messages','dialogue','developer','social','conversation-topics','npc-personality','conversation-memory','npc-biography','conversation-engine','action-catalog','rpg-core','physical-system','investigation-system','equipment-crafting','action-resolver','goals-story','npc-agency','economy-system','society-system','life-combat','genre-system','extended-actions','rpg-engine','semantic','scenes','simulation','engine'])await import('../'+f+'.js');
 const E=globalThis.StoryEngine;
 const base={world:'Магическая лавка.',character:'Мира — хозяйка лавки.',player:'Путник',canon:''};
 const play=(commands,c=base,m=E.fresh())=>commands.reduce((r,t)=>E.reply(c,r.memory,t),{memory:m});
@@ -43,14 +43,14 @@ test('observing public workshop is silent; personal boundary is a justified init
 });
 test('technical voice has no physical authority or NPC memory',()=>{
  const m=play(['Привет']).memory,n=npc(m),heard=structuredClone(n.memory),items=structuredClone(m.entities),beliefs=structuredClone(n.beliefs);
- const r=E.reply(base,m,'Перепрыгнуть ларец');assert.equal(r.outcome.status,'clarification');assert.equal(voices(r).length,0);assert.ok(r.messages.some(v=>v.speaker.type==='developer'));
+ const r=E.reply(base,m,'Квантовать ларец');assert.equal(r.outcome.status,'clarification');assert.equal(voices(r).length,0);assert.ok(r.messages.some(v=>v.speaker.type==='developer'));
  assert.deepEqual(npc(r.memory).memory,heard);assert.deepEqual(npc(r.memory).beliefs,beliefs);assert.deepEqual(r.memory.entities,items);assert.equal(r.memory.world.developer.fired.length,0);
  assert.ok(!JSON.stringify(r).includes('\\ue000'));
 });
 test('developer has a cooldown and returns as a separate speaker',()=>{
- let r=play(['Перепрыгнуть ларец']);assert.equal(r.messages.filter(v=>v.speaker.type==='developer').length,1);
- r=E.reply(base,r.memory,'Перепрыгнуть ларец');assert.equal(r.messages.filter(v=>v.speaker.type==='developer').length,0);
- r=play(['Жду','Перепрыгнуть ларец'],base,r.memory);assert.equal(r.messages.filter(v=>v.speaker.type==='developer').length,1);
+ let r=play(['Квантовать ларец']);assert.equal(r.messages.filter(v=>v.speaker.type==='developer').length,1);
+ r=E.reply(base,r.memory,'Квантовать ларец');assert.equal(r.messages.filter(v=>v.speaker.type==='developer').length,0);
+ r=play(['Жду','Квантовать ларец'],base,r.memory);assert.equal(r.messages.filter(v=>v.speaker.type==='developer').length,1);
 });
 test('registered developer event creates an actual once-only passage',()=>{
  const c={...base,canon:'Мета-событие: проход | лавка | потайная дверь | архив | 2'};

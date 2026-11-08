@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-for(const f of ['spatial','narrator','messages','dialogue','developer','social','conversation-topics','npc-personality','conversation-memory','npc-biography','conversation-engine','semantic','scenes','simulation','engine'])await import('../'+f+'.js');
+for(const f of ['spatial','narrator','messages','dialogue','developer','social','conversation-topics','npc-personality','conversation-memory','npc-biography','conversation-engine','action-catalog','rpg-core','physical-system','investigation-system','equipment-crafting','action-resolver','goals-story','npc-agency','economy-system','society-system','life-combat','genre-system','extended-actions','rpg-engine','semantic','scenes','simulation','engine'])await import('../'+f+'.js');
 const E=globalThis.StoryEngine,T=globalThis.ConversationTopics;
 const base={world:'Город. В лавке продают воспоминания в стеклянных флаконах.',character:'Мира — хозяйка лавки воспоминаний. Сдержанная и наблюдательная, с сухим юмором.',player:'Путник',canon:''};
 const actor=(m,name='Мира')=>Object.values(m.world.npcs).find(n=>n.name===name);

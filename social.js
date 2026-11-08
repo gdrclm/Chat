@@ -49,6 +49,7 @@
     }
     function visible(s,n,a){
       if(!here(s,n)||n.social.attention==='asleep')return false;
+      if(H.visiblePhysical&&!H.visiblePhysical(s,n,a))return false;
       const text=norm(a.text||''),stealth=/незаметно|тайно|скрытно|пока .*работает/.test(text)||a.semantic?.variant==='steal'&&a.semantic?.manner?.includes('скрытно');
       if(s.facts.hidden)return false;
       return !(stealth&&n.social.attention==='busy');
@@ -114,7 +115,7 @@
       for(const n of Object.values(s.world.npcs)){
         if(options.onlyObserverId&&options.onlyObserverId!==n.id)continue;
         const direct=options.directId===n.id&&here(s,n)&&n.social.attention!=='asleep';
-        if(direct||visible(s,n,a)){event.witnesses.push(n.id);learn(s,n,event,'witness',true);}
+        if(direct||visible(s,n,a)){event.witnesses.push(n.id);learn(s,n,event,'witness',!H.recognizeActor||H.recognizeActor(s,n));}
       }
       event.detected=event.witnesses.length>0;emit(s,'social_event',event.id,null,event,a.id);return event;
     }
@@ -204,7 +205,7 @@
       const acted=!['refused','clarification'].includes(r.status)&&r.performed!==false;
       if(acted)for(const e of s.entities){const old=before.entities.find(old=>old.id===e.id);if(!old)continue;
         if(e.location==='inventory'&&old.location!=='inventory'){
-          if(e.ownerId&&!permitted(s,e,'take')){e.concealed=/незаметно|тайно|скрытно/.test(norm(a.text))||Boolean(s.facts.hidden);record(s,'theft',a,{targetId:e.id,ownerId:e.ownerId});}
+          if(e.ownerId&&!permitted(s,e,'take')&&!a.authorizedItemIds?.includes(e.id)){e.concealed=/незаметно|тайно|скрытно/.test(norm(a.text))||Boolean(s.facts.hidden);record(s,'theft',a,{targetId:e.id,ownerId:e.ownerId});}
           else if(!e.ownerId)e.ownerId='player';
         }
         if(e.ownerId&&e.ownerId!=='player'&&!old.destroyed&&e.destroyed)record(s,'damage',a,{targetId:e.id,ownerId:e.ownerId});

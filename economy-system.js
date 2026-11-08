@@ -1,0 +1,95 @@
+/* Finite money, goods, labour, demand, credit and production; no quest-only payouts. */
+(function(root){'use strict';
+  function create(C){
+    const {require:R,result:ok,props:P,qty:Q}=C;
+    const merchant=n=>/торгов|продав|лавк|купец|хозя|мастер|ремес|кузнец/.test(C.norm(n?.description+' '+n?.profession));
+    function market(s){s.world.rpg.market||={sales:{},demand:{},quotes:[],jobs:[],production:[]};return s.world.rpg.market;}
+    function value(s,e,n,buying=false){const m=market(s),key=P(e).material,base=e.price||Math.max(1,Math.round(P(e).mass*2)),demand=m.demand[key]??1;return Math.max(1,Math.round(base*Math.max(.1,P(e).durability/P(e).maxDurability)*(P(e).quality||1)*demand*(buying?1:.65)));}
+    function agreement(s,n,type,data){const contract={id:C.id(s,'contract'),employerId:n.id,type,status:'active',created:s.world.rpg.clock.minute,...data};s.world.rpg.contracts.push(contract);return contract;}
+    function job(s,a){return s.world.rpg.contracts.find(c=>c.id===a.contractId)||s.world.rpg.contracts.filter(c=>c.status==='active'&&['employment','service','order'].includes(c.type)).at(-1);}
+    function permitted(s,n){R(n,'unknown_buyer','С кем вы заключаете сделку?','clarification');C.agree(s,n);R(!n.agency.shopClosed,'shop_closed','Сейчас заведение закрыто. Приходите в часы работы.');R(!n.agency.boycottPlayer,'trade_refused','Эта группа пока отказывается торговать с вами.');}
+    function needs(s,n){
+      const location=s.world.locations.find(l=>l.id===n.location),authored=(n.agency.needs||[]).filter(need=>need.itemId?C.item(s,need.itemId)&&!C.item(s,need.itemId).destroyed&&!P(C.item(s,need.itemId)).work?.completed:need.patientId&&s.world.npcs[need.patientId]?.health<(need.health||3));return [...authored,...s.entities.filter(e=>!e.destroyed&&(e.ownerId===n.id||e.location===location?.name)&&P(e).durability<P(e).maxDurability).map(e=>({type:'repair',itemId:e.id,text:'Восстановить '+e.label,amount:Math.max(1,Math.ceil((P(e).maxDurability-P(e).durability)/25))}))];
+    }
+    function handle(s,a){const m=market(s),q=C.norm(a.text),e=C.target(s,a),n=C.person(s,a);
+      if(a.op==='market_report')return ok('Спрос по материалам: '+Object.entries(m.demand).map(([k,v])=>k+' ×'+v.toFixed(2)).join(', ')+'. Оборот: '+s.world.rpg.ledger.filter(v=>/sale|purchase|production/.test(v.reason)).reduce((v,p)=>v+p.amount,0)+' монет.','market_reported',{performed:false});
+      if(a.op==='sell'){
+        permitted(s,n);R(merchant(n),'not_a_buyer','Этот персонаж не занимается покупкой таких вещей.');R(e&&e.location==='inventory','not_carried','Продаваемая вещь должна быть у вас.');R(!e.ownerId||e.ownerId==='player','cannot_sell_stolen','Покупатель требует подтвердить право распоряжаться вещью.');const amount=Math.min(C.amount(a.text,Q(e)),Q(e)),quote=m.quotes.find(v=>v.npcId===n.id&&v.itemId===e.id&&!v.used&&v.expires>=s.world.rpg.clock.minute),price=(quote?.price||value(s,e,n))*amount;C.money(s,n.id,'player',price,'sale');const moved=C.transfer(s,e,n.id,amount);moved.ownerId=n.id;if(quote)quote.used=true;m.sales[P(e).material]=(m.sales[P(e).material]||0)+amount;m.demand[P(e).material]=Math.max(.4,(m.demand[P(e).material]??1)-.08*amount);C.event(s,'sale',{itemId:moved.id,buyerId:n.id,amount,price});return ok('Продано '+amount+' единиц за '+price+' монет. Спрос изменился.','goods_sold');
+      }
+      if(a.op==='buy_market'){
+        permitted(s,n);R(e&&e.location===n.id,'not_for_sale','У продавца нет этого доступного товара.');const amount=Math.min(C.amount(a.text,Q(e)),Q(e)),price=value(s,e,n,true)*amount;C.money(s,'player',n.id,price,'purchase');const moved=C.transfer(s,e,'inventory',amount);moved.ownerId='player';m.demand[P(e).material]=Math.min(2,(m.demand[P(e).material]??1)+.05*amount);return ok('Товар куплен с учётом наличия, состояния и текущего спроса.','market_purchase');
+      }
+      if(a.op==='haggle'){
+        permitted(s,n);R(e,'unknown_target','За какой товар идёт торг?','clarification');const base=value(s,e,n,e.location===n.id),proposed=C.amount(a.text,Math.ceil(base*.8)),selling=e.location==='inventory',ratio=proposed/base;
+        if(selling&&ratio>1.35||!selling&&ratio<.65)return ok('Контрагент отклоняет цену. Товар и деньги остаются у владельцев.','price_rejected',{status:'refused',completed:false});
+        const accepted=selling?Math.min(proposed,Math.ceil(base*(n.trust>=2?1.2:1.05))):Math.max(proposed,Math.ceil(base*(n.trust>=2?.75:.9)));m.quotes.push({id:C.id(s,'quote'),npcId:n.id,itemId:e.id,price:accepted,expires:s.world.rpg.clock.minute+60,used:false});return ok('Согласована цена '+accepted+' монет за единицу; предложение действует час.','price_negotiated');
+      }
+      if(a.op==='barter_multi'){
+        permitted(s,n);const all=C.match(s,a.text,{all:true}),offered=all.filter(v=>v.location==='inventory'&&(!v.ownerId||v.ownerId==='player')),wanted=all.find(v=>v.location===n.id);R(offered.length>=2&&wanted,'incomplete_barter','Нужны как минимум две ваши вещи и конкретный товар контрагента.','clarification');const total=offered.reduce((v,e)=>v+value(s,e,n)*Q(e),0);R(total>=value(s,wanted,n,true)*Q(wanted),'unequal_barter','Предложенные товары не покрывают стоимость запрошенного.');for(const item of offered){C.transfer(s,item,n.id);item.ownerId=n.id;}C.transfer(s,wanted,'inventory');wanted.ownerId='player';return ok('Согласован обмен нескольких реальных вещей.','multiple_goods_bartered');
+      }
+      if(a.op==='find_odd_job'||a.op==='employment'){
+        permitted(s,n);const list=needs(s,n),need=list.find(v=>/леч|врач/.test(q)?v.type==='heal':/перевоз|груз/.test(q)?v.type==='carry':v.type==='repair')||list[0];R(need,'no_local_need','Здесь пока нет незакрытой потребности в работе. Можно предложить конкретную услугу или обратиться к другому жителю.');const condition=need.type==='heal'?{type:'heal',targetId:need.patientId,health:need.health||3}:need.type==='carry'?{type:'deliver_place',targetId:need.itemId,locationId:need.destinationId}:{type:need.type==='work'?'work':'repair',targetId:need.itemId};const c=agreement(s,n,a.op==='employment'?'employment':'service',{profession:need.type==='heal'?'medicine':need.type==='carry'?'porter':'craft',condition,itemId:need.itemId,patientId:need.patientId,amount:need.amount,worked:0,quality:0});return ok('Принята работа: '+need.text+'. Плата '+c.amount+' монет, после проверяемого результата.','work_contract_signed',{contractId:c.id});
+      }
+      if(a.op==='hourly'||a.op==='long_contract'){
+        permitted(s,n);const c=job(s,a);R(c&&c.employerId===n.id,'no_work_contract','Сначала договоритесь о конкретной работе.');c.hourly=C.amount(a.text,2);c.minimumMinutes=a.op==='long_contract'?120:0;c.duration=a.op==='long_contract'?1440:60;c.deadline=s.world.rpg.clock.minute+c.duration;c.longTerm=a.op==='long_contract';return ok('Зафиксирована ставка '+c.hourly+' монет в час фактической работы. Ожидание не считается рабочим действием.','hourly_pay_agreed');
+      }
+      if(a.op==='goods_pay'){
+        permitted(s,n);const c=job(s,a);R(c,'no_work_contract','Нет действующего заказа.');R(e&&e.location===n.id,'payment_goods_absent','У заказчика нет этого товара.');c.payment={itemId:e.id,amount:Math.min(Q(e),C.amount(a.text,1))};return ok('Оплата по результату будет выдана согласованным товаром.','payment_in_goods_agreed');
+      }
+      if(a.op==='perform_work'){
+        const c=job(s,a);R(c,'no_work_contract','Сначала нужен заказ с конкретным результатом.');R(s.world.npcs[c.employerId]?.location===s.world.player.location,'wrong_worksite','Работу нужно выполнять в согласованном месте.');
+        if(c.profession==='porter'){R(e&&e.portable&&C.weight(s)+P(e).mass*Q(e)<=s.world.player.body.capacity,'cannot_carry_job','Нужен посильный груз.');C.transfer(s,e,'inventory');c.carriedItemId=e.id;c.quality++;}
+        else if(c.profession==='medicine'){const patient=s.world.npcs[c.patientId];R(patient&&patient.health<(patient.maxHealth||3),'no_patient','У контракта нет раненого пациента.');C.api.life.firstAid(s,patient,a);c.quality++;}
+        else {const target=C.item(s,c.itemId),work=P(target).work;R(target&&work&&['clean','sort','survey'].includes(work.type),'specific_craft_action_needed','Выполните сам ремонт, изготовление или обработку предмета. Запись о работе появится после результата.','clarification');R(!work.completed,'work_already_complete','Эта работа уже выполнена.');work.worked=Math.min(work.duration||120,(work.worked||0)+30);work.progress=work.worked/(work.duration||120);if(work.type==='clean')P(target).dirt=Math.max(0,(work.initialDirt||100)*(1-work.progress));if(work.type==='sort')P(target).sortProgress=work.progress;work.completed=work.progress>=1;if(work.completed&&work.type==='sort')P(target).sorted=true;c.quality++;C.event(s,'professional_work',{itemId:target.id,contractId:c.id,progress:work.progress});}
+        c.worked+=30;return ok('Профессиональный этап выполнен и учтён в договоре.','professional_work_done',{time:30});
+      }
+      if(a.op==='claim_pay'){
+        const c=job(s,a)||s.world.rpg.contracts.filter(v=>v.status==='fulfilled').at(-1);R(c,'no_work_contract','Оплачиваемой работы нет.');permitted(s,s.world.npcs[c.employerId]);R(c.status!=='paid','already_paid','Эта работа уже оплачена.');R(C.api.goals.satisfied(s,c.condition)&&(!c.minimumMinutes||c.worked>=c.minimumMinutes),'work_unfinished','Условия результата и отработанного времени ещё не выполнены.');
+        if(c.payment){const goods=C.item(s,c.payment.itemId);R(goods?.location===c.employerId,'payment_goods_spent','Заказчик уже не располагает обещанным товаром.');const moved=C.transfer(s,goods,'inventory',c.payment.amount);moved.ownerId='player';}else C.money(s,c.employerId,'player',c.hourly?Math.max(1,Math.floor(c.worked/60*c.hourly)):c.amount,'service_pay');c.status='paid';c.fulfilled=true;C.H.social.change(s,s.world.npcs[c.employerId],{trust:1,respect:1,reliability:1});return ok('Качество и результат проверены. Оплата получена один раз.','service_paid');
+      }
+      if(a.op==='propose_service'){
+        permitted(s,n);R(e,'unknown_service_target','Нужен конкретный предмет услуги.','clarification');R(e.ownerId===n.id||e.location===C.place(s).name,'not_customer_property','Заказчик не распоряжается этой вещью.');const earlier=[...s.world.rpg.events].reverse().find(v=>v.type==='repaired'&&v.itemId===e.id);R(!earlier||!s.world.rpg.contracts.some(c=>c.itemId===e.id&&c.status==='paid'&&(!c.effortId||c.effortId===earlier.id)),'service_already_paid','За этот результат уже рассчитались.');const c=agreement(s,n,'service',{condition:{type:'repair',targetId:e.id},itemId:e.id,amount:C.amount(a.text,2),worked:earlier?30:0,quality:earlier?1:0,retroactive:Boolean(earlier),effortId:earlier?.id||null});return ok('Согласована оплата конкретной услуги после проверки вещи.','custom_service_agreed',{contractId:c.id});
+      }
+      if(a.op==='revise_order'){
+        const c=job(s,a);R(c,'no_work_contract','Нет заказа для пересмотра.');permitted(s,s.world.npcs[c.employerId]);const requested=C.amount(a.text,c.amount);R(requested<=c.amount*2,'new_price_rejected','Заказчик не согласен на столь большое изменение.');c.revisions||=[];c.revisions.push({oldAmount:c.amount,reason:a.text,time:s.world.rpg.clock.minute});c.amount=requested;c.status=/отказываюсь|отменяю/.test(q)?'cancelled':'active';return ok('Новые условия записаны. Выполненные этапы и потраченные материалы сохранены.','order_revised');
+      }
+      if(a.op==='lend_money'||a.op==='borrow_money'){
+        permitted(s,n);const amount=C.amount(a.text,1),lender=a.op==='lend_money'?'player':n.id,borrower=a.op==='lend_money'?n.id:'player';R(lender==='player'||n.trust>=1,'credit_refused','Кредитор пока не готов доверить деньги.');C.money(s,lender,borrower,amount,'loan');const loan={id:C.id(s,'loan'),lender,borrower,principal:amount,balance:amount,due:s.world.rpg.clock.minute+1440,interest:0,status:'active',payments:[]};s.world.rpg.loans.push(loan);return ok('Деньги переданы в долг с записью остатка и срока возврата.','loan_created');
+      }
+      if(a.op==='repay'){
+        const loan=s.world.rpg.loans.filter(l=>l.status==='active'&&(l.borrower==='player'||l.lender==='player')).at(-1);R(loan,'no_loan','Непогашенного долга нет.');const amount=Math.min(C.amount(a.text,loan.balance),loan.balance);C.money(s,loan.borrower,loan.lender,amount,'loan_repayment');loan.balance-=amount;loan.payments.push({amount,time:s.world.rpg.clock.minute});if(!loan.balance){loan.status='repaid';C.H.social.change(s,s.world.npcs[loan.lender==='player'?loan.borrower:loan.lender],{reliability:1});}return ok('Погашено '+amount+'. Остаток долга: '+loan.balance+'.','loan_part_paid');
+      }
+      if(['rent_workshop','rent_lodging','buy_property'].includes(a.op)){
+        permitted(s,n);const location=C.findPlace(s,a.text)||C.place(s),owner=location.ownerId||location.environment.ownerId||(/лавк|мастер|дом|гостиниц|комнат/.test(C.norm(location.name))&&n.location===location.id?n.id:null);R(owner===n.id,'not_property_owner','Этот человек не уполномочен сдавать или продавать данное помещение.');const buy=a.op==='buy_property',price=buy?(location.environment.propertyPrice||30):(a.op==='rent_lodging'?2:5);C.money(s,'player',n.id,price,buy?'property_purchase':'property_rent');if(buy){location.ownerId='player';location.environment.ownerId='player';s.world.rpg.rentals=(s.world.rpg.rentals||[]).filter(v=>v.locationId!==location.id);}else{s.world.rpg.rentals||=[];s.world.rpg.rentals.push({id:C.id(s,'lease'),locationId:location.id,tenantId:'player',ownerId:n.id,until:s.world.rpg.clock.minute+1440,kind:a.op});}return ok(buy?'Право собственности передано и записано.':'Помещение арендовано на сутки. Доступ зависит от срока аренды.','premises_secured');
+      }
+      if(a.op==='open_business'){
+        const location=C.place(s);R(location.ownerId==='player'||s.world.rpg.rentals?.some(r=>r.locationId===location.id&&r.until>s.world.rpg.clock.minute),'premises_required','Сначала нужно законно получить рабочее помещение.');R(!s.world.rpg.businesses.some(b=>b.locationId===location.id&&b.ownerId==='player'),'business_exists','Здесь уже работает ваша точка.');const business={id:C.id(s,'business'),ownerId:'player',locationId:location.id,name:a.text.split(':').slice(1).join(':').trim()||'Торговая точка',employees:[],orders:[],sales:0,lastWage:s.world.rpg.clock.minute};s.world.rpg.businesses.push(business);return ok('Торговая точка открыта. Для производства нужны реальные запасы, рецепты и работники.','business_opened');
+      }
+      if(a.op==='hire_worker'){
+        permitted(s,n);const business=s.world.rpg.businesses.find(b=>b.ownerId==='player'&&b.locationId===s.world.player.location);R(business,'no_business','Сначала откройте дело в собственном или арендованном помещении.');R(!business.employees.some(v=>v.npcId===n.id),'already_employed','Этот работник уже нанят.');business.employees.push({npcId:n.id,wage:C.amount(a.text,1),paidUntil:s.world.rpg.clock.minute});n.agency.employerId='player';return ok('Работник нанят с регулярной зарплатой. Без оплаты он приостановит труд.','worker_hired');
+      }
+      if(a.op==='production'){
+        const business=s.world.rpg.businesses.find(b=>b.ownerId==='player'&&b.locationId===s.world.player.location);R(business?.employees.length,'no_workers','Нужны работающая точка и хотя бы один работник.');const product=a.product||a.text.replace(/^.*?(?:производство|производить)\s+/iu,'');R(C.api.equipment.recipe(s,product),'unknown_recipe','Нет рецепта этого изделия.');const count=C.amount(a.text,1),employee=business.employees[0],worker=s.world.npcs[employee.npcId];R(worker.location===business.locationId,'worker_absent','Работник ещё не прибыл.');const batch={id:C.id(s,'batch'),businessId:business.id,product,count,completed:0,status:'active',taskIds:[]};for(let i=0;i<count;i++)batch.taskIds.push(C.api.agency.queue(s,worker,'craft',{product,destinationId:business.locationId,batchId:batch.id}).id);m.production.push(batch);return ok('Производственный заказ поставлен в очередь. Компоненты будут списываться за каждое изделие.','production_started');
+      }
+      if(a.op==='accept_order'){
+        permitted(s,n);const product=a.product||a.text.split(':').slice(1).join(':').trim();R(C.api.equipment.recipe(s,product),'unknown_recipe','Для заказа нужен известный рецепт.');const need=n.agency.demand?.find(v=>C.same(v.product,product));R(need,'no_customer_demand','У заказчика нет подтверждённой потребности в таком изделии.');const c=agreement(s,n,'order',{product,amount:need.price||3,condition:{type:'craft',label:product},worked:0});return ok('Принят заказ на '+product+'. Предоплата и готовое изделие из воздуха не появляются.','craft_order_accepted',{contractId:c.id});
+      }
+      return null;
+    }
+    function after(s,a,r){
+      if(r.performed===false||r.status!=='success')return;
+      const physicalWork=['repair','forge','smelt','work_wood','craft','craft_furniture','craft_torch','craft_rope','diagnose'];
+      if(a.rpg&&physicalWork.includes(a.rpg.op))for(const c of s.world.rpg.contracts.filter(c=>c.status==='active'&&s.world.npcs[c.employerId]?.location===s.world.player.location)){
+        if(c.itemId&&a.targetId!==c.itemId&&a.rpg.op!=='craft')continue;c.worked=(c.worked||0)+(r.time||20);c.quality=(c.quality||0)+1;c.workEvents||=[];c.workEvents.push(s.currentActionId);
+      }
+    }
+    function tick(s,elapsed){const m=market(s),now=s.world.rpg.clock.minute;
+      for(const loan of s.world.rpg.loans.filter(l=>l.status==='active'&&l.borrower!=='player'&&now>=l.due)){const n=s.world.npcs[loan.borrower],amount=Math.min(n.finance.money,loan.balance);if(amount>0){C.money(s,n.id,loan.lender,amount,'loan_repayment');loan.balance-=amount;loan.payments.push({amount,time:now});if(!loan.balance)loan.status='repaid';}if(loan.balance){loan.overdue=true;loan.due=now+1440;}}
+      for(const business of s.world.rpg.businesses){for(const employee of business.employees){const hours=Math.floor((now-employee.paidUntil)/60);if(hours<=0)continue;const wage=hours*employee.wage,n=s.world.npcs[employee.npcId];if(s.world.player.money>=wage){C.money(s,'player',n.id,wage,'wages');employee.paidUntil+=hours*60;employee.unpaid=false;}else{employee.unpaid=true;for(const t of s.world.rpg.tasks.filter(t=>t.actorId===n.id&&!['completed','cancelled'].includes(t.status)))t.status='cancelled';n.agency.employerId=null;}}}
+      for(const batch of m.production.filter(b=>b.status==='active')){const tasks=batch.taskIds.map(id=>s.world.rpg.tasks.find(t=>t.id===id));batch.completed=tasks.filter(t=>t.status==='completed').length;if(batch.completed===batch.count){batch.status='completed';s.world.rpg.settlement.prosperity+=batch.count;C.event(s,'production_completed',{batchId:batch.id,count:batch.count});}}
+      if(elapsed>0){s.world.rpg.settlement.economicInfluence=s.world.rpg.ledger.filter(v=>v.from==='player'||v.to==='player').reduce((sum,v)=>sum+v.amount,0);}
+    }
+    return {handle,after,tick,value,market,needs,agreement};
+  }
+  root.RpgEconomy={create};
+})(globalThis);

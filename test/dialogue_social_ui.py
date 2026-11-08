@@ -29,11 +29,11 @@ with sync_playwright() as p:
         assert memory()['place']=='лавка' and memory()['world']['activeNpcId'] is None
         assert send('Жду').locator('[data-speaker=npc]').count()==0
         before=memory()['world']['npcs'][memory()['world']['primaryNpcId']]['memory']
-        last=send('Перепрыгнуть ларец')
+        last=send('Квантовать ларец')
         assert last.locator('[data-speaker=developer] small').inner_text()=='РАЗРАБОТЧИК'
         assert last.locator('[data-speaker=npc]').count()==0
         assert memory()['world']['npcs'][memory()['world']['primaryNpcId']]['memory']==before
-        assert send('Перепрыгнуть ларец').locator('[data-speaker=developer]').count()==0
+        assert send('Квантовать ларец').locator('[data-speaker=developer]').count()==0
         for command in ['Выхожу на улицу','Иду в город','Иду в мастерскую']:
             assert send(command).locator('[data-speaker=npc]').count()==0
         assert 'Нет собеседника' in page.locator('#memory').inner_text()

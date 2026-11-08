@@ -5,7 +5,7 @@
   const reactions=new Set(['witness_event','private_boundary','permission_request','plot_initiative','greeting_requested','reparation','source_shared']);
   function create(H){
     const {emit}=H;
-    const here=(s,n)=>Boolean(n&&n.location===s.world.player.location&&!n.hidden&&!['incapacitated','dead'].includes(n.status));
+    const here=(s,n)=>Boolean(n&&n.location===s.world.player.location&&!n.hidden&&!['incapacitated','dead'].includes(n.status)&&n.agency?.activity!=='sleeping');
     function init(s){
       const migrating=s.world.dialogueVersion!==1;
       if(migrating){s.world.boundNpcId=s.world.activeNpcId||s.world.primaryNpcId;s.world.activeNpcId=null;s.world.dialogueVersion=1;}

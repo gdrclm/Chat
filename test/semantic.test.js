@@ -11,6 +11,20 @@ import '../npc-personality.js';
 import '../conversation-memory.js';
 import '../npc-biography.js';
 import '../conversation-engine.js';
+import '../action-catalog.js';
+import '../rpg-core.js';
+import '../physical-system.js';
+import '../investigation-system.js';
+import '../equipment-crafting.js';
+import '../action-resolver.js';
+import '../goals-story.js';
+import '../npc-agency.js';
+import '../economy-system.js';
+import '../society-system.js';
+import '../life-combat.js';
+import '../genre-system.js';
+import '../extended-actions.js';
+import '../rpg-engine.js';
 import '../semantic.js';
 import '../scenes.js';
 import '../simulation.js';
@@ -167,7 +181,7 @@ test('unknown first physical action stops a dependent look; a separate sentence 
  const r=E.reply(config,fresh(),'Перепрыгнуть на Марс и осмотреться. Беру компас');assert.equal(r.results[1].skipped,true);assert.equal(r.results[2].status,'success');assert.equal(r.memory.world.loops.exploration.observed.length,0);
 });
 test('an unsupported physical predicate is named and preserved without pretending to perform it',()=>{
- const r=E.reply(config,fresh(),'Перепрыгнуть на Марс');assert.equal(r.results[0].code,'unsupported_action');assert.equal(r.results[0].performed,false);assert.match(r.text,/перепрыгнуть/);assert.ok(r.memory.threads.some(t=>t.text.includes('Перепрыгнуть на Марс')));assert.equal(r.memory.place,'лавка');
+ const r=E.reply(config,fresh(),'Квантовать на Марс');assert.equal(r.results[0].code,'unsupported_action');assert.equal(r.results[0].performed,false);assert.match(r.text,/квантовать/);assert.ok(r.memory.threads.some(t=>t.text.includes('Квантовать на Марс')));assert.equal(r.memory.place,'лавка');
 });
 test('negation plus contrast runs the alternative action, not the denied one',()=>{
  const r=E.reply(locked,available,'Не беру ключ, а осматриваюсь');assert.deepEqual(r.memory.inventory,[]);assert.ok(r.memory.world.loops.exploration.observed.includes(r.memory.world.player.location));

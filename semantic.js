@@ -229,6 +229,8 @@
     if(vocative&&(context.people||[]).some(n=>sameName(vocative[2],n.name))&&/^(?:поздоровайся|поздоровайтесь|поприветствуй|поприветствуйте|приветствуй|приветствуйте)(?:\s|$)/u.test(vocative[1])){
       const nested=step(vocative[1],context);return requested(nested,vocative[2],raw);
     }
+    const extended=root.StoryActionResolver?.resolve(raw,context);
+    if(extended&&!idiom)return {raw,intent:'RPG',recognized:true,mode:mode(raw.includes(':')&&['program','secret_pact','property_rules','personal_story','case_hypothesis'].includes(extended.op)?raw.split(':')[0]:raw,null,inherited,context),actor:'player',rpg:extended};
     const h = idiom ? null : head(raw,context);
     const result = {raw,intent:h?.intent || 'LEGACY',recognized:Boolean(h),mode:mode(raw,h,inherited,context),actor:'player',...slots(raw,h,context)};
     if(!h&&!idiom&&!context.legacyStarts?.(raw)&&['execute','attempt'].includes(result.mode)){
@@ -257,7 +259,7 @@
   }
   function starts(text,context) {
     const q = tidy(text).replace(/^(?:затем|потом|после этого|сначала)\s+/iu,'');
-    return Boolean(head(q,context)) || (/^(?:а )?(?:кто|что|как|почему|зачем|когда|где|чем|вы|ты)(?:\s|$)/iu.test(norm(q))&&Boolean(root.ConversationTopics?.resolve(q))) || /^(?:я\s+)?(?:прошу|попрошу|попросить|не\s|хочу\s|меня зовут|говорю|шепчу|привет|танцую|ломаю|беру|изготавливаю|устанавливаю|превращаю)/u.test(norm(q)) || Boolean(context.legacyStarts?.(q));
+    return Boolean(root.StoryActionResolver?.resolve(q,context)) || Boolean(head(q,context)) || (/^(?:а )?(?:кто|что|как|почему|зачем|когда|где|чем|вы|ты)(?:\s|$)/iu.test(norm(q))&&Boolean(root.ConversationTopics?.resolve(q))) || /^(?:я\s+)?(?:прошу|попрошу|попросить|не\s|хочу\s|меня зовут|говорю|шепчу|привет|танцую|ломаю|беру|изготавливаю|устанавливаю|превращаю)/u.test(norm(q)) || Boolean(context.legacyStarts?.(q));
   }
   function split(text,context) {
     const chunks=[];let part='',quote=null,dependent=false;
@@ -266,6 +268,7 @@
     // A request to carry/hide/open is one negotiated NPC plan in the existing simulation.
     if ((/^(?:я\s+)?(?:прошу|договариваюсь|предлагаю|попрошу|попросить)/u.test(norm(source))||/^[а-я-]+[:,]\s*(?:вынеси|перенеси|унеси|спрячь)/u.test(norm(source))) && /вынест|перенест|унест|спрят|вынеси|перенеси|унеси|спрячь/.test(norm(source))) return [{raw:source,dependsOnPrevious:false}];
     if(root.ConversationTopics?.resolve(source,context)?.confidence===1)return [{raw:source,dependsOnPrevious:false}];
+    const structured=root.StoryActionResolver?.resolve(source,context);if(structured&&['configure','property_rules','secret_pact','subgoals','program'].includes(structured.op)&&source.includes(':'))return [{raw:source,dependsOnPrevious:false}];
     for(let i=0;i<source.length;i++){
       const char=source[i];
       if(!quote&&['«','“','"'].includes(char))quote=char==='«'?'»':char==='“'?'”':'"';else if(quote===char)quote=null;
@@ -282,7 +285,7 @@
         }
       }
       part+=char;
-      if(!quote&&/[;\n.!?]/.test(char)&&!/[.!?]/.test(source[i+1]||' ')){flush();dependent=false;}
+      if(!quote&&/[;\n.!?]/.test(char)&&!(char==='.'&&/\d/.test(source[i-1]||'')&&/\d/.test(source[i+1]||''))&&!/[.!?]/.test(source[i+1]||' ')){flush();dependent=false;}
     }
     flush();return chunks;
   }
@@ -343,6 +346,8 @@
       const best=found[0]?.score;const equal=found.filter(v=>v.score===best);
       const local=equal.filter(v=>v.e.location===memory.place||v.e.location==='inventory'||v.e.location===memory.world?.activeNpcId);
       if(local.length)found=local;
+      const ordinal=result.target.match(/(?:номер|экземпляр|№)\s*(\d+)/u)?.[1]||(/втор(?:ой|ую|ого)/u.test(result.target)?2:/трет(?:ий|ью|ьего)/u.test(result.target)?3:/перв(?:ый|ую|ого)/u.test(result.target)?1:0);
+      if(ordinal&&found.length>1&&found[0].score===found[1].score){const live=found.filter(v=>!v.e.destroyed);found=[(live.length?live:found)[Number(ordinal)-1]].filter(Boolean);}
       if(result.intent==='TAKE'&&/\sи\s|,/.test(result.target)){result.targetIds=found.map(v=>v.e.id);result.ambiguous=false;return result;}
       result.ambiguous=found.length>1&&found[0].score===found[1].score;
       result.targetId=result.ambiguous?null:found[0]?.e.id || null;

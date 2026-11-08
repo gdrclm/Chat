@@ -34,7 +34,7 @@ function render() {
   if (!state.messages.length) {
     const intro = document.createElement('div'); intro.className = 'intro';
     const title = document.createElement('h3'); title.textContent = 'Каждая история начинается со слова.';
-    const text = document.createElement('p'); text.textContent = 'Задайте мир в настройках автора или начните с лавки. Слова могут быть ложью; вещи меняются от действий. Например: «Осматриваюсь», «Прошу Миру вынести ларец наружу и открыть позже». Кнопка «Мир» показывает выходы, людей и дела.';
+    const text = document.createElement('p'); text.textContent = 'Начните с «Осматриваюсь». В «Мире» есть карта, цели, поручения и подходящие действия. Можно поставить собственную цель, уйти от загадки, работать и путешествовать со спутниками. В настройках — пять готовых историй.';
     intro.append(title, text); list.append(intro);
   }
   for (const message of state.messages) {
@@ -61,7 +61,7 @@ function render() {
     list.append(item);
   }
   const profile = engine.profile(state.config);
-  document.querySelector('#badge').textContent = '● Локально · 5.0';
+  document.querySelector('#badge').textContent = '● Локально · 6.0';
   const currentNpc=state.memory.world.npcs[state.memory.world.activeNpcId];
   const title = state.memory.place || profile.title || 'Ваша история';
   document.querySelector('#story-title').textContent = title[0].toUpperCase() + title.slice(1);
@@ -140,25 +140,31 @@ document.querySelector('#import').addEventListener('change', async event => {
 
 document.querySelector('#debug-view').addEventListener('change',event=>{debugView=event.target.checked;try{localStorage.setItem('between-lines-debug',String(debugView));}catch{}render();});
 function showPage(page) {
-  for(const name of ['settings','world','chat'])document.querySelector('#'+name+'-page').hidden=name!==page;
-  const focus=page==='settings'?'#close-settings':page==='world'?'#close-world':'#open-settings';document.querySelector(focus).focus();
+  for(const name of ['settings','world','actions','chat'])document.querySelector('#'+name+'-page').hidden=name!==page;
+  const focus=page==='settings'?'#close-settings':page==='world'?'#close-world':page==='actions'?'#action-search':'#open-settings';document.querySelector(focus).focus();
 }
 function showSettings(open) { showPage(open?'settings':'chat'); }
 document.querySelector('#open-settings').addEventListener('click', () => showSettings(true));
 document.querySelector('#close-settings').addEventListener('click', () => showSettings(false));
 document.querySelector('#open-world').addEventListener('click',()=>showPage('world'));
 document.querySelector('#close-world').addEventListener('click',()=>showPage('chat'));
+document.querySelector('#open-actions').addEventListener('click',()=>{renderCatalog();showPage('actions');});
+document.querySelector('#close-actions').addEventListener('click',()=>showPage('world'));
+document.querySelector('#action-search').addEventListener('input',renderCatalog);
+for(const preset of globalThis.StoryPresets){const option=document.createElement('option');option.value=preset.id;option.textContent=preset.name;document.querySelector('#story-preset').append(option);}
+document.querySelector('#apply-preset').addEventListener('click',()=>{const preset=globalThis.StoryPresets.find(p=>p.id===document.querySelector('#story-preset').value);if(!preset)return;for(const name of ['world','character','player','canon'])settings.elements.namedItem(name).value=preset[name];settings.elements.namedItem('world').focus();});
 document.addEventListener('keydown', event => { if (event.key === 'Escape') showPage('chat'); });
 function issueCommand(command) {
   const draft=field.value;showPage('chat');field.value=command;send.click();field.value=draft;
 }
 function renderWorld() {
   const memory=state.memory,world=memory.world,map=engine.map(memory);
+  renderRpg(world,memory);
   document.querySelector('#map-title').textContent='Место: '+memory.place;
   const exits=document.querySelector('#map-exits');exits.replaceChildren();
   for(const exit of map.exits) {const b=document.createElement('button');b.type='button';b.textContent=exit.name+(exit.blocked?' · заперто':' →');b.disabled=exit.blocked;b.addEventListener('click',()=>issueCommand('Иду в '+exit.name));exits.append(b);}
   const people=document.querySelector('#nearby-people');people.replaceChildren();
-  for(const person of Object.values(world.npcs).filter(n=>n.location===world.player.location&&n.dialogueState?.status!=='undiscovered')){const b=document.createElement('button');b.type='button';b.textContent=person.name;b.addEventListener('click',()=>issueCommand('Говорю с '+person.name));people.append(b);}
+  for(const person of Object.values(world.npcs).filter(n=>n.location===world.player.location&&!n.hidden&&n.agency?.activity!=='sleeping'&&n.dialogueState?.status!=='undiscovered')){const b=document.createElement('button');b.type='button';b.textContent=person.name;b.addEventListener('click',()=>issueCommand('Говорю с '+person.name));people.append(b);}
   const interlocutor=world.npcs[world.activeNpcId],topicButtons=document.querySelector('#conversation-topics');topicButtons.replaceChildren();
   const summary=document.querySelector('#conversation-summary');summary.textContent=interlocutor?`${interlocutor.name} · Тема: ${interlocutor.conversation.activeTopic?globalThis.ConversationTopics.topic(interlocutor.conversation.activeTopic).label:'знакомство'} · Обсуждено тем: ${Object.keys(interlocutor.conversation.discussedTopics).length}`:'Обратитесь к замеченному персонажу, чтобы начать разговор.';
   if(interlocutor)for(const id of ['name','identity','place','occupation','hobbies','goal','trust'].filter(id=>!interlocutor.conversation.discussedTopics[id]).slice(0,4)){const topic=globalThis.ConversationTopics.topic(id),button=document.createElement('button');button.type='button';button.textContent=topic.questions[0];button.addEventListener('click',()=>issueCommand(topic.questions[0]));topicButtons.append(button);}
@@ -189,6 +195,33 @@ function renderWorld() {
     for(const g of n.grievances){const row=document.createElement('li');row.textContent=`${n.name}: ${g.reason} · ${g.resolved?'примирение состоялось':`нужны извинение${g.apology?' (получено)':''} и значимый поступок: ${g.compensation?'возместить ущерб: '+g.compensation+' монеты':g.requiredItem||n.motive}${g.reparation?' (получено)':''}`}`;conflicts.append(row);}
     for(const belief of Object.values(n.beliefs).filter(b=>!b.key.startsWith('entity:'))){const row=document.createElement('li');row.textContent=`${n.name}: ${belief.text} · уверенность ${Math.round(belief.confidence*100)}%`;beliefs.append(row);}
   }
+}
+function renderRpg(world,memory){
+  const r=world.rpg,p=world.player,b=p.body,now=r.clock.minute,day=Math.floor(now/1440),time=String(Math.floor(now%1440/60)).padStart(2,'0')+':'+String(Math.floor(now%60)).padStart(2,'0');
+  const labels={active:'в работе',pending:'ожидает',working:'выполняется',completed:'готово',paid:'оплачено',failed:'неудача',cancelled:'отменено',abandoned:'отказ',superseded:'пересмотрено',resolved:'завершено',resolved_by_agreement:'решено договором',blocked:'нужна помощь',waiting:'ожидание',guarding:'охрана',watching:'наблюдение',searching:'поиск',scheduled:'назначено',attended:'состоялось',missed:'пропущено',repaid:'погашено',closed:'завершено',accusation:'предъявлено обвинение',open:'открыто',reopened:'переоткрыто',disputed:'оспаривается',expelled:'исключён'};
+  const label=status=>labels[status]||'в работе',item=id=>memory.entities.find(e=>e.id===id)?.label||'предмет',person=id=>world.npcs[id]?.name||'Вы',location=id=>world.locations.find(l=>l.id===id)?.name||'неизвестное место';
+  const rows=(id,texts)=>{const ul=document.querySelector('#'+id);ul.replaceChildren();for(const text of texts){const li=document.createElement('li');li.textContent=text;ul.append(li);}};
+  document.querySelector('#world-time').textContent='День '+(day+1)+' · '+['понедельник','вторник','среда','четверг','пятница','суббота','воскресенье'][day%7]+' · '+time;
+  document.querySelector('#world-body').textContent='Здоровье '+Math.ceil(b.health)+'/'+b.maxHealth+' · Силы '+Math.floor(b.stamina)+(r.enabled.needs?' · Голод '+Math.floor(b.hunger)+' · Жажда '+Math.floor(b.thirst)+' · Тепло '+Math.floor(b.warmth):'')+(r.enabled.magic?' · Энергия '+b.mana+'/'+b.maxMana:'');
+  document.querySelector('#rpg-load').textContent='Груз '+Math.round(p.load*10)/10+' / '+b.capacity+' кг'+(p.overloaded?' · Быстро двигаться нельзя':'');
+  const eq=p.equipment;rows('rpg-equipment',['Правая рука: '+(eq.right?item(eq.right):'свободна'),'Левая рука: '+(eq.left?item(eq.left):'свободна'),'Надето: '+(eq.worn.map(item).join(', ')||'нет снаряжения'),...p.inventoryIds.map((id,i)=>{const e=memory.entities.find(e=>e.id===id);return e.label+(e.quantity>1?' ×'+e.quantity:'')+' · прочность '+Math.floor(e.physical.durability)+'/'+e.physical.maxDurability;})]);
+  rows('rpg-goals',r.goals.map(g=>(g.id===r.primaryGoalId?'★ ':'')+g.text+' · '+label(g.status)+' · '+g.objectives.filter(o=>o.status==='completed').length+'/'+g.objectives.length));
+  rows('rpg-arcs',r.arcs.map(a=>a.title+' · глава '+a.chapter+' · '+label(a.status)));
+  const taskNames={move:'прийти',escort:'проводить',guard:'охранять',watch:'наблюдать',search:'найти вещь',search_person:'искать человека',collect:'собрать вещи',craft:'изготовить',repair:'починить',message:'передать сообщение',work:'работать',survey:'обследовать',distract:'отвлечь'};
+  rows('rpg-tasks',r.tasks.slice(-15).map(t=>person(t.actorId)+': '+(taskNames[t.type]||'поручение')+' '+(t.product||t.itemId&&item(t.itemId)||'')+' · '+label(t.status)+(t.status==='blocked'?' — проверьте путь, материалы и инструменты':'')));
+  rows('rpg-appointments',r.appointments.map(a=>person(a.npcId)+' · '+location(a.locationId)+' · '+String(Math.floor(a.time%1440/60)).padStart(2,'0')+':'+String(a.time%60).padStart(2,'0')+' · '+label(a.status)));
+  rows('rpg-contracts',r.contracts.slice(-8).map(c=>person(c.employerId)+': '+(c.product||c.itemId&&item(c.itemId)||'работа')+' · '+label(c.status)+' · '+(c.hourly?c.hourly+' монет/час':c.amount+' монет')));
+  rows('rpg-businesses',r.businesses.map(b=>b.name+' · '+location(b.locationId)+' · работников '+b.employees.length));
+  rows('rpg-loans',r.loans.map(l=>person(l.borrower)+' должен '+person(l.lender)+': '+l.balance+' · '+label(l.status)));
+  rows('rpg-cases',r.cases.map(c=>c.name+' · '+label(c.status)+' · источников '+c.evidence.length+' · показаний '+c.testimony.length));
+  rows('rpg-groups',(r.memberships.player||[]).map(m=>(r.factions.find(f=>f.id===m.factionId)?.name||'Организация')+' · '+m.title+' · '+label(m.status)));
+  document.querySelector('#rpg-settlement').textContent='Инфраструктура '+r.settlement.infrastructure+' · Благополучие '+r.settlement.prosperity+' · Решений '+r.settlement.decisions.length+(r.ending?' · Финал истории достигнут':'');
+  const hints=document.querySelector('#suggested-actions');hints.replaceChildren();for(const command of engine.suggestions(memory)){const button=document.createElement('button');button.type='button';button.textContent=command;button.addEventListener('click',()=>issueCommand(command));hints.append(button);}
+}
+function renderCatalog(){
+  const query=document.querySelector('#action-search').value.toLowerCase().replace(/ё/g,'е'),entries=globalThis.ActionCatalog.entries.filter(e=>(e.id+' '+e.description+' '+(e.examples||[]).join(' ')).toLowerCase().replace(/ё/g,'е').includes(query)),ul=document.querySelector('#action-catalog');ul.replaceChildren();
+  document.querySelector('#action-count').textContent='Найдено '+entries.length+' из 325';
+  for(const e of entries){const li=document.createElement('li');li.value=e.id;const text=document.createElement('p');text.textContent=e.description;li.append(text);if(e.examples?.length){const details=document.createElement('details'),summary=document.createElement('summary');summary.textContent='Пример сценария';details.append(summary);for(const example of e.examples){const p=document.createElement('p');p.textContent=example;details.append(p);}const button=document.createElement('button');button.type='button';button.className='secondary';button.textContent='Вставить последнюю реплику';button.addEventListener('click',()=>{showPage('chat');field.value=e.examples.at(-1);field.focus();});details.append(button);li.append(details);}ul.append(li);}
 }
 function resizeViewport() {
   const viewport = window.visualViewport;

@@ -1,11 +1,19 @@
 <!doctype html>
-<html lang="ru" data-version="5.0">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content"><title>Между строк — локальная история</title><link rel="stylesheet" href="style.css"><script defer src="spatial.js"></script><script defer src="narrator.js"></script><script defer src="messages.js"></script><script defer src="dialogue.js"></script><script defer src="developer.js"></script><script defer src="social.js"></script><script defer src="conversation-topics.js"></script><script defer src="npc-personality.js"></script><script defer src="conversation-memory.js"></script><script defer src="npc-biography.js"></script><script defer src="conversation-engine.js"></script><script defer src="semantic.js"></script><script defer src="scenes.js"></script><script defer src="simulation.js"></script><script defer src="engine.js"></script><script defer src="app.js"></script></head>
+<html lang="ru" data-version="6.0">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content"><title>Между строк — локальная история</title><link rel="stylesheet" href="style.css"><script defer src="spatial.js"></script><script defer src="narrator.js"></script><script defer src="messages.js"></script><script defer src="dialogue.js"></script><script defer src="developer.js"></script><script defer src="social.js"></script><script defer src="conversation-topics.js"></script><script defer src="npc-personality.js"></script><script defer src="conversation-memory.js"></script><script defer src="npc-biography.js"></script><script defer src="conversation-engine.js"></script><script defer src="action-catalog.js"></script><script defer src="rpg-core.js"></script><script defer src="physical-system.js"></script><script defer src="investigation-system.js"></script><script defer src="equipment-crafting.js"></script><script defer src="action-resolver.js"></script><script defer src="goals-story.js"></script>
+<script defer src="npc-agency.js"></script>
+<script defer src="economy-system.js"></script>
+<script defer src="society-system.js"></script>
+<script defer src="life-combat.js"></script>
+<script defer src="genre-system.js"></script>
+<script defer src="extended-actions.js"></script>
+<script defer src="rpg-engine.js"></script><script defer src="semantic.js"></script><script defer src="scenes.js"></script><script defer src="simulation.js"></script><script defer src="engine.js"></script><script defer src="story-presets.js"></script><script defer src="app.js"></script></head>
 <body>
 <aside id="settings-page" hidden aria-label="Настройки истории">
   <div class="page-top"><span class="eyebrow">НАСТРОЙКИ АВТОРА</span><button id="close-settings" type="button" class="secondary">К чату ✕</button></div>
   <div class="eyebrow">ИНТЕРАКТИВНАЯ ИСТОРИЯ</div><h1>Между<br>строк<span>✦</span></h1>
   <p class="muted">Ваши слова меняют историю.</p>
+  <label>Готовая история<select id="story-preset"><option value="">Выберите мир</option></select></label><button id="apply-preset" type="button" class="secondary">Заполнить вводные</button><p class="hint">Выбранный мир появится в форме ниже. Сохраните вводные, затем начните заново, если нужна новая история.</p>
   <form id="settings">
     <label>Мир и ситуация · авторский канон<textarea name="world" maxlength="4000" rows="3">Ночной город, где воспоминания продаются в стеклянных флаконах. Я прихожу в закрытую лавку за своим потерянным прошлым.</textarea></label>
     <label>Персонаж<textarea name="character" maxlength="4000" rows="3">Мира — хозяйка лавки воспоминаний. Сдержанная, наблюдательная, с сухим юмором. Она знает обо мне больше, чем говорит.</textarea></label>
@@ -26,19 +34,31 @@
 </aside>
 <aside id="world-page" hidden aria-label="Мир и персонажи">
   <div class="page-top"><span class="eyebrow">МИР И ПЕРСОНАЖИ</span><button id="close-world" type="button" class="secondary">К чату ✕</button></div>
+  <p id="world-time" class="world-clock"></p><p id="world-body" class="hint"></p>
+  <h3>Что можно попробовать</h3><div id="suggested-actions" class="world-buttons"></div><button id="open-actions" type="button" class="secondary">Каталог · 325 возможностей</button>
+  <h3>Мои цели и истории</h3><ul id="rpg-goals"></ul><ul id="rpg-arcs"></ul>
+  <h3>Снаряжение и груз</h3><p id="rpg-load" class="hint"></p><ul id="rpg-equipment"></ul>
+  <h3>Поручения и встречи</h3><ul id="rpg-tasks"></ul><ul id="rpg-appointments"></ul>
   <h2 id="map-title">Карта</h2><p class="hint">Переход выполняется отдельным ходом. Доступны только соединённые места.</p><div id="map-exits" class="world-buttons"></div>
   <h3>Рядом</h3><div id="nearby-people" class="world-buttons"></div>
   <h3>Разговор</h3><p id="conversation-summary" class="hint"></p><div id="conversation-topics" class="world-buttons"></div>
   <details><summary>Память бесед · просмотр автора</summary><ul id="conversation-records"></ul></details>
   <h3>Исследование и знания</h3><p id="exploration-progress" class="hint"></p><ul id="learned-facts"></ul><details><summary>Изученные свойства предметов</summary><ul id="known-properties"></ul></details>
   <h3>Дела и деньги</h3><p id="world-work"></p><p class="hint">На рынке и в мастерской можно искать работу. Загадку лавки для этого решать не требуется.</p>
+  <ul id="rpg-contracts"></ul><ul id="rpg-businesses"></ul><ul id="rpg-loans"></ul>
+  <h3>Мои расследования</h3><ul id="rpg-cases"></ul><h3>Сообщества и поселение</h3><ul id="rpg-groups"></ul><p id="rpg-settlement" class="hint"></p>
   <h3>Отложенные действия</h3><ul id="deferred-actions"></ul>
   <h3>Отношения и причины конфликтов</h3><ul id="relationship-values"></ul><ul id="relationship-records"></ul>
   <details><summary>Поступки и сведения · просмотр автора</summary><ul id="social-event-records"></ul><ul id="social-knowledge-records"></ul><p class="hint">Само событие, наблюдение свидетеля и пересказ хранятся отдельно. Пропажа сама по себе не раскрывает виновника.</p></details>
   <details><summary>Убеждения персонажей · просмотр автора</summary><ul id="belief-records"></ul><p class="hint">Убеждение персонажа может быть ошибочным. Истина мира задаётся автором и событиями, отдельно от этих версий.</p></details>
 </aside>
+<aside id="actions-page" hidden aria-label="Каталог действий">
+  <div class="page-top"><span class="eyebrow">325 ВОЗМОЖНОСТЕЙ</span><button id="close-actions" type="button" class="secondary">К миру ←</button></div>
+  <h2>Ваш следующий ход</h2><p class="hint">Возможности зависят от мира, доступных вещей и отношений. Вопрос, замысел и выполненное действие различаются. В готовых историях уже есть предметы для разных занятий.</p>
+  <label>Найти действие<input id="action-search" type="search" placeholder="Верёвка, работа, разговор, 112…" autocomplete="off"></label><p id="action-count" class="hint" aria-live="polite"></p><ol id="action-catalog"></ol>
+</aside>
 <main id="chat-page">
-  <header><div><span class="eyebrow">МЕЖДУ СТРОК · 5.0</span><h2 id="story-title">Ваша история</h2></div><div class="header-actions"><span id="badge">● Офлайн</span><button id="open-world" type="button">Мир</button><button id="open-settings" type="button" aria-label="Открыть настройки">⚙</button></div></header>
+  <header><div><span class="eyebrow">МЕЖДУ СТРОК · 6.0</span><h2 id="story-title">Ваша история</h2></div><div class="header-actions"><span id="badge">● Офлайн</span><button id="open-world" type="button">Мир</button><button id="open-settings" type="button" aria-label="Открыть настройки">⚙</button></div></header>
   <p id="memory" class="hint" aria-live="polite"></p>
   <section id="messages" aria-label="Диалог" aria-live="polite"></section>
   <div class="compose"><p id="status" role="status">Запуск… Если кнопки не отвечают, откройте файл в браузере, а не в предпросмотре мессенджера.</p><form id="chat"><textarea id="message" aria-label="Ваш ответ" placeholder="Что вы скажете или сделаете?" rows="2" maxlength="6000" required></textarea><button id="send" type="submit">Отправить</button></form><p class="hint">Enter — отправить · Shift + Enter — новая строка</p></div>

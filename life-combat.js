@@ -1,0 +1,104 @@
+/* Optional needs, daily routines, material stealth and turn-based defensive choices. */
+(function(root){'use strict';
+  function create(C){
+    const {require:R,result:ok,props:P}=C;
+    const me=s=>s.world.player.body;
+    function injure(s,actor,part,damage){const b=actor==='player'?me(s):s.world.npcs[actor]?.body;if(!b)return;b.injuries[part]=(b.injuries[part]||0)+damage;b.health=Math.max(0,(actor==='player'?b.health:s.world.npcs[actor].health)-damage);if(actor!=='player'){const n=s.world.npcs[actor];n.health=b.health;if(!n.health)n.status='incapacitated';}C.event(s,'injury',{actorId:actor,part,damage});}
+    function firstAid(s,n,a={}){
+      const bandage=C.accessibleItems(s).find(e=>e.location==='inventory'&&(P(e).functions.includes('bandage')||/бинт|чистая ткань/.test(C.norm(e.label))));R(bandage,'bandage_required','Нужна чистая перевязка.');R(n.health<(n.maxHealth||3)||Object.keys(n.body.injuries).length,'patient_not_injured','Персонаж не нуждается в перевязке.');C.consume(s,bandage);n.health=Math.min(n.maxHealth||3,n.health+1);n.body.health=n.health;for(const k of Object.keys(n.body.injuries)){n.body.injuries[k]=Math.max(0,n.body.injuries[k]-1);if(!n.body.injuries[k])delete n.body.injuries[k];}if(n.health>0&&n.status==='incapacitated')n.status='recovering';C.event(s,'first_aid',{npcId:n.id,actorId:'player'});return n;
+    }
+    function armor(s,actor,damage){const worn=actor==='player'?s.world.player.equipment.worn:(s.world.npcs[actor]?.agency.armorIds||[]);let left=damage;for(const id of worn){const item=C.item(s,id);if(!item||P(item).durability<=0)continue;const absorbed=Math.min(left,P(item).armor||0);P(item).durability=Math.max(0,P(item).durability-absorbed*10);P(item).wear+=absorbed*2;left-=absorbed;}return Math.max(0,left);}
+    function combat(s){return s.world.rpg.combat;}
+    function strike(s,actor,target,damage=1,part='torso'){const fight=combat(s),hit={id:C.id(s,'strike'),actorId:actor,targetId:target,damage,part,created:s.world.rpg.clock.minute,status:'pending'};fight.pending.push(hit);C.event(s,'strike_prepared',hit);return hit;}
+    function identify(s,n){const b=me(s);if(!b.faceHidden)return true;if(n.agency.recognizesGait||n.memory.knownMaskIds?.includes(b.maskId))return true;return false;}
+    function handle(s,a){const b=me(s),q=C.norm(a.text),e=C.target(s,a),n=C.person(s,a,{explicit:true});
+      if(a.op==='body_status')return ok('Здоровье '+b.health+'/'+b.maxHealth+', силы '+Math.floor(b.stamina)+', голод '+Math.floor(b.hunger)+', жажда '+Math.floor(b.thirst)+', тепло '+Math.floor(b.warmth)+'. Положение: '+b.posture+'. Травмы: '+Object.keys(b.injuries).join(', ')+'.','body_reported',{performed:false});
+      if(a.op==='clock'){
+        const t=s.world.rpg.clock.minute,day=Math.floor(t/1440),hour=Math.floor(t%1440/60),minute=Math.floor(t%60),weekday=['понедельник','вторник','среда','четверг','пятница','суббота','воскресенье'][day%7];return ok('День '+(day+1)+', '+weekday+', '+String(hour).padStart(2,'0')+':'+String(minute).padStart(2,'0')+'. '+(hour<6?'Ночь.':hour<12?'Утро.':hour<18?'День.':'Вечер.'),'clock_reported',{performed:false,time:0});
+      }
+      if(a.op==='wait_time')return ok('Вы пропускаете '+C.amount(a.text,10)+' игровых минут. Мир продолжает жить.','time_waited',{time:Math.min(10080,Math.max(1,C.amount(a.text,10)))});
+      if(a.op==='sleep'||a.op==='rest'){
+        const minutes=a.op==='sleep'?C.amount(a.text,8)*60:C.amount(a.text,30);if(a.op==='sleep'){const bed=e&&(/кровать|ложе|матрас/.test(C.norm(e.label))||P(e).functions.includes('bed'));const lodging=s.world.rpg.rentals?.some(r=>r.locationId===s.world.player.location&&r.until>=s.world.rpg.clock.minute+minutes);R(bed||lodging,'sleep_place_required','Для полноценного сна нужна доступная кровать или оплаченное жильё.');}
+        const gain=a.op==='sleep'?minutes*.2:minutes*.5;b.stamina=Math.min(100,b.stamina+gain);b.posture=a.op==='sleep'?'sleeping':'resting';b.restedUntil=s.world.rpg.clock.minute+minutes;if(a.op==='sleep'&&minutes>=360){b.health=Math.min(b.maxHealth,b.health+1);b.sleepDebt=0;}return ok(a.op==='sleep'?'Вы спите указанное число часов. Часы мира и дела NPC продолжают идти.':'Вы отдыхаете, восстанавливая силы.','rest_completed',{time:minutes});
+      }
+      if(a.op==='eat'||a.op==='drink'){
+        R(e&&e.location==='inventory','food_not_carried','Нужны настоящие продукты или вода при вас.');if(a.op==='eat'){R(P(e).nutrition>0||P(e).functions.includes('food'),'not_food','Предмет не является пригодной едой.');b.hunger=Math.max(0,b.hunger-(P(e).nutrition||20));b.stamina=Math.min(100,b.stamina+(P(e).energyFood||5));if(P(e).toxic)b.illness={type:'poisoning',severity:2,started:s.world.rpg.clock.minute};b.lastMeal={itemId:e.id,kind:P(e).foodType||P(e).material};C.consume(s,e);}else{const liquid=P(e).liquid;R((liquid?.type==='water'&&liquid.amount>0)||P(e).hydration>0||C.norm(e.label)==='вода','not_drinkable','Пригодной для питья жидкости нет.');b.thirst=Math.max(0,b.thirst-(P(e).hydration||30));if(liquid)liquid.amount=Math.max(0,liquid.amount-.25);else C.consume(s,e);if(P(e).contaminated)b.illness={type:'infection',severity:1,started:s.world.rpg.clock.minute};}return ok('Ресурс употреблён. Самочувствие зависит от его свойств.','needs_replenished');
+      }
+      if(a.op==='cook'){const product=a.product||'суп',made=C.api.equipment.make(s,product);return ok('Приготовлено: '+made.label+'. Ингредиенты израсходованы.','food_cooked',{time:30,itemId:made.id});}
+      if(a.op==='treat_illness'){
+        R(b.illness,'not_ill','Заболевание не установлено.');const medicine=e&&P(e).functions.includes('medicine')?e:C.accessibleItems(s).find(v=>P(v).functions.includes('medicine'));R(medicine,'medicine_required','Нужно подходящее лекарство.');R(!P(medicine).treats||P(medicine).treats.includes(b.illness.type),'wrong_medicine','Это средство не лечит установленную болезнь.');C.consume(s,medicine);b.illness.severity--;if(b.illness.severity<=0)b.illness=null;return ok('Лечение уменьшило тяжесть болезни.','illness_treated',{time:20});
+      }
+      if(a.op==='wash'){
+        const water=C.accessibleItems(s).find(v=>P(v).liquid?.type==='water'&&P(v).liquid.amount>0||C.norm(v.label)==='вода');R(water||C.place(s).environment.waterSource,'water_required','Для мытья нужна доступная вода.');if(water?.physical.liquid)P(water).liquid.amount=Math.max(0,P(water).liquid.amount-.5);else if(water)C.consume(s,water);b.cleanliness=100;b.appearance='clean';return ok('Вы умываетесь. Чистота и внешний вид изменились.','washed',{time:10});
+      }
+      if(a.op==='maintenance'){
+        R(e&&e.location==='inventory','equipment_not_carried','Нужно ваше снаряжение.');R(C.api.equipment.tool(s,'repair')||C.accessibleItems(s).some(v=>/ткань|масло/.test(C.norm(v.label))),'maintenance_supply_required','Нужен материал для ухода.');P(e).wear=Math.max(0,P(e).wear-5);P(e).dirt=0;P(e).maintainedAt=s.world.rpg.clock.minute;return ok('Уход замедляет износ. Серьёзные поломки требуют ремонта.','equipment_maintained',{time:15});
+      }
+      if(a.op==='store_supplies'){
+        R(e,'supplies_required','Какие запасы вы размещаете?','clarification');const container=C.match(s,a.secondary||a.text,{filter:v=>v.id!==e.id&&P(v).capacity>0});R(container,'storage_required','Нужен реальный складской контейнер.');R(!container.ownerId||container.ownerId==='player','storage_not_owned','Нужно разрешение владельца хранилища.');const used=s.entities.filter(v=>v.containerId===container.id&&!v.destroyed).reduce((v,x)=>v+P(x).volume*C.qty(x),0);R(used+P(e).volume*C.qty(e)<=P(container).capacity,'storage_full','Запасы не помещаются.');e.containerId=container.id;e.location=container.location;container.opened=true;s.world.rpg.supplies||=[];if(!s.world.rpg.supplies.includes(e.id))s.world.rpg.supplies.push(e.id);return ok('Запасы размещены в контейнере с сохранением количества и срока годности.','supplies_stored');
+      }
+      if(a.op==='hide_cover'||a.op==='cover_move'){
+        R(e&&P(e).height>=.8&&P(e).opacity!==0,'cover_required','Нужно настоящее укрытие достаточной высоты.');if(a.op==='cover_move'){R(b.coverId,'not_in_cover','Сначала нужно занять укрытие.');R(C.api.physics.illumination(s)<.4||Object.values(s.world.npcs).filter(p=>p.location===s.world.player.location).every(p=>p.busyUntilTurn>=s.turn||p.social.attention==='busy'),'crossing_observed','Между укрытиями вас замечают.');}b.posture='crouching';b.coverId=e.id;b.position={...P(e).position,x:P(e).position.x+P(e).width/2+.3};s.facts.hidden=!Object.values(s.world.npcs).some(p=>C.api.physics.visible(s,p,a));return ok('Вы занимаете физическое укрытие. Линии обзора пересчитаны.','physical_cover_taken');
+      }
+      if(a.op==='distract_sound'){
+        R(e&&e.location==='inventory','throwable_required','Нужен реальный предмет для броска.');C.transfer(s,e,s.place);P(e).position={x:b.position?.x+5||5,y:0,z:0};C.event(s,'sound',{itemId:e.id,locationId:s.world.player.location,volume:1,position:P(e).position});for(const p of Object.values(s.world.npcs).filter(p=>p.location===s.world.player.location)){p.busyUntilTurn=s.turn+2;p.agency.attentionPoint={...P(e).position};}return ok('Шум привлекает внимание к месту падения предмета.','guard_distracted_by_sound');
+      }
+      if(a.op==='darken'){
+        R(e&&P(e).lit,'light_not_lit','Нужен действующий источник света.');P(e).lit=false;return ok('Источник света погашен. Видимость зависит от оставшегося освещения.','light_extinguished');
+      }
+      if(a.op==='disguise'){
+        const clothes=s.world.player.equipment.worn.map(id=>C.item(s,id)).filter(Boolean);R(clothes.some(v=>P(v).uniformRole),'uniform_required','Нужна подходящая надетая одежда с опознаваемым назначением.');b.disguise={role:clothes.find(v=>P(v).uniformRole).physical.uniformRole,quality:.5+C.skill(s,'acting')*.1,started:s.world.rpg.clock.minute};return ok('Одежда поддерживает роль. Знакомые люди и проверка поведения могут раскрыть маскировку.','disguise_assumed');
+      }
+      if(a.op==='mask'){
+        const mask=e&&(/маск|платок|капюшон/.test(C.norm(e.label))||P(e).functions.includes('mask'));R(mask&&e.location==='inventory','mask_required','Нужна реальная маска или ткань.');b.faceHidden=true;b.maskId=e.id;for(const p of Object.values(s.world.npcs).filter(p=>C.api.physics.visible(s,p,a))){p.memory.knownMaskIds||=[];if(!p.memory.knownMaskIds.includes(e.id))p.memory.knownMaskIds.push(e.id);}return ok('Лицо скрыто. Видевшие переодевание могут вас узнать; присутствие остаётся заметным.','face_masked');
+      }
+      if(a.op==='shadow'){
+        R(n&&n.location===s.world.player.location,'subject_absent','Следовать можно за находящимся рядом персонажем.');R(!C.api.physics.visible(s,n,a)||n.busyUntilTurn>=s.turn||C.skill(s,'stealth')>=2,'shadow_detected','Персонаж замечает, что вы собираетесь следить за ним.');b.shadowing={npcId:n.id,lastLocation:n.location,status:'following',history:[]};return ok('Вы начинаете слежку. При переходах потребуется реальный доступный маршрут.','shadow_started');
+      }
+      if(a.op==='set_trap'){
+        R(e&&e.location==='inventory'&&(P(e).functions.includes('trap')||P(e).functions.includes('tie')),'trap_material_required','Нужна ловушка или подходящая верёвка.');const trap={id:C.id(s,'trap'),locationId:s.world.player.location,materialId:e.id,ownerId:'player',subjectId:n?.id||null,armed:true,visible:false,damage:P(e).damage||0};C.transfer(s,e,s.place);e.hidden=true;s.world.rpg.traps.push(trap);return ok('Ловушка установлена. Она сработает при появлении цели в этом месте.','trap_armed');
+      }
+      if(a.op==='disarm_trap'){
+        const trap=s.world.rpg.traps.find(t=>t.armed&&t.locationId===s.world.player.location&&(t.visible||C.skill(s,'traps')>=1));R(trap,'no_detected_trap','Обнаруженной доступной ловушки нет.');R(C.api.equipment.tool(s,'unfasten')||C.api.equipment.tool(s,'cut')||C.skill(s,'traps')>=2,'disarm_tool_required','Для обезвреживания нужен инструмент или навык.');trap.armed=false;C.item(s,trap.materialId).hidden=false;return ok('Ловушка обезврежена, её материал остаётся на месте.','trap_disarmed');
+      }
+      if(a.op==='first_aid'){R(n&&n.location===s.world.player.location,'patient_absent','Пациента нет рядом.');firstAid(s,n,a);return ok('Вы оказываете первую помощь с расходом перевязки.','first_aid_given',{time:10});}
+      if(a.op==='combat_start'){
+        const targets=C.api.agency.npcList(s,a.text).filter(p=>p.location===s.world.player.location&&p.health>0);R(targets.length,'opponents_required','Нужны находящиеся рядом противники.');const f=combat(s);f.active=true;f.participants=['player',...targets.map(p=>p.id)];f.round=0;f.pending=[];for(const p of targets){strike(s,p.id,'player',P(C.item(s,p.agency.weaponId)).damage||1,'torso');}return ok('Конфликт начат. Противники готовят удары; можно защищаться, отступить или сдаться.','combat_started');
+      }
+      const f=combat(s);
+      if(['dodge','block','disarm','restrain','retreat','surrender','combat_attack','detain','deliver_detainee'].includes(a.op)){
+        if(a.op==='deliver_detainee'){
+          const prisoner=Object.values(s.world.npcs).find(p=>p.agency.detainedBy==='player'),guard=Object.values(s.world.npcs).find(p=>p.identity.role==='guard'&&p.location===s.world.player.location);R(prisoner&&guard,'law_or_prisoner_absent','Нужны задержанный и представитель закона рядом.');R(prisoner.location===s.world.player.location,'prisoner_not_delivered','Задержанный ещё не доставлен.');prisoner.agency.detainedBy=guard.id;prisoner.status='detained';C.event(s,'prisoner_delivered',{npcId:prisoner.id,guardId:guard.id});return ok('Задержанный передан представителю закона.','prisoner_delivered');
+        }
+        R(f.active,'no_active_combat','Сейчас нет активного боя.');const hit=f.pending.find(h=>h.status==='pending'&&h.targetId==='player'&&(!n||h.actorId===n.id));
+        if(a.op==='dodge'){R(hit,'no_pending_strike','Нет конкретного ожидающего удара.');R(!s.world.player.overloaded&&!b.injuries.legs&&b.stamina>=5,'cannot_dodge','Груз, травма или усталость мешают уклонению.');hit.status='dodged';b.stamina-=5;return ok('Вы уклоняетесь от выбранного удара.','strike_dodged');}
+        if(a.op==='block'){R(hit,'no_pending_strike','Нет ожидающего удара.');const held=[s.world.player.equipment.left,s.world.player.equipment.right].map(id=>C.item(s,id)).find(v=>v&&P(v).durability>0);R(held,'blocker_required','Нужен предмет в руке.');const absorbed=Math.min(hit.damage,P(held).block||1);P(held).durability=Math.max(0,P(held).durability-absorbed*15);hit.damage-=absorbed;hit.status=hit.damage<=0?'blocked':'pending';return ok('Предмет принимает удар и теряет прочность.','strike_blocked');}
+        if(a.op==='surrender'){f.active=false;for(const h of f.pending)if(h.status==='pending')h.status='ceased';b.surrendered=true;C.event(s,'combat_surrender',{actorId:'player'});return ok('Вы прекращаете сопротивление. Конфликт окончен сдачей.','surrendered');}
+        if(a.op==='retreat'){const exit=s.world.edges.find(edge=>edge.from===s.world.player.location&&C.route(s,edge.from,edge.to));R(exit,'escape_route_required','Нет доступного пути отступления.');const fast=!b.injuries.legs&&!s.world.player.overloaded;if(!fast&&hit){injure(s,'player',hit.part,armor(s,'player',hit.damage));hit.status='landed';}C.H.moveActor(s,'player',s.world.locations.find(l=>l.id===exit.to));f.active=false;f.outcome='retreated';return ok('Вы отступаете по доступному переходу.'+(fast?'':' Противник успевает задеть вас.'),'combat_retreated');}
+        R(n&&n.location===s.world.player.location&&n.health>0,'opponent_unavailable','Выбранный противник недоступен.');
+        if(a.op==='disarm'){const weapon=C.item(s,n.agency.weaponId);R(weapon&&weapon.location===n.id,'opponent_unarmed','У противника нет экипированного оружия.');R(b.stamina>=10&&!b.injuries.arms,'cannot_disarm','Нужны силы и здоровые руки.');C.transfer(s,weapon,s.place);n.agency.weaponId=null;b.stamina-=10;return ok('Оружие выбито на землю.','opponent_disarmed');}
+        if(a.op==='restrain'||a.op==='detain'){const rope=C.accessibleItems(s).find(v=>v.location==='inventory'&&P(v).functions.includes('tie'));R(rope,'restraint_required','Нужна верёвка или другое средство связывания.');R(n.health<=1||C.skill(s,'combat')>=2||n.agency.surrendered,'opponent_resisting','Противник ещё способен сопротивляться.');C.transfer(s,rope,n.id);n.agency.restrained=true;n.agency.detainedBy=a.op==='detain'?'player':null;n.status='restrained';for(const h of f.pending)if(h.actorId===n.id)h.status='ceased';return ok('Противник обездвижен и остаётся в сознании.','opponent_restrained');}
+        const weapon=[s.world.player.equipment.right,s.world.player.equipment.left].map(id=>C.item(s,id)).find(v=>v&&P(v).damage>0),damage=weapon?P(weapon).damage:1,part=/ног/.test(q)?'legs':/рук/.test(q)?'arms':'torso';injure(s,n.id,part,armor(s,n.id,damage));if(weapon){P(weapon).wear++;P(weapon).durability=Math.max(0,P(weapon).durability-2);}C.H.social.record(s,'assault',{id:s.currentActionId,actor:'player',text:a.text},{targetId:n.id,ownerId:n.id});f.round++;return ok('Удар нанесён; травма и защита учтены.','combat_strike_landed');
+      }
+      return null;
+    }
+    function after(s,a,r){if(r.performed===false)return;const physical=a.rpg&&['physics','equipment'].includes(a.rpg.system)&&!a.rpg.informational;if(physical&&r.status==='success'){me(s).stamina=Math.max(0,me(s).stamina-Math.min(10,(r.time||5)/5));me(s).cleanliness=Math.max(0,me(s).cleanliness-1);}}
+    function tick(s,elapsed){const b=me(s),now=s.world.rpg.clock.minute,env=C.place(s).environment;
+      if(s.world.rpg.enabled.needs&&elapsed>0){
+        b.hunger=Math.min(100,b.hunger+elapsed/12);b.thirst=Math.min(100,b.thirst+elapsed/8);const warmth=s.world.player.equipment.worn.reduce((v,id)=>v+(P(C.item(s,id)).insulation||0),0),cold=Math.max(0,10-env.temperature-warmth*10);b.warmth=Math.max(0,Math.min(100,b.warmth+(env.temperature>=15?elapsed/10:-cold*elapsed/60)));
+        if(b.hunger>70||b.thirst>70)b.stamina=Math.max(0,b.stamina-elapsed/15);if(b.thirst>=100||b.warmth<10)b.health=Math.max(0,b.health-elapsed/120);if(b.warmth<20&&elapsed>=60&&!b.illness)b.illness={type:'cold',severity:1,started:now};if(b.illness)b.stamina=Math.max(0,b.stamina-elapsed*b.illness.severity/30);
+      }
+      for(const n of Object.values(s.world.npcs)){
+        n.body.health=n.health;
+        const time=now%1440,schedule=n.agency.schedule.find(r=>r.start<=time&&r.end>time||r.start>r.end&&(time>=r.start||time<r.end));
+        if(schedule){n.agency.shopClosed=!!schedule.closed||schedule.activity==='sleeping';if(n.location!==schedule.locationId&&elapsed>=5){const t={status:'pending',history:[]};C.api.agency.travel(s,n,schedule.locationId,t);}if(n.location===schedule.locationId){n.agency.activity=schedule.activity;n.social.attention=schedule.activity==='sleeping'?'asleep':schedule.activity==='working'?'busy':'alert';}}
+        if(n.agency.detainedBy==='player'&&n.location!==s.world.player.location&&elapsed>=2){const dummy={status:'pending',history:[]};C.api.agency.travel(s,n,s.world.player.location,dummy);}
+      }
+      if(b.shadowing){const n=s.world.npcs[b.shadowing.npcId];if(n&&n.location!==b.shadowing.lastLocation){const path=C.route(s,s.world.player.location,n.location);if(path?.length===1){C.H.moveActor(s,'player',s.world.locations.find(l=>l.id===path[0]));b.shadowing.history.push({locationId:n.location,time:now});b.shadowing.lastLocation=n.location;}else b.shadowing.status='lost';}}
+      for(const trap of s.world.rpg.traps.filter(t=>t.armed)){const targets=trap.subjectId?[s.world.npcs[trap.subjectId]]:Object.values(s.world.npcs).filter(n=>n.location===trap.locationId);for(const n of targets.filter(Boolean))if(n.location===trap.locationId&&n.agency.lastTrapId!==trap.id){trap.armed=false;trap.triggeredBy=n.id;n.agency.lastTrapId=trap.id;n.agency.restrained=true;if(trap.damage)injure(s,n.id,'legs',trap.damage);C.event(s,'trap_triggered',{trapId:trap.id,npcId:n.id});break;}}
+      const f=combat(s);if(f.active){for(const hit of f.pending.filter(h=>h.status==='pending'&&h.created<now-5)){const actor=s.world.npcs[hit.actorId];if(actor?.health>0&&!actor.agency.restrained){const damage=armor(s,hit.targetId,hit.damage);if(damage)injure(s,hit.targetId,hit.part,damage);hit.status='landed';}else hit.status='ceased';}const living=f.participants.filter(id=>id!=='player'&&s.world.npcs[id]?.health>0&&!s.world.npcs[id]?.agency.restrained);if(!living.length||b.health<=0){f.active=false;f.outcome=b.health<=0?'defeat':'victory';C.event(s,'combat_ended',{outcome:f.outcome});}else if(elapsed>0)for(const id of living)if(!f.pending.some(h=>h.actorId===id&&h.status==='pending'))strike(s,id,'player',1,'torso');}
+    }
+    return {handle,after,tick,firstAid,injure,armor,identify,strike};
+  }
+  root.RpgLife={create};
+})(globalThis);

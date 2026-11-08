@@ -618,6 +618,7 @@
     const pending=s.world.player.pendingAction;
     if(pending&&plan.steps.length===1&&!plan.steps[0].recognized&&!legacyStarts(text)&&plan.steps[0].mode==='execute'&&words(text).length<=8){
       const completed=clone(pending.step);completed[pending.slot]=clean(text).replace(/[.!?]+$/,'');
+      if(completed.rpg){if(pending.slot==='destination')completed.rpg.secondary=clean(text);else completed.rpg.targetQuery=clean(text);completed.rpg.text+=' '+clean(text);}
       if(pending.slot==='actor'&&completed.recipient!== 'player')completed.recipient=null;
       completed.raw=pending.step.raw+' → '+clean(text);completed.dependsOnPrevious=false;
       delete completed.targetId;delete completed.destinationId;delete completed.targetLabel;
@@ -645,6 +646,7 @@
   }
   function semanticMode(s,c,action) {
     const step=c.semantic;
+    if(action.rpg)return simulation.rpg.mode(s,c,action);
     if(action.conversation||action.intent==='request_permission')return null;
     if(step?.unsupportedVerb){
       thread(s,'Не разобрано действие: '+step.raw,'unresolved:'+hash(step.raw));log(s,'intention',step.raw);
@@ -676,7 +678,7 @@
     return {...response,code:'capability_question',text:'Вы спрашиваете о действии: «'+target+'». '+detail+' Действие не выполнено.'};
   }
   function semanticAccess(s,c) {
-    if(c.conversation)return null;
+    if(c.conversation||c.rpg)return null;
     const step=c.semantic;
     if(step?.condition&&['execute','attempt','request'].includes(step.mode)){
       const person=Object.values(s.world.npcs).find(n=>root.StorySpatial.same(n.name,step.condition.name));
@@ -723,7 +725,8 @@
       let p=simulation.npcProfile(s,config,profile(config));
       const action=simulation.analyze(s,config,c,text);s.currentActionId=action.id;
       action.text=step.raw;action.semantic=c.semantic;action.dependsOnPrevious=step.dependsOnPrevious;
-      simulation.conversation.prepare(s,c,action);
+      simulation.rpg.prepare(s,c,action);
+      if(!action.rpg)simulation.conversation.prepare(s,c,action);
       const previousResult=results.at(-1);
       if(step.dependsOnPrevious&&previousResult&&((previousResult.status!=='success'&&!(previousResult.status==='partial_success'&&previousResult.completed))||previousResult.performed===false&&['execute','attempt','request'].includes(step.mode))){
         results.push({status:'refused',code:'dependency_failed',reason:'dependency_failed',skipped:true,performed:false,text:'Шаг «'+step.raw+'» не выполнен: предыдущее действие не завершено.',action,effects:[]});continue;
@@ -733,8 +736,9 @@
       if(view&&view.id!==s.world.boundNpcId){simulation.flush(s);simulation.bind(s,view.id);p=simulation.npcProfile(s,config,profile(config));}
       const before=simulation.snapshot(s);s.currentResolution={status:'success',code:'completed'};
       root.StoryMessages.begin(s);simulation.dialogue.before(s,c,action);
-      let r=semanticMode(s,c,action)||semanticAccess(s,c)||simulation.social.handle(s,p,c,action);
+      let r=semanticMode(s,c,action)||semanticAccess(s,c)||simulation.rpg.guard(s,c,action)||simulation.social.handle(s,p,c,action);
       c.allowTakingHeld=action.allowTakingHeld;
+      if(!r)r=simulation.rpg.handle(s,c,action);
       if(!r)r=simulation.handle(s,p,c,config,action);
       if(!r) {
         p=simulation.npcProfile(s,config,profile(config));
@@ -747,8 +751,10 @@
       r=simulation.developer.route(s,c,action,r);r.reason=r.code;
       if(r.performed!==false)simulation.after(s,p,c,action,r);
       else if(action.intent==='goal'&&simulation.dialogue.active(s,simulation.npc(s))&&s.facts.goal){const person=simulation.npc(s);if(person)person.memory.playerGoal=s.facts.goal;}
+      simulation.rpg.beforeSocial(s,before,c,action,r);
       simulation.social.after(s,before,c,action,r);
       simulation.conversation.observe(s,before,c,action,r);
+      simulation.rpg.after(s,before,c,action,r);
       r.action=action;r.effects=simulation.effects(s,before,action);
       root.StoryMessages.finish(s,r);
       results.push(r);intents.push(action.intent);s.lastIntent=c.negated?'refuse':action.intent;
@@ -762,7 +768,8 @@
     if(pendingAction)s.world.player.pendingAction=pendingAction;
     const p=simulation.npcProfile(s,config,profile(config));
     root.StoryMessages.begin(s);
-    const event=director(s,p,intents);simulation.flush(s);simulation.social.tick(s);simulation.presence(s);
+    const tickBefore=simulation.snapshot(s),event=director(s,p,intents);simulation.flush(s);simulation.rpg.tick(s);simulation.social.tick(s);simulation.presence(s);
+    if(results.length){const last=results.at(-1);last.effects.push(...simulation.effects(s,tickBefore,last.action).filter(e=>!last.effects.some(v=>v.id===e.id)));}
     const eventResult=root.StoryMessages.finish(s,{text:event});
     root.StoryMessages.begin(s);
     const metaBefore=simulation.snapshot(s),meta=simulation.developer.tick(s);
@@ -776,7 +783,7 @@
     if(goalAssessment?.status==='pending' && ['success','partial_success'].includes(status)){status='partial_success';narration.blocks.push({speaker:{type:'narrator'},trigger:'goal_assessment',text:goalAssessment.reason,effects:[]});output+='\n\n'+goalAssessment.reason;}
     const effects=results.flatMap(r=>r.effects||[]);
     const information={novel:results.some(r=>r.information?.novel),discoveries:[...new Set(results.flatMap(r=>r.information?.discoveries||[]))],opportunities:[...new Set(results.flatMap(r=>r.information?.opportunities||[]))]};
-    const outcome={status,goalAssessment,information,semanticPlan,results:results.map(r=>({status:r.status,code:r.code,reason:r.text,information:r.information||null,conversation:r.conversation||null,skipped:Boolean(r.skipped),performed:r.performed!==false,completed:Boolean(r.completed),action:r.action,effects:r.effects})),effects};
+    const outcome={status,goalAssessment,information,semanticPlan,results:results.map(r=>({status:r.status,code:r.code,reason:r.text,information:r.information||null,conversation:r.conversation||null,rpg:r.rpg||null,skipped:Boolean(r.skipped),performed:r.performed!==false,completed:Boolean(r.completed),action:r.action,effects:r.effects})),effects};
     if(results.length>1) {
       const plan={id:'turn-plan:'+s.turn,actor:'player',goal:results[0].action.goal,expectedEffect:results[0].action.expectedEffect,steps:outcome.results,status,goalAssessment,causes:effects.map(e=>e.id)};
       s.world.plans.push(plan);s.world.plans=s.world.plans.slice(-40);
@@ -786,7 +793,8 @@
     return {text:output,messages:narration.blocks,narrative:narration.blocks,memory:s,outcome,semantic:semanticPlan,results:outcome.results,analysis:outcome.results.map(r=>r.action)};
   }
   const simulation=root.StorySimulation.create({clean,norm,normalizedInput,words,stem,hash,clone,profile,matchEntity,addEntity,log,voice,resolveBarrier,containerText});
-  root.StoryEngine={version:VERSION,release:'5.0',fresh,reply,profile,restore:init,reframe,parse,clauses,
+  root.StoryEngine={version:VERSION,release:'6.0',fresh,reply,profile,restore:init,reframe,parse,clauses,
+    suggestions(memory){return simulation.rpg.suggestions(memory);},
     resolve(config,memory,text){const s=init(config,memory);return semantic.resolve(text,{...semantic.context(s),legacyStarts});},
     analyze(config,memory,text){const s=init(config,memory);return resolveInput(s,text).steps.map(step=>simulation.analyze(s,config,semanticCommand(step,s),text));},
     map(memory){return simulation.map(memory);}};

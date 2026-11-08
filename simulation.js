@@ -66,7 +66,7 @@
     }
     function init(s,p,config) {
       const reusable=s.world?.schema===4&&Array.isArray(s.world.locations)&&Array.isArray(s.world.edges)&&s.world.player&&s.world.npcs&&Array.isArray(s.world.events)&&Array.isArray(s.world.deferred)&&s.world.locations.some(l=>l.id===s.world.player.location);
-      if(reusable && JSON.stringify(s.world.authorCanon)===JSON.stringify(config)) { dialogue.init(s);bind(s,s.world.boundNpcId);s.place=byLoc(s,s.world.player.location).name;presence(s);scenes.init(s,p,config);social.init(s,config);developer.init(s,config);conversation.init(s,config);for(const e of s.entities){annotate(s,e,p);syncEntityTruth(s,e,'canon');}return; }
+      if(reusable && JSON.stringify(s.world.authorCanon)===JSON.stringify(config)) { dialogue.init(s);bind(s,s.world.boundNpcId);s.place=byLoc(s,s.world.player.location).name;presence(s);scenes.init(s,p,config);social.init(s,config);developer.init(s,config);conversation.init(s,config);rpg.init(s,config);for(const e of s.entities){annotate(s,e,p);syncEntityTruth(s,e,'canon');}return; }
       const old=s.world;const previousPlace=s.place;
       const w={schema:4,authorCanon:clone(config),locations:[],edges:[],npcs:{},activeNpcId:null,player:{location:null,previousLocation:null,counters:{},variants:{},money:0},facts:{},events:[],nextEvent:1,plans:[],deferred:[],loops:{work:{status:'idle',serial:0},exploration:{visited:[],discoveries:[]},social:{contacts:[]}},storyUsed:{}};
       s.world=w;
@@ -135,7 +135,7 @@
         addEntity(s,label,{id:'stock:'+hash(label),location:merchant.id,source:'stock',kind:'tool',portable:true,price,stockOwner:merchant.id});
       }
       for(const e of s.entities){annotate(s,e,p);syncEntityTruth(s,e,'canon');}
-      dialogue.init(s);w.loops.exploration.visited.push(current.id);bind(s,main.id);presence(s);scenes.init(s,p,config);social.init(s,config);developer.init(s,config);conversation.init(s,config);for(const e of s.entities){annotate(s,e,p);syncEntityTruth(s,e,'canon');}
+      dialogue.init(s);w.loops.exploration.visited.push(current.id);bind(s,main.id);presence(s);scenes.init(s,p,config);social.init(s,config);developer.init(s,config);conversation.init(s,config);rpg.init(s,config);for(const e of s.entities){annotate(s,e,p);syncEntityTruth(s,e,'canon');}
     }
     function annotate(s,e,p) {
       if(e.portable===undefined)e.portable=!['fixed','barrier'].includes(e.kind)||/ларец|сундук|ящик|шкатулк/.test(norm(e.label));
@@ -189,7 +189,7 @@
     function syncEntityTruth(s,e,source='event') {
       for(const key of ['location','opened','locked','destroyed','hidden','condition','pinInstalled','moved','containerId','supportId','openingDegree'])truth(s,'entity:'+e.id+':'+key,e[key]??false,source);
     }
-    function snapshot(s){return clone({entities:s.entities,inventory:s.inventory,clocks:s.clocks,stage:s.stage,player:s.world.player,work:s.world.loops.work,relationships:Object.values(s.world.npcs).map(n=>({id:n.id,trust:n.trust,tension:n.tension,location:n.location,health:n.health,status:n.status,relationship:n.social?.relationship})),npcBeliefs:Object.fromEntries(Object.values(s.world.npcs).map(n=>[n.id,n.beliefs])),facts:s.world.facts});}
+    function snapshot(s){return clone({entities:s.entities,inventory:s.inventory,clocks:s.clocks,stage:s.stage,player:s.world.player,work:s.world.loops.work,rpg:s.world.rpg,relationships:Object.values(s.world.npcs).map(n=>({id:n.id,trust:n.trust,tension:n.tension,location:n.location,health:n.health,status:n.status,relationship:n.social?.relationship})),npcBeliefs:Object.fromEntries(Object.values(s.world.npcs).map(n=>[n.id,n.beliefs])),facts:s.world.facts});}
     function observeProperty(s,e,key,value,action) {
       for(const n of Object.values(s.world.npcs)) {
         if(!social.permitsObservation(s,n,e,action))continue;
@@ -207,7 +207,7 @@
       }
     }
     function effects(s,before,action) {
-      for(const e of s.entities){const old=before.entities.find(v=>v.id===e.id);const parent=e.containerId&&s.entities.find(v=>v.id===e.containerId);const oldParent=parent&&before.entities.find(v=>v.id===parent.id);if(old&&parent&&e.location!==old.location&&parent.location===oldParent?.location)delete e.containerId;}
+      for(const e of s.entities){const old=before.entities.find(v=>v.id===e.id);const parent=e.containerId&&s.entities.find(v=>v.id===e.containerId);const oldParent=parent&&before.entities.find(v=>v.id===parent.id);if(old&&parent&&e.containerId===old.containerId&&e.location!==old.location&&parent.location===oldParent?.location)delete e.containerId;}
       for(let depth=0;depth<8;depth++)for(const e of s.entities){const parent=e.containerId&&s.entities.find(v=>v.id===e.containerId);if(parent){e.location=parent.location;if(parent.destroyed||parent.opened&&parent.openingDegree!=='slightly'){e.hidden=false;e.known=true;}}}
       for(const e of s.entities) {
         annotate(s,e,profile(s.world.authorCanon));
@@ -223,6 +223,7 @@
       }
       for(const key of ['danger','discovery'])if(before.clocks[key]!==s.clocks[key]){emit(s,'clock_'+key,key,before.clocks[key],s.clocks[key],action.id);truth(s,'clock:'+key,s.clocks[key]);}
       if(before.player.location!==s.world.player.location)emit(s,'player_move','player',before.player.location,s.world.player.location,action.id);
+      rpg.effects(s,before,action);
       scenes.changed(s,before,action);
       return s.world.events.filter(e=>e.cause===action.id);
     }
@@ -657,13 +658,14 @@
       const achieved=Boolean(n&&n.trust>=1&&!openGrievances(n).length);
       return {status:achieved?'achieved':'pending',goal:relevant[0].action.goal,recipientId:recipient,observedTrust:n?.trust??null,openConflicts:openGrievances(n).map(g=>g.id),reason:achieved?'Достигнуты условия сотрудничества.':'Предмет мог быть передан, но требуемое доверие пока не достигнуто.'};
     }
-    function map(s){return {current:s.world.player.location,locations:s.world.locations.map(v=>({...v,people:Object.values(s.world.npcs).filter(n=>n.location===v.id).map(n=>n.name)})),edges:clone(s.world.edges),exits:exits(s)};}
+    function map(s){return {current:s.world.player.location,locations:s.world.locations.map(v=>({...v,people:Object.values(s.world.npcs).filter(n=>n.location===v.id&&!n.hidden).map(n=>n.name)})),edges:clone(s.world.edges),exits:exits(s)};}
     const dialogue=root.StoryDialogue.create({emit});
     const developer=root.DeveloperIntervention.create({...H,emit});
-    const social=root.StorySocial.create({...H,emit,truth,findNpc,findLocation,here,npc,flush,bind,moveActor,conflict,openGrievances,reconcile,dialogue});
+    const social=root.StorySocial.create({...H,emit,truth,findNpc,findLocation,here,npc,flush,bind,moveActor,conflict,openGrievances,reconcile,dialogue,visiblePhysical:(s,n,a)=>s.world.rpg?rpg.visible(s,n,a):true,recognizeActor:(s,n)=>!s.world.rpg||rpg.identify(s,n)});
     const conversation=root.StoryConversation.create({...H,emit,dialogue,npc,here,openGrievances,social});
+    const rpg=root.StoryRpg.create({...H,emit,truth,findNpc,findLocation,makeNpc,moveActor,containerAccess,dialogue,social,conversation,npc,here,flush,bind,hear,proposition});
     const spatial=root.StorySpatial.create({...H,emit,containerAccess});
     const scenes=root.StoryScenes.create({...H,npc,here,findLocation,openGrievances,emit,truth,containerAccess,spatial,dialogue,sayNpc:(s,n,text,trigger)=>dialogue.say(s,n,text,trigger)});
-    return {dialogue,developer,social,conversation,containerAccess,inspectScene:scenes.inspect,openedText:scenes.openedText,init,analyze,handle,after,flush,bind,presence,npc,npcProfile,openGrievances,snapshot,effects,runDue,map,assessGoal,proposition,emit,truth,annotate,statuses,result};
+    return {dialogue,developer,social,conversation,rpg,containerAccess,inspectScene:scenes.inspect,openedText:scenes.openedText,init,analyze,handle,after,flush,bind,presence,npc,npcProfile,openGrievances,snapshot,effects,runDue,map,assessGoal,proposition,emit,truth,annotate,statuses,result};
   }};
 })(globalThis);

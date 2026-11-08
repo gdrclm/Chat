@@ -104,6 +104,7 @@
     {"number": 100, "id": "expectations", "label": "Отношение к герою", "depth": 2, "questions": ["Чего вы ждёте от меня?", "Зачем вам моё участие?"]}
   ];
   const byId=Object.fromEntries(topics.map(topic=>[topic.id,topic]));
+  byId.hobbies.questions.push('Есть увлечение?');byId.music.questions.push('Какую музыку любите?');byId.secret.questions.push('Раскройте свой секрет');
   const norm=text=>String(text||'').toLowerCase().replace(/ё/g,'е').replace(/[«»“”"?!.,:;—–]/g,' ').replace(/\s+/g,' ').trim();
   function normalized(text){return norm(text).replace(/(?:^| )(?:пожалуйста|пожалуй|скажите|скажи)(?= |$)/gu,' ').replace(/(?:^| )(?:вы|вас|вам|вами|ты|тебя|тебе|тобой)(?= |$)/gu,' ты').replace(/(?:ваше|ваш|ваша|ваши|твое|твой|твоя|твои)/gu,'свой').replace(/\s+/g,' ').trim();}
   const patterns={
@@ -128,7 +129,7 @@
     for(const person of context.people||[]){const escaped=person.name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');text=text.replace(new RegExp('^'+escaped+'\\s*[:,]\\s*','iu'),'');}
     text=text.replace(/^(?:я\s+)?(?:спрашиваю|спросить)\s+(?:[^«:"?]+?:\s*|[^«"?]+?\s+о\s+)?[«"]?/iu,'').replace(/[»"]$/u,'');
     const q=familiar(text),base=normalized(text),last=context.activeTopic;
-    if(/^(?:а )?(?:почему|зачем|расскаж(?:и|ите) подробнее|подробнее|что.*имеешь в виду|что.*имеете в виду|а раньше|раньше|и что случилось потом|что было потом|(?:вы|ты) уверен(?:а|ы)?|а у.*самой|а у.*самого|а если я не соглашусь)$/u.test(base)){
+    if(/^(?:а )?(?:почему|зачем|расскаж(?:и|ите) подробнее|подробнее|что это значит|что.*имеешь в виду|что.*имеете в виду|а раньше|раньше|и что случилось потом|что было потом|(?:вы|ты) уверен(?:а|ы)?|а у.*самой|а у.*самого|а если я не соглашусь)$/u.test(base)){
       let followUp=/раньше/.test(base)?'past':/почему|зачем/.test(base)?'reason':/уверен/.test(base)?'certainty':/не соглаш/.test(base)?'disagree':/самой|самого/.test(base)?'personal_experience':/потом/.test(base)?'next':'elaborate';
       const parent=byId[last?.split('.')[0]]||byId[last]||null;
       return {topicId:last||null,parentId:parent?.id||null,followUp,confidence:1,raw:input,contextRequired:!last};
