@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ru" data-version="4.3">
+<html lang="ru" data-version="4.4">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content"><title>Между строк — локальная история</title><style>:root{color-scheme:dark;font-family:system-ui,-apple-system,sans-serif;color:#e8e5dd;background:#151917;font-size:14px;--app-height:100dvh;--app-top:0px}*{box-sizing:border-box}[hidden]{display:none!important}html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:none}body{position:fixed;top:var(--app-top);height:var(--app-height);left:0}button,input,textarea{font:inherit}button{cursor:pointer;touch-action:manipulation;border:0;border-radius:12px;padding:12px 16px;min-height:44px;background:#c4d5a5;color:#20291c}button:disabled{opacity:.5}button:focus-visible{outline:2px solid #fff;outline-offset:3px}main{width:100%;max-width:900px;margin:auto;height:100%;display:flex;flex-direction:column;min-height:0;padding-top:env(safe-area-inset-top)}header{flex-shrink:0;padding:18px 24px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #30372e;gap:12px}.eyebrow{font-size:10px;letter-spacing:2px;color:#a6b992}h2{font:24px Georgia,serif;margin:6px 0 0}.header-actions{display:flex;align-items:center;gap:12px}#badge{font-size:11px;color:#bacc9d;white-space:nowrap}#open-settings,.secondary{background:#303d2c;color:#d8e5cb}.hint{font-size:11px;line-height:1.5;color:#929d91}#memory{margin:0;padding:10px 24px;border-bottom:1px solid #30372e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0}#messages{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:24px;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}.intro{max-width:440px;margin:6vh auto;line-height:1.8;color:#929d91}.intro h3{font:28px Georgia,serif;color:#e1e5d8}article{margin-bottom:18px;max-width:92%;padding:16px 20px;background:#222a22;border:1px solid #333e30;border-radius:3px 16px 16px}article.user{margin-left:auto;background:#2f3829;border-color:#45503a;border-radius:16px 3px 16px 16px}article small{font-size:9px;letter-spacing:2px;color:#b6c89c}article p{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.7;margin:8px 0 0}.compose{flex-shrink:0;padding:0 20px max(10px,env(safe-area-inset-bottom));background:#151917}#status{color:#d8c899;font-size:12px;margin:6px 0;line-height:1.4}#status:empty{display:none}#chat{display:flex;align-items:end;gap:8px;background:#20271f;padding:8px;border:1px solid #46513c;border-radius:16px}#message{min-width:0;flex:1;color:#e8e5dd;font-size:16px;background:transparent;border:0;outline:none;margin:0;padding:10px;resize:none;max-height:100px}#send{flex-shrink:0}.compose>.hint{margin:6px 0 0;text-align:center}aside{height:100%;max-width:640px;margin:auto;overflow-y:auto;padding:24px 24px max(24px,env(safe-area-inset-bottom));padding-top:max(20px,env(safe-area-inset-top));background:#1d231f;overscroll-behavior:contain}.page-top{display:flex;align-items:center;justify-content:space-between;gap:12px}h1{font:38px Georgia,serif;margin:22px 0 12px}h1 br{display:none}h1 span{color:#c4d5a5;margin-left:16px}.muted{color:#929d91}label{display:block;font-size:13px;color:#bac5b5;margin:18px 0}input,textarea{width:100%;background:#151b17;border:1px solid #394336;border-radius:10px;padding:12px;color:#e8e5dd;font-size:16px;margin-top:8px}input:focus,textarea:focus{outline:1px solid #c4d5a5}#settings .secondary{width:100%}.text-button{background:transparent;color:#c4d5a5}.no-script{position:fixed;inset:20px;background:#222a22;padding:24px;z-index:20}@media(max-width:600px){header{padding:12px 16px}h2{font-size:20px}.eyebrow{font-size:9px}.header-actions{gap:8px}#badge{display:none}#open-settings{font-size:12px;padding:10px}#messages{padding:16px}#memory{padding:8px 16px;font-size:10px}.compose{padding-left:10px;padding-right:10px}#send{font-size:12px;padding:12px}article{padding:14px;max-width:95%}.compose>.hint{display:none}.intro{margin:4vh auto}.intro h3{font-size:25px}}@media(max-height:450px){header{padding:6px 12px}header .eyebrow,#memory{display:none}h2{font-size:18px;margin:0}.intro{margin:0 auto}.compose>.hint{display:none}}
 
 .memory-panel{border-top:1px solid #394336;margin-top:24px;padding-top:20px}.memory-panel h3{font-size:13px;color:#c4d5a5;margin-top:20px}.memory-panel ul{padding-left:20px;line-height:1.7;color:#bac5b5;font-size:12px}.memory-panel li{margin:8px 0;overflow-wrap:anywhere}header>div:first-child{min-width:0}#story-title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -7,6 +7,8 @@
 .world-buttons{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}.world-buttons button{background:#303d2c;color:#d8e5cb}#world-page h2{margin:24px 0 12px}#world-page h3{font-size:14px;color:#c4d5a5;margin-top:24px}#world-page ul{padding-left:18px;line-height:1.7;color:#bac5b5}#world-page li{margin:10px 0;overflow-wrap:anywhere}article .outcome-label{display:block;letter-spacing:0;margin-top:14px;color:#a8c389}.outcome-label[data-status=refused]{color:#deb49e}.outcome-label[data-status=clarification]{color:#d8c899}article details{margin-top:12px;font-size:12px;color:#b8c2b0}article summary{cursor:pointer;min-height:28px}article .action-detail{font-size:12px;line-height:1.6}#open-world{background:#303d2c;color:#d8e5cb;font-size:12px;padding:10px}header .header-actions{flex-shrink:0;gap:6px}
 
 .debug-toggle{display:flex;align-items:center;gap:10px;line-height:1.5}.debug-toggle input{width:20px;height:20px;margin:0;flex-shrink:0}#learned-facts{font-size:12px}article .action-detail{overflow-wrap:anywhere}
+
+.utterance + .utterance{margin-top:14px}.utterance p{margin-bottom:0}.speaker-npc{border-left:3px solid #77b8a3;padding-left:12px}.speaker-npc small{color:#9fddc6}.speaker-developer{border-left:3px solid #d7a9f4;padding:10px 12px;background:#302538;border-radius:6px}.speaker-developer small{color:#e1bdf9}
 </style></head>
 <body>
 <aside id="settings-page" hidden aria-label="Настройки истории">
@@ -38,11 +40,12 @@
   <h3>Исследование и знания</h3><p id="exploration-progress" class="hint"></p><ul id="learned-facts"></ul><details><summary>Изученные свойства предметов</summary><ul id="known-properties"></ul></details>
   <h3>Дела и деньги</h3><p id="world-work"></p><p class="hint">На рынке и в мастерской можно искать работу. Загадку лавки для этого решать не требуется.</p>
   <h3>Отложенные действия</h3><ul id="deferred-actions"></ul>
-  <h3>Отношения и причины конфликтов</h3><ul id="relationship-records"></ul>
+  <h3>Отношения и причины конфликтов</h3><ul id="relationship-values"></ul><ul id="relationship-records"></ul>
+  <details><summary>Поступки и сведения · просмотр автора</summary><ul id="social-event-records"></ul><ul id="social-knowledge-records"></ul><p class="hint">Само событие, наблюдение свидетеля и пересказ хранятся отдельно. Пропажа сама по себе не раскрывает виновника.</p></details>
   <details><summary>Убеждения персонажей · просмотр автора</summary><ul id="belief-records"></ul><p class="hint">Убеждение персонажа может быть ошибочным. Истина мира задаётся автором и событиями, отдельно от этих версий.</p></details>
 </aside>
 <main id="chat-page">
-  <header><div><span class="eyebrow">МЕЖДУ СТРОК · 4.3</span><h2 id="story-title">Ваша история</h2></div><div class="header-actions"><span id="badge">● Офлайн</span><button id="open-world" type="button">Мир</button><button id="open-settings" type="button" aria-label="Открыть настройки">⚙</button></div></header>
+  <header><div><span class="eyebrow">МЕЖДУ СТРОК · 4.4</span><h2 id="story-title">Ваша история</h2></div><div class="header-actions"><span id="badge">● Офлайн</span><button id="open-world" type="button">Мир</button><button id="open-settings" type="button" aria-label="Открыть настройки">⚙</button></div></header>
   <p id="memory" class="hint" aria-live="polite"></p>
   <section id="messages" aria-label="Диалог" aria-live="polite"></section>
   <div class="compose"><p id="status" role="status">Запуск… Если кнопки не отвечают, откройте файл в браузере, а не в предпросмотре мессенджера.</p><form id="chat"><textarea id="message" aria-label="Ваш ответ" placeholder="Что вы скажете или сделаете?" rows="2" maxlength="6000" required></textarea><button id="send" type="submit">Отправить</button></form><p class="hint">Enter — отправить · Shift + Enter — новая строка</p></div>
@@ -87,7 +90,7 @@
       return refs[0]?{reference:{...refs[0]}}:{error:'unknown_spatial_target'};
     }
     let parents=spec.parent?entities(memory,spec.parent):memory.focus?memory.entities.filter(e=>e.id===memory.focus):[];
-    const local=parents.filter(e=>[memory.place,'inventory',memory.world.activeNpcId].includes(e.location));if(local.length)parents=local;
+    const local=parents.filter(e=>[memory.place,'inventory',memory.world.boundNpcId].includes(e.location));if(local.length)parents=local;
     if(parents.length!==1)return {error:parents.length?'ambiguous_target':'unknown_parent',parent:spec.parent};
     const parent=parents[0],label=norm(parent.label);
     const supported=spec.part==='surface'||spec.part==='lid'&&/ларец|сундук|ящик|шкатулк|сейф|короб|банка/.test(label)||spec.part==='handle'&&/двер|шкаф|окно|ящик/.test(label)||spec.part==='leg'&&/стол|стул|верстак/.test(label)&&!/без нож|нет нож/.test(label+' '+norm(parent.description));
@@ -167,7 +170,7 @@
   }
   function compose({intro='',results=[],event=''}){
     const blocks=[];
-    if(clean(intro))blocks.push({kind:'intro',text:clean(intro)});
+    if(clean(intro))blocks.push({kind:'intro',speaker:{type:'narrator'},trigger:'story_start',effects:[],text:clean(intro)});
     for(let index=0;index<results.length;index++){
       const result=results[index];const next=results[index+1];
       const nextSurvey=next?.status==='success'&&next.action?.dependsOnPrevious&&['INSPECT','SEARCH'].includes(next.action.semantic?.intent)&&next.action.semantic.locationId&&(next.narration?.some(block=>block.kind==='location')||next.code==='already_observed');
@@ -177,14 +180,441 @@
         if(block.kind==='location'&&clean(intro).includes(clean(block.text)))continue;
         if(!clean(block.text))continue;
         const previous=blocks.at(-1);
-        if(previous&&previous.kind===block.kind&&previous.locationId===block.locationId&&normalized(previous.text)===normalized(block.text))continue;
-        blocks.push({...block,text:clean(block.text),stepIndex:index});
+        if(previous&&previous.speaker?.type===(block.speaker?.type||'narrator')&&previous.speaker?.id===block.speaker?.id&&previous.kind===block.kind&&previous.locationId===block.locationId&&normalized(previous.text)===normalized(block.text))continue;
+        blocks.push({speaker:{type:'narrator'},trigger:'action_result',effects:[],...block,text:clean(block.text),stepIndex:index});
       }
     }
-    if(clean(event))blocks.push({kind:'event',text:clean(event)});
-    return {text:blocks.map(block=>block.text).join('\n\n'),blocks};
+    if(Array.isArray(event))blocks.push(...event);else if(clean(event))blocks.push({kind:'event',speaker:{type:'narrator'},trigger:'world_event',text:clean(event),effects:[]});
+    return {text:root.StoryMessages?root.StoryMessages.plain(blocks):blocks.map(block=>block.text).join('\n\n'),blocks};
   }
   root.StoryNarrator={locationDescription,compose};
+})(globalThis);
+</script>
+<script>/* Explicit speaker records; legacy action builders interpolate opaque, per-step references. */
+(function(root){
+  'use strict';
+  let sequence=0;
+  const narrator={type:'narrator'};
+  function begin(s){s.currentMessages=[];s.messageNonce=++sequence+':'+Math.random().toString(36).slice(2);}
+  function say(s,speaker,text,trigger,options={}){
+    if(!s.currentMessages)begin(s);
+    const token='\uE000'+s.messageNonce+':'+s.currentMessages.length+'\uE001';
+    s.currentMessages.push({token,speaker:{...speaker},trigger,text:String(text),effects:[],...options});return token;
+  }
+  function finish(s,result){
+    const records=s.currentMessages||[],used=new Set(),blocks=[];
+    const expand=(text,metadata={})=>{
+      const source=String(text||'');let at=0;
+      const matches=records.map(row=>({row,index:source.indexOf(row.token)})).filter(v=>v.index>=0).sort((a,b)=>a.index-b.index);
+      for(const {row,index}of matches){
+        if(index<at)continue;
+        const before=source.slice(at,index).trim();if(before)blocks.push({...metadata,speaker:narrator,trigger:metadata.trigger||'action_result',text:before,effects:[]});
+        if(row.manner)blocks.push({kind:'manner',speaker:narrator,trigger:row.trigger,text:row.manner,effects:[]});
+        const {token,manner,...message}=row;blocks.push({kind:'speech',...metadata,...message});used.add(token);at=index+token.length;
+      }
+      const rest=source.slice(at).trim();if(rest)blocks.push({...metadata,speaker:metadata.speaker||narrator,trigger:metadata.trigger||'action_result',text:rest,effects:metadata.effects||[]});
+    };
+    for(const block of result.narration||[{kind:'action',text:result.text}]){const {text,...metadata}=block;expand(text,metadata);}
+    for(const row of records)if(!used.has(row.token))expand(row.token);
+    for(const block of blocks)if(!block.effects?.length)block.effects=(result.effects||[]).map(effect=>effect.id);
+    result.narration=blocks;result.text=plain(blocks);delete s.currentMessages;delete s.messageNonce;return result;
+  }
+  function plain(messages){return messages.map(row=>row.speaker?.type==='npc'?(row.speaker.name||'Персонаж')+':\n«'+row.text+'»':row.speaker?.type==='developer'?'Разработчик:\n'+row.text:row.text).join('\n\n');}
+  root.StoryMessages={begin,say,finish,plain};
+})(globalThis);
+</script>
+<script>/* Contact, conversation and justified initiative are independent from physical presence. */
+(function(root){
+  'use strict';
+  const norm=text=>String(text||'').toLowerCase().replace(/ё/g,'е');
+  const reactions=new Set(['witness_event','private_boundary','permission_request','plot_initiative','greeting_requested','reparation','source_shared']);
+  function create(H){
+    const {emit}=H;
+    const here=(s,n)=>Boolean(n&&n.location===s.world.player.location&&!n.hidden&&!['incapacitated','dead'].includes(n.status));
+    function init(s){
+      const migrating=s.world.dialogueVersion!==1;
+      if(migrating){s.world.boundNpcId=s.world.activeNpcId||s.world.primaryNpcId;s.world.activeNpcId=null;s.world.dialogueVersion=1;}
+      for(const n of Object.values(s.world.npcs))n.dialogueState||={status:migrating&&s.world.loops.social.contacts.includes(n.id)?'ended':'undiscovered',contactTurn:null,lastTrigger:null,initiatives:[]};
+      if(s.world.activeNpcId&&!here(s,s.world.npcs[s.world.activeNpcId]))close(s,'separated');
+    }
+    function notice(s,n){if(n?.dialogueState.status==='undiscovered'){n.dialogueState.status='noticed';n.dialogueState.noticedTurn=s.turn;}}
+    function start(s,n,trigger='player_addressed'){
+      if(!here(s,n))return false;notice(s,n);const state=n.dialogueState;
+      if(s.world.activeNpcId&&s.world.activeNpcId!==n.id)close(s,'switched');
+      if(state.status!=='active'){state.contactTurn??=s.turn;state.startedTurn=s.turn;state.status='active';emit(s,'dialogue_started',n.id,null,{trigger});}
+      state.lastTrigger=trigger;s.world.activeNpcId=n.id;return true;
+    }
+    function close(s,reason='ended'){
+      const n=s.world.npcs[s.world.activeNpcId];if(n){n.dialogueState.status=['attention_shift','working'].includes(reason)?'suspended':'ended';n.dialogueState.endedTurn=s.turn;n.dialogueState.lastTrigger=reason;emit(s,'dialogue_ended',n.id,null,{reason});}
+      s.world.activeNpcId=null;
+    }
+    function active(s,n){return Boolean(here(s,n)&&s.world.activeNpcId===n.id&&n.dialogueState.status==='active');}
+    function addressed(c,a){
+      if(c.negated||c.hypothetical||['negated','hypothetical','report'].includes(c.semantic?.mode))return false;
+      if(a.intent==='request_permission')return true;
+      if(c.semantic?.recognized&&c.semantic.intent!=='TALK'&&['question','intention','hypothetical','negated','report'].includes(c.semantic.mode))return false;
+      if(a.intent==='return_property'&&/незаметно|тайно/.test(norm(c.originalText||c.text)))return false;
+      if(a.intent==='goal')return /поговор|познаком|побесед/.test(norm(c.originalText||c.text));
+      return ['greet','talk','question','identity','name','remember','thanks','apology','help','bargain','insult','threat','claim','agree','refuse','select_npc','find_job','collect_pay','buy','give','show','deliver_job','request_plan','request_npc','borrow','rent','pay_fine','return_property','compensate','confess','report_event','promise'].includes(a.intent)||c.speech;
+    }
+    function before(s,c,a){
+      if(a.semantic?.unsupportedVerb)return;
+      if(a.intent==='end_dialogue'){close(s,'ended');return;}
+      if(['move','return','approach','work','repair','repair_craft','repair_install','inspect'].includes(a.intent)&&!addressed(c,a)){if(s.world.activeNpcId)close(s,['move','return'].includes(a.intent)?'separated':a.intent==='work'?'working':'attention_shift');return;}
+      if(!addressed(c,a))return;
+      const id=a.intent==='request_npc'?a.actor:a.recipientId||s.world.boundNpcId;
+      if(id!=='player')start(s,s.world.npcs[id],'player_addressed');
+    }
+    function canSpeak(s,n,trigger){return here(s,n)&&(active(s,n)||reactions.has(trigger));}
+    function say(s,n,text,trigger='dialogue',options={}){
+      if(!canSpeak(s,n,trigger))return '';
+      if(/[ая]$/iu.test(n.name)&&!/^(?:Никита|Илья|Кузьма|Савва|Лука)$/iu.test(n.name)){const endings={видел:'видела',заметил:'заметила',услышал:'услышала',готов:'готова',получил:'получила',запомнил:'запомнила'};text=text.replace(/[А-Яа-яЁё]+/gu,word=>endings[norm(word)]||word);}
+      notice(s,n);
+      if(reactions.has(trigger)&&!active(s,n)){
+        n.dialogueState.initiatives.push({turn:s.turn,trigger});n.dialogueState.initiatives=n.dialogueState.initiatives.slice(-20);s.world.lastInitiatorId=n.id;
+      }
+      return root.StoryMessages.say(s,{type:'npc',id:n.id,name:n.name},text,trigger,{locationId:n.location,...options});
+    }
+    return {init,notice,start,close,active,addressed,before,canSpeak,say,here};
+  }
+  root.StoryDialogue={create};
+})(globalThis);
+</script>
+<script>/* A metanarrative voice. Ordinary comments have no authority to alter physical state. */
+(function(root){
+  'use strict';
+  const technical=new Set(['unsupported_action','unknown_intent','unsupported_method','unknown_repair_method','unsupported_npc_action','unsupported_transformation']);
+  function create(H){
+    const {emit,addEntity,hash}=H;
+    function init(s,config){
+      s.world.developer||={lastTurn:-20,seen:{},registered:[],fired:[]};
+      if(s.world.developer.initialized)return;
+      for(const line of String(config.canon||'').split('\n')){
+        const m=line.match(/^Мета-событие\s*:\s*проход\s*\|\s*([^|]+)\|\s*([^|]+)\|\s*([^|]+)\|\s*(\d+)\s*$/iu);
+        if(m)s.world.developer.registered.push({id:'meta:'+hash(line),kind:'passage',location:m[1].trim(),door:m[2].trim(),destination:m[3].trim(),notBefore:Number(m[4])});
+      }
+      s.world.developer.initialized=true;
+    }
+    function note(s,code,text){
+      const dev=s.world.developer;dev.seen[code]=(dev.seen[code]||0)+1;
+      if(s.turn-dev.lastTurn<3)return 'Этот способ пока не удалось выполнить. Уточните действие или выберите другой подход.';
+      dev.lastTurn=s.turn;
+      const line=dev.seen[code]>2?'Ты настойчивее моего словаря. '+text:text;
+      return root.StoryMessages.say(s,{type:'developer',id:'developer'},line,'technical_clarification');
+    }
+    function route(s,c,a,r){
+      if(!technical.has(r.code))return r;
+      s.currentMessages=(s.currentMessages||[]).filter(row=>row.speaker.type!=='npc');
+      r.text=note(s,r.code,r.code==='unsupported_action'?'Действие «'+c.semantic.unsupportedVerb+'» я пока не умею разбирать. Объясни цель и способ, и попробуем уточнить замысел.':r.text);
+      r.narration=null;r.performed=false;return r;
+    }
+    function fire(s,id){
+      const dev=s.world.developer,event=dev.registered.find(event=>event.id===id);
+      if(!event||dev.fired.includes(id)||s.turn<event.notBefore||s.place!==event.location)return {status:'refused',code:'meta_event_not_authorized',text:'Нет разрешённого события для такого вмешательства.',effects:[]};
+      const from=s.world.locations.find(place=>place.name===event.location);let to=s.world.locations.find(place=>place.name===event.destination);
+      if(!from)return {status:'refused',code:'meta_event_not_authorized',text:'Место события отсутствует.',effects:[]};
+      if(!to){to={id:'loc:'+hash(event.destination),name:event.destination,aliases:[],visits:0,scene:{description:'Место: '+event.destination+'.',features:[],background:[],observed:{},discoveries:{},events:[],revision:0}};s.world.locations.push(to);}
+      const door=addEntity(s,event.door,{id:id+':door',kind:'barrier',location:from.name,known:true,locked:false,portable:false,source:'developer-event'});
+      for(const [a,b]of [[from,to],[to,from]])if(!s.world.edges.some(edge=>edge.from===a.id&&edge.to===b.id))s.world.edges.push({from:a.id,to:b.id,barrierId:door.id});
+      dev.fired.push(id);const effect=emit(s,'registered_developer_event',id,null,{doorId:door.id,from:from.id,to:to.id},'developer:'+id);
+      const speech=root.StoryMessages.say(s,{type:'developer',id:'developer'},'Минуту. У этой стены обнаружился проход, который я придерживал для особого случая.','registered_meta_event',{effects:[effect.id]});
+      return {status:'success',code:'meta_event_applied',text:speech+'\nНа стене становится видна «'+door.label+'». Теперь здесь есть проход в место «'+to.name+'».',effects:[effect],performed:true,completed:true,action:{id:'developer:'+id,actor:'developer',intent:'registered_event',scope:'author_registered',goal:'',semantic:{mode:'registered_event'}}};
+    }
+    function tick(s){const event=s.world.developer.registered.find(event=>!s.world.developer.fired.includes(event.id)&&s.turn>=event.notBefore&&s.place===event.location);return event?fire(s,event.id):null;}
+    return {init,note,route,fire,tick};
+  }
+  root.DeveloperIntervention={create};
+})(globalThis);
+</script>
+<script>/* Physical acts, limited witness knowledge and individual judgements are separate records. */
+(function(root){
+  'use strict';
+  function create(H){
+    const {norm,words,stem,clone,emit,truth,log,findNpc,matchEntity,dialogue,conflict,openGrievances,moveActor,reconcile,flush,bind}=H;
+    const clamp=(v,min=-5,max=5)=>Math.max(min,Math.min(max,v));
+    const here=(s,n)=>dialogue.here(s,n);
+    const fields=config=>String(config.canon||'').split('\n').map(line=>{const at=line.indexOf(':');return at<0?[]:[norm(line.slice(0,at)),line.slice(at+1).trim()];}).filter(row=>row.length);
+    function profile(n){
+      const q=norm(n.description+' '+n.motive),rogue=/вор|плут|контрабанд|разбой/.test(q),timid=/робк|трус|боязл|пуглив/.test(q),violent=/жесток|воин|разбой|боец/.test(q);
+      return {lawfulness:rogue?.15:.8,propertyRespect:rogue?.35:.85,violenceTolerance:violent?.8:.15,forgiveness:/добр|мягк|милосерд/.test(q)?.8:.4,courage:timid?.15:violent?.9:.65,gossip:/молчалив|скрытн/.test(q)?.1:.65,taboos:[],loyalties:{}};
+    }
+    function init(s,config){
+      s.world.social||={events:[],promises:[],reports:[],cases:[],laws:[],guards:[],zones:[],nextId:1};
+      for(const n of Object.values(s.world.npcs)){
+        n.social||={profile:profile(n),relationship:{respect:0,fear:0,suspicion:0,hostility:0,affection:0,reliability:0},knowledge:{},expected:{},missing:[],lastReactionTurn:-1,attention:/мастерск/.test(norm(s.world.locations.find(l=>l.id===n.location)?.name))?'busy':'watching'};
+        n.health??=3;n.status||='active';
+      }
+      if(s.world.socialVersion===1)return;
+      const owner=Object.values(s.world.npcs).find(n=>n.id===s.world.primaryNpcId&&/хозяйк|владел|хранител|сторож/.test(norm(n.description)));
+      for(const e of s.entities){
+        e.ownerId??=e.stockOwner||s.world.npcs[e.location]?.id||(e.location==='inventory'?'player':null)||(owner&&e.kind==='barrier'&&e.source==='scene'&&e.location===s.startPlace?owner.id:null);
+        e.permissions||={};
+      }
+      for(const [key,value]of fields(config)){
+        const args=value.split('|').map(v=>v.trim());
+        if(key==='владелец'){
+          const e=s.entities.find(e=>norm(e.label)===norm(args[0]))||matchEntity(s,args[0],true),n=findNpc(s,args[1]||'');if(e&&n)e.ownerId=n.id;
+        }
+        if(key==='внимание'){const n=findNpc(s,args[0]);if(n)n.social.attention=/спит/.test(norm(args[1]))?'asleep':/занят|отверн/.test(norm(args[1]))?'busy':'watching';}
+        if(key==='мораль'){
+          const n=findNpc(s,args[0]);if(n)for(const pair of (args[1]||'').split(/[;,]/)){const [name,raw]=pair.split('=').map(v=>v.trim());const aliases={законность:'lawfulness',собственность:'propertyRespect',насилие:'violenceTolerance',прощение:'forgiveness',смелость:'courage',слухи:'gossip'};const attr=aliases[norm(name)]||name;if(attr in n.social.profile&&Number.isFinite(Number(raw)))n.social.profile[attr]=clamp(Number(raw),0,1);}
+        }
+        if(key==='лояльность'){const a=findNpc(s,args[0]),b=findNpc(s,args[1]);if(a&&b)a.social.profile.loyalties[b.id]=/враг/.test(norm(args[2]))?-1:1;}
+        if(key==='запрет npc'){const n=findNpc(s,args[0]);if(n)n.social.profile.taboos=(args[1]||'').split(',').map(norm);}
+        if(key==='закрытая зона'){const place=s.world.locations.find(l=>norm(l.name)===norm(args[0])),n=findNpc(s,args[1]);if(place&&n)s.world.social.zones.push({locationId:place.id,ownerId:n.id});}
+        if(key==='страж'){const n=findNpc(s,args[0]);if(n)s.world.social.guards.push(n.id);}
+        if(key==='закон'){const place=s.world.locations.find(l=>norm(l.name)===norm(args[0])),fine=Number((args[2]||'').match(/\d+/)?.[0]);if(place&&fine)s.world.social.laws.push({locationId:place.id,type:({кража:'theft',порча:'damage',нападение:'assault'})[norm(args[1])]||norm(args[1]),fine});}
+      }
+      for(let depth=0;depth<8;depth++)for(const e of s.entities)if(!e.ownerId&&e.containerId)e.ownerId=s.entities.find(parent=>parent.id===e.containerId)?.ownerId||null;
+      for(const e of s.entities)if(e.ownerId&&s.world.npcs[e.ownerId])s.world.npcs[e.ownerId].social.expected[e.id]=e.location;
+      s.world.socialVersion=1;
+    }
+    function permitted(s,e,right='use'){
+      if(!e?.ownerId||e.ownerId==='player')return true;
+      if(e.loan?.borrowerId==='player'&&!e.loan.returned&&(!e.loan.deadline||s.turn<=e.loan.deadline)&&['take','use'].includes(right))return true;
+      if(e.permissions?.player?.includes(right))return true;
+      const p=s.world.player.permissions?.[e.ownerId];return Boolean(p?.private&&e.private||p?.tools&&['bench','tools','mechanism'].includes(e.localKey));
+    }
+    function visible(s,n,a){
+      if(!here(s,n)||n.social.attention==='asleep')return false;
+      const text=norm(a.text||''),stealth=/незаметно|тайно|скрытно|пока .*работает/.test(text)||a.semantic?.variant==='steal'&&a.semantic?.manner?.includes('скрытно');
+      if(s.facts.hidden)return false;
+      return !(stealth&&n.social.attention==='busy');
+    }
+    function change(s,n,delta){
+      const before={trust:n.trust,...n.social.relationship};
+      for(const [key,value]of Object.entries(delta))if(key==='trust')n.trust=clamp(n.trust+value);else if(key in n.social.relationship)n.social.relationship[key]=clamp(n.social.relationship[key]+value,['fear','suspicion','hostility'].includes(key)?0:-5,5);
+      if(n.id===s.world.boundNpcId)s.trust=n.trust;
+      emit(s,'relationship_changed',n.id,before,{trust:n.trust,...n.social.relationship});
+    }
+    function say(s,n,text,trigger='witness_event'){return dialogue.say(s,n,text,trigger);}
+    function reaction(s,n,event,knowledge){
+      if(!here(s,n)||n.social.lastReactionTurn===s.turn)return;
+      const known=knowledge.actorId==='player',item=s.entities.find(e=>e.id===event.targetId),label=item?.label||'имущество';
+      const lines={theft:known?'Я видел, как вы забрали «'+label+'» без разрешения. Верните вещь.':'Здесь пропала вещь. Я пока не знаю, кто её забрал.',theft_attempt:'Я заметил попытку забрать чужую вещь. Остановитесь.',damage:'Вы повредили «'+label+'». Нужно исправить ущерб или возместить его.',assault:'Не подходите. Я буду защищаться.',threat:'После угроз я не стану вам доверять.',insult:'Так со мной разговаривать не нужно.',deception:'Теперь у меня есть основание не доверять прежним словам.',broken_promise:'Вы не выполнили обещание в согласованный срок.',trespass:'Здесь закрытая зона. У вас нет разрешения.',unauthorized_use:'Это чужие инструменты. Сначала договоритесь с владельцем.',framing:'Я вижу попытку выдать подставное свидетельство за независимое доказательство.',complicity:'Я запомню, что вы помогли участнику нарушения.'};
+      if(n.social.profile.courage<.4&&event.ownerId!==n.id){emit(s,'silent_social_reaction',n.id,null,{eventId:event.id});return;}
+      let text=lines[knowledge.understoodAs||event.type]||lines[event.type];if(!text)return;
+      if(!known&&event.type==='damage')text='«'+label+'» повреждён. Я пока не знаю, кто это сделал.';
+      if(knowledge.source==='report')text='Мне рассказали о вашем поступке. Я не видел его сам; хочу объяснений.';
+      if(['theft','theft_attempt'].includes(event.type)&&event.ownerId!==n.id)text=n.social.profile.propertyRespect<.5?'Ловко. Но свои ценные вещи я при вас оставлять не буду.':'Я заметил, как вы берёте чужое. Владелец должен об этом узнать.';
+      n.social.lastReactionTurn=s.turn;say(s,n,text);emit(s,'npc_social_reaction',n.id,null,{eventId:event.id,source:knowledge.source});
+    }
+    function evaluate(s,n,event,knowledge){
+      event.evaluations||={};if(event.evaluations[n.id])return;
+      if(!knowledge.actorId){n.social.alert=true;return;}
+      if(knowledge.actorId!=='player'){n.social.opinions||={};n.social.opinions[knowledge.actorId]={eventId:event.id,type:event.type,source:knowledge.source,trust:-1,turn:s.turn};event.evaluations[n.id]={turn:s.turn,source:knowledge.source,actorId:event.actorId};return;}
+      const p=n.social.profile,own=event.ownerId===n.id,loyalty=p.loyalties[event.ownerId]||0,priorTrust=n.trust;
+      let delta={};
+      if(['theft','theft_attempt','damage','unauthorized_use','trespass'].includes(event.type)){
+        const condemns=own||loyalty>0||p.propertyRespect>=.5||p.lawfulness>=.8||p.taboos.includes(event.type);
+        delta=condemns?{trust:own?-2:-1,respect:-1,suspicion:own?2:1,hostility:own?1:0,affection:-1}:{respect:loyalty<0?1:0,suspicion:own?1:0};
+      }else if(event.type==='assault')delta={trust:-2,fear:p.courage<.4?3:1,hostility:p.violenceTolerance>.6?3:2,respect:-1,affection:-2};
+      else if(event.type==='threat')delta={trust:-1,fear:p.courage<.4?2:1,hostility:p.courage>.7?2:1,respect:-1};
+      else if(event.type==='insult')delta={respect:-1,hostility:1,affection:-1};
+      else if(event.type==='broken_promise')delta={trust:-1,reliability:-2,suspicion:1};
+      else delta={trust:-1,respect:-1,suspicion:2,reliability:-1};
+      if(p.taboos.includes(event.type)){delta.trust=(delta.trust||0)-1;delta.hostility=(delta.hostility||0)+1;}
+      change(s,n,delta);event.evaluations[n.id]={turn:s.turn,source:knowledge.source,priorTrust,delta};
+      if(own||['assault','threat','insult','deception','framing','broken_promise'].includes(event.type)){
+        let g=openGrievances(n).find(g=>(g.kind===event.type||event.type==='framing'&&g.kind==='staged_evidence')&&g.turn===s.turn);
+        g||=conflict(s,n,event.type,event.type+': '+(s.entities.find(e=>e.id===event.targetId)?.label||event.reason||'поступок героя'));
+        if(!g.socialEventId)g.socialEventId=event.id;
+        if(['theft','damage','unauthorized_use','trespass'].includes(event.type)){g.requiredItemId=event.targetId;g.requiredItem=s.entities.find(e=>e.id===event.targetId)?.label||'возмещение';g.compensation=event.type==='damage'?(s.entities.find(e=>e.id===event.targetId)?.price||3):0;g.trustBefore=priorTrust;if(event.type==='theft'&&event.propertyReturned)g.reparation=true;}
+      }
+      if(['theft','damage','assault','trespass','unauthorized_use'].includes(event.type)){n.social.accessRestricted=true;emit(s,'access_restricted',n.id,null,{eventId:event.id});}
+      reaction(s,n,event,knowledge);
+      if(event.type==='insult'&&s.world.activeNpcId===n.id)dialogue.close(s,'insulted');
+      if(event.type==='assault'&&n.social.profile.courage<.4&&n.health>0){
+        const exit=s.world.edges.find(edge=>edge.from===n.location&&!s.entities.find(e=>e.id===edge.barrierId&&e.locked&&!e.opened));
+        if(exit){const target=s.world.locations.find(place=>place.id===exit.to);const r=moveActor(s,n.id,target);if(r.status==='success')emit(s,'npc_fled',n.id,null,{eventId:event.id,destination:target.id});}
+      }
+    }
+    function learn(s,n,event,source='witness',actorKnown=true,reporterId=null){
+      const old=n.social.knowledge[event.id];if(old&&old.confidence>= (source==='report'?.75:1))return;
+      const knowledge={eventId:event.id,source,reporterId,actorId:actorKnown?(source==='property_identified'?'player':event.actorId):null,targetId:event.targetId,confidence:source==='report'?.75:source==='property_identified'?.8:actorKnown?1:.3,turn:s.turn,understoodAs:event.type};
+      n.social.knowledge[event.id]=knowledge;emit(s,'social_knowledge',n.id,old||null,knowledge);
+      if(!old?.actorId&&knowledge.actorId)evaluate(s,n,event,knowledge);
+    }
+    function record(s,type,a,options={}){
+      const data=s.world.social,existing=data.events.find(event=>event.cause===a.id&&event.type===type&&event.targetId===options.targetId);if(existing)return existing;
+      const event={id:'social:'+data.nextId++,type,actorId:a.actor||'player',targetId:options.targetId||a.targetId||null,ownerId:options.ownerId||null,locationId:s.world.player.location,witnesses:[],detected:false,resolved:false,turn:s.turn,cause:a.id,evaluations:{},...options};
+      data.events.push(event);data.events=data.events.slice(-160);
+      for(const n of Object.values(s.world.npcs)){
+        if(options.onlyObserverId&&options.onlyObserverId!==n.id)continue;
+        const direct=options.directId===n.id&&here(s,n)&&n.social.attention!=='asleep';
+        if(direct||visible(s,n,a)){event.witnesses.push(n.id);learn(s,n,event,'witness',true);}
+      }
+      event.detected=event.witnesses.length>0;emit(s,'social_event',event.id,null,event,a.id);return event;
+    }
+    function object(s,a,c){return s.entities.find(e=>e.id===a.targetId)||matchEntity(s,c.text,true);}
+    function handle(s,p,c,a){
+      if(c.hypothetical||c.negated||['intention','question','hypothetical','negated','report','speech'].includes(c.semantic?.mode))return null;
+      const e=object(s,a,c),n=s.world.npcs[a.recipientId]||s.world.npcs[s.world.boundNpcId];
+      if(['borrow','rent'].includes(a.intent)){
+        const owner=e&&s.world.npcs[e.ownerId];if(!e||!owner)return {status:'clarification',code:'missing_loan_item',text:'Какую принадлежащую персонажу вещь вы просите одолжить?',effects:[]};
+        if(!here(s,owner))return {status:'refused',code:'owner_absent',text:'Владельца сейчас нет рядом.',effects:[]};
+        dialogue.start(s,owner);if((openGrievances(owner).length||owner.social.accessRestricted)&&!(owner.social.coercedUntil>=s.turn&&owner.social.profile.courage<.4))return {status:'refused',code:'unresolved_conflict',text:say(s,owner,'После случившегося я пока не готов одалживать вещи.','permission_request'),effects:[]};
+        if(owner.social.cautious&&!/под присмотром/.test(norm(c.text)))return {status:'refused',code:'supervision_required',text:say(s,owner,'После случившегося ценные инструменты одолжу только под присмотром.','permission_request'),effects:[]};
+        if(!e.portable||![s.place,owner.id].includes(e.location))return {status:'refused',code:'loan_unavailable',text:'Эту вещь сейчас нельзя передать.',effects:[]};
+        const rent=a.intent==='rent',fee=1;
+        if(rent&&s.world.player.money<fee)return {status:'refused',code:'insufficient_rent',text:'Аренда на пять ходов стоит одну монету. При вас недостаточно денег.',effects:[]};
+        if(rent){s.world.player.money-=fee;truth(s,'player:money',s.world.player.money);}
+        e.loan={ownerId:owner.id,borrowerId:'player',turn:s.turn,returned:false,...(rent?{rental:true,fee,deadline:s.turn+5}:{})};e.location='inventory';e.hidden=false;e.known=true;if(!s.inventory.includes(e.label))s.inventory.push(e.label);s.focus=e.id;
+        emit(s,'loan_granted',e.id,null,e.loan,a.id);return {status:'success',code:rent?'rental_granted':'loan_granted',text:say(s,owner,rent?'Аренда «'+e.label+'» оплачена на пять ходов. После этого нужно вернуть вещь.':'Одолжу «'+e.label+'». Владельцем остаюсь я; верните после работы.','permission_request'),effects:[]};
+      }
+      if(a.intent==='return_property'){
+        if(!e||e.location!=='inventory'||!e.ownerId||e.ownerId==='player')return {status:'refused',code:'nothing_to_return',text:'При вас нет названной чужой вещи.',effects:[]};
+        const owner=s.world.npcs[e.ownerId],quiet=/незаметно|тайно/.test(norm(c.originalText||c.text));const expected=owner.social.expected[e.id];
+        if(!here(s,owner)&&expected!==s.place)return {status:'refused',code:'return_elsewhere',text:'Нужно добраться до владельца или места, где он оставил вещь.',effects:[]};
+        e.location=quiet?s.place:here(s,owner)?owner.id:s.place;e.concealed=false;s.inventory=s.inventory.filter(v=>v!==e.label);if(e.loan)e.loan.returned=true;
+        const observed=here(s,owner)&&visible(s,owner,a);
+        if(observed){for(const g of openGrievances(owner))if(g.requiredItemId===e.id&&['theft','unauthorized_use'].includes(g.kind))g.reparation=true;}else e.returnPendingOwner=true;
+        if(observed&&openGrievances(owner).some(g=>g.apology&&g.reparation)){if(s.world.boundNpcId!==owner.id){flush(s);bind(s,owner.id);}reconcile(s,owner);}
+        for(const event of s.world.social.events.filter(event=>event.type==='theft'&&event.targetId===e.id))event.propertyReturned=true;
+        if(!quiet&&here(s,owner)){dialogue.start(s,owner);say(s,owner,'«'+e.label+'» возвращён. Это важно, но я помню, что произошло.','reparation');}
+        emit(s,'property_returned',e.id,'inventory',e.location,a.id);return {status:'success',code:'property_returned',text:'Вы возвращаете «'+e.label+'». Владение не меняется; вещь больше не у вас.',effects:[]};
+      }
+      if(a.intent==='compensate'){
+        if(!n||!here(s,n))return {status:'refused',code:'npc_absent',text:'Для компенсации нужно встретиться с пострадавшим.',effects:[]};
+        const g=openGrievances(n).find(g=>g.compensation>0&&!g.reparation);if(!g)return {status:'clarification',code:'no_damage_debt',text:'Не установлено, какой ущерб и в каком размере нужно возместить.',effects:[]};
+        const amount=Number((c.text.match(/\d+/)||[])[0]||g.compensation);if(amount<=0||s.world.player.money<amount)return {status:'refused',code:'insufficient_compensation',text:'Нужно выплатить '+amount+' монеты. При вас: '+s.world.player.money+'.',effects:[]};
+        s.world.player.money-=amount;g.compensation=Math.max(0,g.compensation-amount);g.reparation=g.compensation===0;truth(s,'player:money',s.world.player.money);
+        if(g.reparation&&g.apology)reconcile(s,n);
+        emit(s,'damage_compensated',n.id,null,{amount,conflictId:g.id},a.id);return {status:g.compensation?'partial_success':'success',code:g.compensation?'partial_compensation':'compensated',completed:true,text:say(s,n,g.compensation?'Часть компенсации получена. Осталось возместить '+g.compensation+' монеты.':'Компенсация получена. Доверие не возвращается сразу; нам ещё нужно обсудить случившееся.','reparation'),effects:[]};
+      }
+      if(a.intent==='pay_fine'){
+        const item=s.world.social.cases.find(item=>item.status==='unpaid'&&here(s,s.world.npcs[item.guardId]));
+        if(!item)return {status:'refused',code:'no_local_fine',text:'Здесь нет уполномоченного стража с назначенным вам штрафом.',effects:[]};
+        if(s.world.player.money<item.fine)return {status:'refused',code:'insufficient_fine',text:'Не хватает монет для уплаты штрафа.',effects:[]};
+        s.world.player.money-=item.fine;item.status='paid';item.paidTurn=s.turn;truth(s,'player:money',s.world.player.money);emit(s,'fine_paid',item.id,null,{amount:item.fine},a.id);
+        return {status:'success',code:'fine_paid',text:'Штраф уплачен: '+item.fine+' монеты. Возврат имущества и отношения с пострадавшим остаются отдельными обязательствами.',effects:[]};
+      }
+      if(a.intent==='report_event'){
+        if(!n||!here(s,n))return {status:'refused',code:'npc_absent',text:'Получателя сообщения нет рядом.',effects:[]};
+        const event=[...s.world.social.events].reverse().find(e=>e.actorId!=='player'&&e.witnesses.includes('player'));
+        if(!event)return {status:'clarification',code:'no_witnessed_event',text:'У вас нет зафиксированного наблюдения, которое можно подтвердить. Непроверенную версию можно сообщить как обычное утверждение.',effects:[]};
+        learn(s,n,event,'report',true,'player');s.world.social.reports.push({eventId:event.id,from:'player',to:n.id,turn:s.turn});
+        return {status:'success',code:'event_reported',text:say(s,n,'Я услышал рассказ. Это сообщение свидетеля, а не моё собственное наблюдение.'),effects:[]};
+      }
+      if(a.intent==='complicity'){
+        const offender=findNpc(s,c.text,true),event=[...s.world.social.events].reverse().find(e=>offender&&e.actorId===offender.id&&e.detected&&!e.resolved);
+        if(!event||!here(s,offender))return {status:'clarification',code:'no_offender_context',text:'Для помощи нарушителю нужен существующий поступок и находящийся рядом участник. Кого и каким способом вы хотите прикрыть?',effects:[]};
+        record(s,'complicity',a,{targetId:offender.id,ownerId:event.ownerId,relatedEventId:event.id});change(s,offender,{trust:1,respect:1});
+        return {status:'success',code:'offender_protected',text:'Вы выступаете на стороне '+offender.name+'. Это укрепляет вашу связь с участником нарушения; свидетели запоминают соучастие.',effects:[]};
+      }
+      if(a.intent==='confess'){
+        const event=[...s.world.social.events].reverse().find(event=>event.actorId==='player'&&(!n||event.ownerId===n.id)&&!event.resolved);
+        if(!event||!n||!here(s,n))return {status:'clarification',code:'missing_confession_context',text:'В каком конкретном поступке и перед кем вы признаётесь?',effects:[]};
+        dialogue.start(s,n);learn(s,n,event,'confession',true);event.confessed=true;return {status:'success',code:'confessed',text:say(s,n,'Вы признались. Теперь я знаю, что произошло; нужно ещё исправить последствия.','reparation'),effects:[]};
+      }
+      if(a.intent==='promise'){
+        if(!n||!here(s,n))return {status:'refused',code:'npc_absent',text:'Здесь некому дать обещание.',effects:[]};
+        const deadline=c.text.match(/через\s+(\d+)\s+ход/iu);const promise={id:'promise:'+s.world.social.nextId++,actorId:'player',recipientId:n.id,text:c.originalText||c.text,targetId:e?.id||null,condition:/верну|возвра/.test(norm(c.text))?'return':null,deadline:deadline?s.turn+Number(deadline[1]):null,status:'pending'};s.world.social.promises.push(promise);s.facts.promise=promise.text;
+        return {status:'success',code:'promise_recorded',text:say(s,n,'Обещание я запомню. Надёжность покажут ваши действия.'),effects:[]};
+      }
+      const text=norm(c.originalText||c.text),target=findNpc(s,text,true)||(/тебя|тебе|тобой|нападаю|атакую/.test(text)?n:null);
+      if(target&&(!e||/оскорб|угрожа|убью/.test(text))&&(['attack','threat'].includes(a.intent)||/угрожа/.test(text))){
+        const type=/угрожа|убью/.test(text)?'threat':'assault';if(!here(s,target))return {status:'refused',code:'npc_absent',text:'Персонаж находится в другом месте.',effects:[]};
+        target.tension=Math.min(5,target.tension+2);if(target.id===s.world.boundNpcId)s.tension=target.tension;
+        if(type==='assault')target.health=Math.max(0,target.health-1);
+        record(s,type,a,{targetId:target.id,ownerId:target.id,directId:target.id});if(type==='threat'&&target.social.profile.courage<.4)target.social.coercedUntil=s.turn+2;
+        if(target.health===0){target.status='incapacitated';dialogue.close(s,'assaulted');}
+        return {status:'success',code:type==='assault'?'npc_attacked':'npc_threatened',text:type==='assault'?target.name+' получает удар и отступает. Нападение имеет реальные последствия.':'Вы угрожаете '+target.name+'. Страх не означает доверия.',socialHandled:true,effects:[]};
+      }
+      if(a.intent==='take'&&e?.ownerId&&!permitted(s,e,'take')&&s.world.npcs[e.location]){
+        const holder=s.world.npcs[e.location];if(visible(s,holder,a)){record(s,'theft_attempt',a,{targetId:e.id,ownerId:e.ownerId});return {status:'refused',code:'theft_blocked',text:'Владелец удерживает «'+e.label+'»; забрать её из рук не удалось.',effects:[]};}
+        a.allowTakingHeld=true;
+      }
+      return null;
+    }
+    function after(s,before,c,a,r){
+      if(r.socialHandled)return;
+      const acted=!['refused','clarification'].includes(r.status)&&r.performed!==false;
+      if(acted)for(const e of s.entities){const old=before.entities.find(old=>old.id===e.id);if(!old)continue;
+        if(e.location==='inventory'&&old.location!=='inventory'){
+          if(e.ownerId&&!permitted(s,e,'take')){e.concealed=/незаметно|тайно|скрытно/.test(norm(a.text))||Boolean(s.facts.hidden);record(s,'theft',a,{targetId:e.id,ownerId:e.ownerId});}
+          else if(!e.ownerId)e.ownerId='player';
+        }
+        if(e.ownerId&&e.ownerId!=='player'&&!old.destroyed&&e.destroyed)record(s,'damage',a,{targetId:e.id,ownerId:e.ownerId});
+        if(a.intent==='give'&&old.location==='inventory'&&s.world.npcs[e.location]&&(!e.ownerId||e.ownerId==='player'))e.ownerId=e.location;
+        if(a.intent==='use'&&a.targetId===e.id&&e.ownerId&&!permitted(s,e,'use'))record(s,'unauthorized_use',a,{targetId:e.id,ownerId:e.ownerId});
+      }
+      if(acted&&a.intent==='insult'){const n=s.world.npcs[a.recipientId];if(n&&here(s,n))record(s,'insult',a,{targetId:n.id,ownerId:n.id,directId:n.id});}
+      if(acted&&['move','return'].includes(a.intent)&&before.player.location!==s.world.player.location){
+        for(const n of Object.values(s.world.npcs))if(n.location===before.player.location&&!['incapacitated','dead'].includes(n.status))for(const g of openGrievances(n))if(['trespass','unauthorized_use'].includes(g.kind))g.reparation=true;const zone=s.world.social.zones.find(zone=>zone.locationId===s.world.player.location);if(zone&&!s.world.player.permissions?.[zone.ownerId]?.zone)record(s,'trespass',a,{targetId:zone.locationId,ownerId:zone.ownerId});}
+      if(acted&&a.intent==='plant_evidence'){
+        const e=s.entities.find(e=>e.id===a.targetId);if(e?.evidence?.witnessedBy?.length)record(s,'framing',a,{targetId:e.id,ownerId:null});
+      }
+      if(acted&&a.intent==='claim'){
+        const n=s.world.npcs[a.recipientId];if(n&&here(s,n)){
+          const known=Object.values(n.beliefs).find(b=>b.certainty==='known'&&b.sources?.canon&&s.facts.claim&&norm(s.facts.claim).includes(b.key)&&!norm(s.facts.claim).includes(norm(b.value)));
+          if(known)record(s,'deception',a,{targetId:n.id,ownerId:n.id,onlyObserverId:n.id,reason:'Версия противоречит известному свидетелю факту.'});
+        }
+      }
+      if(acted&&a.intent==='show'){
+        const shown=s.entities.find(e=>e.id===a.targetId),recipient=s.world.npcs[a.recipientId];
+        if(shown&&recipient&&here(s,recipient)&&shown.location==='inventory'&&!shown.loan){
+          const theft=[...s.world.social.events].reverse().find(event=>event.type==='theft'&&event.targetId===shown.id&&event.ownerId===recipient.id&&!event.propertyReturned);
+          if(theft&&recipient.social.knowledge[theft.id]?.source==='missing')learn(s,recipient,theft,'property_identified',true);
+        }
+        const carrier=s.entities.find(e=>e.id===a.targetId),n=s.world.npcs[a.recipientId];
+        if(carrier?.evidence?.authenticity==='genuine'&&n&&here(s,n)){
+          const prop=carrier.evidence.proposition;
+          const old=before.npcBeliefs?.[n.id]?.[prop.key];
+          if(old?.sources?.player&&norm(old.value)!==norm(prop.value)){
+            n.beliefs[prop.key]={...prop,confidence:1,certainty:'known',sources:{['genuine:'+carrier.id]:1},turn:s.turn};delete n.agenda;
+            record(s,'deception',a,{targetId:carrier.id,ownerId:n.id,onlyObserverId:n.id,reason:'Подлинный источник опроверг прежние слова.'});
+          }
+        }
+      }
+      for(const n of Object.values(s.world.npcs))for(const g of n.grievances){
+        if(g.resolved&&g.socialEventId){const event=s.world.social.events.find(event=>event.id===g.socialEventId);if(event)event.resolved=true;n.social.cautious=true;}
+      }
+    }
+    function permitsObservation(s,n,e,a){
+      const events=s.world.social.events.filter(event=>event.cause===a.id&&event.targetId===e.id&&['theft','damage'].includes(event.type));
+      return events.length?events.some(event=>event.witnesses.includes(n.id)):!e.concealed&&visible(s,n,a);
+    }
+    function tick(s){
+      for(const n of Object.values(s.world.npcs)){
+        if(['incapacitated','dead'].includes(n.status)||n.social.attention==='asleep')continue;
+        for(const [id,expected]of Object.entries(n.social.expected)){
+          const e=s.entities.find(e=>e.id===id);
+          if(e?.returnPendingOwner&&e.location===expected&&here(s,n)){delete e.returnPendingOwner;for(const g of openGrievances(n))if(g.requiredItemId===e.id&&['theft','unauthorized_use'].includes(g.kind))g.reparation=true;emit(s,'returned_property_found',e.id,null,{ownerId:n.id});}
+          if(!e||n.social.missing.includes(id)||e.location===expected||e.location===n.id||e.loan&&!e.loan.returned)continue;
+          const event=[...s.world.social.events].reverse().find(event=>event.type==='theft'&&event.targetId===id&&!event.propertyReturned);if(!event||s.turn-event.turn<2||s.world.locations.find(loc=>loc.id===n.location)?.name!==expected)continue;
+          if(n.social.knowledge[event.id]?.actorId){n.social.missing.push(id);continue;}
+          n.social.missing.push(id);n.social.alert=true;n.social.attention='watching';n.social.knowledge[event.id]||={eventId:event.id,source:'missing',actorId:null,targetId:id,confidence:.3,turn:s.turn};
+          if(here(s,n))change(s,n,{suspicion:1});
+          emit(s,'property_missing_discovered',n.id,null,{targetId:id,eventId:event.id});reaction(s,n,event,n.social.knowledge[event.id]);
+        }
+        for(const event of s.world.social.events.filter(event=>event.ownerId===n.id&&event.type==='damage'&&!n.social.knowledge[event.id]&&s.turn-event.turn>=2)){
+          const item=s.entities.find(e=>e.id===event.targetId);if(!item||item.location!==s.world.locations.find(loc=>loc.id===n.location)?.name)continue;
+          learn(s,n,event,'damage_discovered',false);n.social.alert=true;reaction(s,n,event,n.social.knowledge[event.id]);
+        }
+        for(const knowledge of Object.values(n.social.knowledge).filter(k=>k.actorId&&k.source==='witness'&&s.turn-k.turn>=2)){
+          const event=s.world.social.events.find(e=>e.id===knowledge.eventId),owner=event&&s.world.npcs[event.ownerId];
+          if(!owner||owner.id===n.id||owner.location!==n.location||n.social.profile.gossip<.5||owner.social.knowledge[event.id]?.actorId||!here(s,n)||owner.social.attention==='asleep')continue;
+          learn(s,owner,event,'report',true,n.id);s.world.social.reports.push({eventId:event.id,from:n.id,to:owner.id,turn:s.turn});
+        }
+      }
+      for(const promise of s.world.social.promises.filter(p=>p.status==='pending')){
+        const e=s.entities.find(e=>e.id===promise.targetId);if(promise.condition==='return'&&e?.ownerId===promise.recipientId&&(e.location===promise.recipientId||e.loan?.returned)){promise.status='fulfilled';continue;}
+        if(promise.condition&&promise.deadline!==null&&s.turn>promise.deadline){promise.status='broken';const a={id:promise.id,actor:'player',text:promise.text,targetId:promise.targetId};const event=record(s,'broken_promise',a,{ownerId:promise.recipientId,targetId:promise.targetId,witnesses:[],onlyObserverId:promise.recipientId});const n=s.world.npcs[promise.recipientId];learn(s,n,event,'promise',true);}
+      }
+      for(const event of s.world.social.events){
+        const law=s.world.social.laws.find(law=>law.type===event.type&&law.locationId===event.locationId);if(!law||s.world.social.cases.some(item=>item.eventId===event.id))continue;
+        const guard=s.world.social.guards.map(id=>s.world.npcs[id]).find(n=>n?.social.knowledge[event.id]?.actorId==='player');if(guard){const item={id:'case:'+s.world.social.nextId++,eventId:event.id,guardId:guard.id,fine:law.fine,status:'unpaid'};s.world.social.cases.push(item);emit(s,'fine_registered',item.id,null,item);}
+      }
+      for(const e of s.entities.filter(e=>e.loan?.rental&&!e.loan.returned&&!e.loan.overdue&&s.turn>e.loan.deadline)){
+        e.loan.overdue=true;const owner=s.world.npcs[e.ownerId];const event=record(s,'broken_promise',{id:'rental:'+e.id+':'+e.loan.turn,actor:'player',text:'Нарушен срок аренды'},{targetId:e.id,ownerId:e.ownerId,onlyObserverId:e.ownerId});learn(s,owner,event,'agreement',true);
+      }
+      if(s.world.activeNpcId&&!here(s,s.world.npcs[s.world.activeNpcId]))dialogue.close(s,'separated');
+    }
+    const OwnershipSystem={permitted},WitnessSystem={visible},RelationshipSystem={change},SocialEventSystem={record,learn},SuspicionSystem={tick},ReputationSystem={learn},ReparationSystem={handle},NPCReactionSystem={reaction};
+    return {init,handle,after,tick,visible,permitted,permitsObservation,record,learn,change,OwnershipSystem,WitnessSystem,RelationshipSystem,SocialEventSystem,SuspicionSystem,ReputationSystem,ReparationSystem,NPCReactionSystem};
+  }
+  root.StorySocial={create};
 })(globalThis);
 </script>
 <script>/* Offline Russian action grammar. It describes a plan; it never changes the world. */
@@ -473,7 +903,9 @@
     flush();return chunks;
   }
   function resolve(text, context = {}) {
-    const chunks=split(text,context);const steps=[];
+    const conditional=String(text).match(/^\s*пока\s+([^,]+?)\s+(работает|занят|отвернулся|спит),\s*(.+)$/iu);
+    const condition=conditional?{type:'npc_attention',name:conditional[1],attention:/спит/iu.test(conditional[2])?'asleep':'busy'}:null;
+    const chunks=split(conditional?conditional[3]:text,context);const steps=[];
     for(const chunk of chunks){
       const previous=steps.at(-1);
       const inherited=chunk.dependsOnPrevious&&previous&&['intention','question','hypothetical','negated','speech','report','request'].includes(previous.mode)?previous.mode:null;
@@ -481,7 +913,7 @@
       if(inherited&&!/^(?:я\s+)?(?:не\s|хочу\s|можно\s|попрошу\s|прошу\s)/u.test(norm(chunk.raw)))parsed.mode=inherited;
       if(inherited==='request'&&previous.actor!=='player'&&parsed.actor==='player'){parsed.actor=previous.actor;if(parsed.intent==='GREET'&&!parsed.recipient)parsed.recipient='player';}
       if(parsed.target==='focused_entity'&&chunk.dependsOnPrevious&&previous?.intent==='MOVE'){parsed.target='current_location';if(parsed.method==='examine')parsed.method='survey';}
-      steps.push({...parsed,index:steps.length,dependsOnPrevious:chunk.dependsOnPrevious});
+      steps.push({...parsed,...(condition?{condition,originalInput:text}:{}),index:steps.length,dependsOnPrevious:chunk.dependsOnPrevious});
     }
     if(!steps.length)steps.push({...step('',context),index:0,dependsOnPrevious:false});
     return {mode:steps.every(s=>s.mode===steps[0].mode)?steps[0].mode:'mixed',steps};
@@ -580,6 +1012,7 @@
       workshop:{description:'В мастерской пахнет нагретым металлом. На верстаке разобран механизм, рядом — ящик с инструментами. Дверца кладовой прикрыта; личный ящик мастера стоит отдельно.',features:[
         {key:'bench',label:'верстак',description:'На верстаке есть тиски и место для обработки небольшой детали. Для работы нужно разрешение мастера.',fact:{key:'workshop.bench',text:'На верстаке можно изготовить штифт, если есть проволока, инструменты и разрешение.',unlocks:['изготовить штифт']}},
         {key:'mechanism',label:'повреждённый механизм',aliases:['механизм','узел','устройство','поломка'],description:'Узел разобран. Одна шестерня смещается вбок: ей не хватает удерживающего штифта.',condition:'broken',fact:{key:'repair.diagnosis',text:'Шестерня механизма смещается: удерживающий штифт отсутствует.',unlocks:['проверить комплект деталей']}},
+        {key:'hammer',label:'молоток мастера',aliases:['молоток','молоток Ильи'],kind:'tool',portable:true,description:'Рабочий молоток принадлежит мастеру. Его можно попросить во временное пользование.'},
         {key:'tools',label:'ящик с инструментами',aliases:['инструменты','ящик инструментов'],description:'В ящике лежат плоскогубцы и напильник. Ими можно обработать проволоку на верстаке после разрешения мастера.',fact:{key:'workshop.tools',text:'Плоскогубцы и напильник доступны на рабочем месте с разрешения мастера.',unlocks:['попросить разрешение на инструменты']}},
         {key:'store',label:'дверца кладовой',aliases:['кладовая','дверца'],description:'За дверцей слышно, как дребезжат металлические заготовки. Сама дверь прикрыта, а не заперта.',sound:'Прикосновение к двери заставляет звякнуть сложенные внутри обрезки металла.',fact:{key:'workshop.stock',text:'В кладовой хранятся заготовки; запасной штифт мастер уже искал и не нашёл.'}},
         {key:'private',label:'личный ящик мастера',aliases:['личный ящик','ящик мастера'],private:true,description:'Это личный ящик. Его содержимое не выставлено для общего осмотра.'}
@@ -630,7 +1063,16 @@
     }
     function init(s,p,config){
       research(s);
-      if(s.world.sceneVersion===1){H.spatial.init(s);return;}
+      if(s.world.sceneVersion===1){
+        for(const place of s.world.locations.filter(l=>role(l)==='workshop'&&l.scene?.features?.length)){
+          const owner=Object.values(s.world.npcs).find(n=>n.location===place.id);
+          if(!s.entities.some(e=>e.id===place.id+':hammer')){
+            const e=addEntity(s,'молоток мастера',{id:place.id+':hammer',source:'local-scene',location:place.name,kind:'tool',portable:true,known:true,hidden:false,localKey:'hammer',localRole:'workshop',ownerId:owner?.id||null,description:'Рабочий молоток принадлежит мастеру.'});place.scene.features.push(e.id);
+            if(owner?.social)owner.social.expected[e.id]=place.name;
+          }
+        }
+        H.spatial.init(s);return;
+      }
       rootFact(s,p,config);
       const urban=!['space','survival','sea'].includes(p.genre);
       for(const node of s.world.locations){
@@ -656,7 +1098,7 @@
       s.world.sceneFlags||={};s.world.sceneVersion=1;H.spatial.init(s);
     }
     function node(s){return s.world.locations.find(l=>l.id===s.world.player.location);}
-    function local(s,e){return e&&(e.location===s.place||e.location==='inventory'||e.location===s.world.activeNpcId)&&!e.destroyed&&H.containerAccess(s,e);}
+    function local(s,e){return e&&(e.location===s.place||e.location==='inventory'||e.location===s.world.boundNpcId)&&!e.destroyed&&H.containerAccess(s,e);}
     function isVisible(s,e){return !e.hidden&&e.known&&local(s,e);}
     function names(a,b){if(words(b).length===1&&stem(b).length>=3&&words(a).map(stem).includes(stem(b)))return true;const nouns=v=>words(v).filter(w=>!/(?:ый|ий|ая|ое|ые|ую|ой|ого|ыми|ную)$/.test(w)).map(stem);const tokens=nouns(a);return nouns(b).filter(w=>w.length>=3).some(w=>tokens.includes(w));}
     function method(text){const q=norm(text);return /слуш|прислуш/.test(q)?'listen':/загляд|под стол|под скам|обыск|ищу|поиск|обшар/.test(q)?'search':/провер|испыт|хватает|деталей/.test(q)?'check':/чита|прочита/.test(q)?'read':'examine';}
@@ -690,7 +1132,7 @@
     function entryBlocks(s,phase='observation'){
       const where=node(s);const seen=s.entities.filter(e=>e.location===s.place&&e.known&&!e.hidden&&!e.destroyed&&H.containerAccess(s,e));
       const social=s.world.loops.social;
-      for(const n of Object.values(s.world.npcs).filter(n=>n.location===where.id)){if(!social.noticed.includes(n.id))social.noticed.push(n.id);if(!social.encountered.includes(n.id))social.encountered.push(n.id);}
+      for(const n of Object.values(s.world.npcs).filter(n=>n.location===where.id)){H.dialogue.notice(s,n);if(!social.noticed.includes(n.id))social.noticed.push(n.id);if(!social.encountered.includes(n.id))social.encountered.push(n.id);}
       const repaired=role(where)==='workshop'&&s.entities.some(e=>e.localKey==='mechanism'&&e.location===s.place&&e.condition==='repaired');
       const description=repaired?'В мастерской на верстаке работает собранный механизм. Причина прежней поломки устранена; инструменты сложены рядом.':where.scene.description;
       return [{kind:'location',locationId:where.id,phase,text:description},...(seen.length?[{kind:'visible',locationId:where.id,phase,text:'Видно: '+seen.map(e=>'«'+e.label+'»').slice(0,5).join(', ')+'.'}]:[])];
@@ -749,7 +1191,7 @@
       if(!local(s,e))return fail('refused','target_elsewhere','«'+e.label+'» находится в другом месте.');
       if((!e.known||e.hidden)&&!canReveal(s,e,m))return fail('refused','discovery_conditions','С этой позиции содержимое недоступно. Нужен подходящий способ или открытый доступ.');
       if(!e.known||e.hidden){e.known=true;e.hidden=false;}
-      if(e.private&&!permission(s,e,'private'))return privateReaction(s,e);
+      if(e.private&&!permission(s,e,'private')&&here(s,s.world.npcs[e.ownerId]))return privateReaction(s,e);
       s.focus=e.id;
       rememberProperties(s,e,m);
       if(m==='listen'&&!e.sound)return ok('Вы прислушиваетесь к «'+e.label+'». Новых звуков не обнаружено.','no_new_information',{novel:false,discoveries:[]});
@@ -765,10 +1207,8 @@
       if(discoveries.length&&!s.world.loops.exploration.understood.includes(where.id))s.world.loops.exploration.understood.push(where.id);
       if(discoveries.includes('square.guild'))unlockGuildKnowledge(s,e,where);
       const shortcut=e.localKey==='lamp'?openShortcut(s,e):'';
-      let ownerReaction='';const owner=s.world.npcs[e.ownerId];
-      if(owner&&here(s,owner)&&e.localRole==='workshop'&&['bench','tools'].includes(e.localKey)){owner.memory.researchNotices||={};if(!owner.memory.researchNotices[e.id]){owner.memory.researchNotices[e.id]=s.turn;emit(s,'npc_research_reaction',owner.id,null,{itemId:e.id,kind:'public_workplace'});ownerReaction='\n'+owner.name+': «Если хотите поработать, сначала договоримся об инструментах». ';}}
       const extra=discoveries.length?'\nТеперь можно: '+[...new Set(discoveries.flatMap(id=>r.knowledge[id]?.unlocks||[]))].join('; '):'';
-      return ok((m==='listen'?e.sound:describe(s,e))+(details.length?'\n'+[...new Set(details)].filter(d=>!describe(s,e).includes(d)).join('\n'):'')+(extra.endsWith(': ')?'':extra)+shortcut+ownerReaction,'object_studied',{novel:true,sourceId:e.id,locationId:where.id,discoveries,opportunities:r.capabilities.slice(-6)});
+      return ok((m==='listen'?e.sound:describe(s,e))+(details.length?'\n'+[...new Set(details)].filter(d=>!describe(s,e).includes(d)).join('\n'):'')+(extra.endsWith(': ')?'':extra)+shortcut,'object_studied',{novel:true,sourceId:e.id,locationId:where.id,discoveries,opportunities:r.capabilities.slice(-6)});
     }
     function permission(s,e,type='tools'){
       return !e.ownerId||s.world.player.permissions?.[e.ownerId]?.[type]===true;
@@ -778,7 +1218,7 @@
       if(owner&&here(s,owner)){
         owner.memory.researchWarnings||={};
         if(!owner.memory.researchWarnings[e.id]){owner.memory.researchWarnings[e.id]=s.turn;emit(s,'npc_research_reaction',owner.id,null,{itemId:e.id,reason:'private_object'});}
-        return fail('refused','private_requires_permission',owner.name+': «Это личные вещи. Сначала спросите разрешение». Содержимое не открыто.');
+        return fail('refused','private_requires_permission',H.sayNpc(s,owner,'Это личные вещи. Сначала спросите разрешение.','private_boundary')+' Содержимое не открыто.');
       }
       return fail('refused','private_requires_permission','Для осмотра личного содержимого нужно разрешение владельца.');
     }
@@ -817,60 +1257,61 @@
       emit(s,'permission_granted',n.id,null,{type,player:'player'});
     }
     function npcInteraction(s,p,c,a){
+      const q=norm(c.originalText||c.text);
       const n=npc(s),e=a.targetId&&s.entities.find(v=>v.id===a.targetId);
       if(!n||!here(s,n))return null;
-      if(/разреш|можно.*(?:инструмент|верстак|ящик)|возьму.*инструмент/.test(c.lower)){
-        const privateAccess=/личн/.test(c.lower);
+      if(/разреш|можно.*(?:инструмент|верстак|ящик)|возьму.*инструмент/.test(q)){
+        const privateAccess=/личн/.test(q);
         const owned=s.entities.some(item=>item.ownerId===n.id&&item.location===s.place&&(privateAccess?item.private:item.localRole==='workshop'&&['bench','tools'].includes(item.localKey)));
         if(!owned)return null;
-        if(openGrievances(n).length)return fail('refused','unresolved_conflict',n.name+': «Сначала нужно уладить нашу ссору».');
-        if(privateAccess&&s.trust<2)return fail('refused','private_requires_trust',n.name+': «К личным вещам я пока не готов вас допустить».');
-        grantPermission(s,n,privateAccess?'private':'tools');return ok(n.name+': «Разрешаю пользоваться '+(privateAccess?'личным ящиком':'верстаком и рабочими инструментами')+'. Верните всё на место».','permission_granted',{novel:true,discoveries:[],opportunities:['пользоваться рабочим местом']});
+        if(openGrievances(n).length)return fail('refused','unresolved_conflict',H.sayNpc(s,n,'Сначала нужно уладить нашу ссору','dialogue'));
+        if(privateAccess&&s.trust<2)return fail('refused','private_requires_trust',H.sayNpc(s,n,'К личным вещам я пока не готов вас допустить','dialogue'));
+        grantPermission(s,n,privateAccess?'private':'tools');return ok(H.sayNpc(s,n,'Разрешаю пользоваться '+(privateAccess?'личным ящиком':'верстаком и рабочими инструментами')+'. Верните всё на место','dialogue'),'permission_granted',{novel:true,discoveries:[],opportunities:['пользоваться рабочим местом']});
       }
-      if(/предлагаю|давай|помоги/.test(c.lower)&&/изгот[оа]в|сделать/.test(c.lower)&&(/штифт/.test(c.lower)||/его/.test(c.lower)&&n.memory.lastRecipe==='pin')&&n.expertise?.['repair.pin']){
-        if(openGrievances(n).length||s.trust<0)return fail('refused','unresolved_conflict',n.name+': «Сначала уладим конфликт».');
-        s.pending={kind:'joint-repair',recipe:'pin',npcId:n.id};return ok(n.name+': «Могу помочь на верстаке. Ваш материал, наши инструменты. Подтверждаете?»','joint_work_proposed',{novel:true,discoveries:[]});
+      if(/предлагаю|давай|помоги/.test(q)&&/изгот[оа]в|сделать/.test(q)&&(/штифт/.test(q)||/его/.test(q)&&n.memory.lastRecipe==='pin')&&n.expertise?.['repair.pin']){
+        if(openGrievances(n).length||s.trust<0)return fail('refused','unresolved_conflict',H.sayNpc(s,n,'Сначала уладим конфликт','dialogue'));
+        s.pending={kind:'joint-repair',recipe:'pin',npcId:n.id};return ok(H.sayNpc(s,n,'Могу помочь на верстаке. Ваш материал, наши инструменты. Подтверждаете?','dialogue'),'joint_work_proposed',{novel:true,discoveries:[]});
       }
       if(c.intent==='agree'&&s.pending?.kind==='joint-repair'){
         if(s.pending.npcId!==n.id)return fail('refused','wrong_participant','Договорённость относится к другому мастеру.');
-        if(openGrievances(n).length)return fail('refused','unresolved_conflict',n.name+': «Прежде нужно уладить ссору».');
+        if(openGrievances(n).length)return fail('refused','unresolved_conflict',H.sayNpc(s,n,'Прежде нужно уладить ссору','dialogue'));
         s.pending=null;grantPermission(s,n,'tools');return repair(s,p,{...c,question:false,lower:'изготавливаю штифт',text:'Изготавливаю штифт'});
       }
-      if(c.question&&/знак|символ|метк|гильди/.test(c.lower)&&n.expertise?.['guild.sign']){
-        if(!fact(s,'city.mark')&&!fact(s,'street.mark'))return ok(n.name+': «Покажите или опишите знак, который вы действительно нашли».','knowledge_context_required',{novel:false,discoveries:[]});
+      if(c.question&&/знак|символ|метк|гильди/.test(q)&&n.expertise?.['guild.sign']){
+        if(!fact(s,'city.mark')&&!fact(s,'street.mark'))return ok(H.sayNpc(s,n,'Покажите или опишите знак, который вы действительно нашли','dialogue'),'knowledge_context_required',{novel:false,discoveries:[]});
         const source={id:n.id};const spec=n.expertise['guild.sign'];const fresh=know(s,{key:'guild.sign',...spec},source,node(s).id);
-        n.memory.discussedSign=true;return ok(n.name+': «'+spec.text+'»','local_expertise',{novel:fresh,discoveries:fresh?['guild.sign']:[]});
+        n.memory.discussedSign=true;return ok(H.sayNpc(s,n,''+spec.text+'','dialogue'),'local_expertise',{novel:fresh,discoveries:fresh?['guild.sign']:[]});
       }
-      if(c.question&&/штифт|проволок|полом|механизм/.test(c.lower)&&n.expertise?.['repair.pin']){
+      if(c.question&&/штифт|проволок|полом|механизм/.test(q)&&n.expertise?.['repair.pin']){
         const mech=s.entities.find(v=>v.localKey==='mechanism'&&v.location===s.place);
-        if(mech?.condition==='repaired')return ok(n.name+': «Механизм уже работает. Теперь его можно обслуживать, а не устранять прежнюю поломку».','current_condition',{novel:false,discoveries:[]});
-        if(!fact(s,'repair.diagnosis'))return ok(n.name+': «Сначала изучите поломку на механизме».','diagnosis_required',{novel:false,discoveries:[]});
+        if(mech?.condition==='repaired')return ok(H.sayNpc(s,n,'Механизм уже работает. Теперь его можно обслуживать, а не устранять прежнюю поломку','dialogue'),'current_condition',{novel:false,discoveries:[]});
+        if(!fact(s,'repair.diagnosis'))return ok(H.sayNpc(s,n,'Сначала изучите поломку на механизме','dialogue'),'diagnosis_required',{novel:false,discoveries:[]});
         n.memory.lastRecipe='pin';
         const hasWire=s.entities.some(e=>e.location==='inventory'&&!e.destroyed&&/проволок/.test(norm(e.label)));
         const bench=s.entities.find(e=>e.localKey==='bench'&&e.location===s.place&&!e.destroyed);
         const readiness=hasWire&&bench&&permission(s,bench)?' Всё необходимое сейчас доступно.':' Пока не хватает '+(!hasWire?'проволоки':!bench?'верстака':'разрешения на работу')+'.';
         const spec=n.expertise['repair.pin'];const fresh=know(s,{key:'repair.recipe',...spec},{id:n.id},node(s).id);
-        return ok(n.name+': «'+spec.text+readiness+'»','recipe_explained',{novel:fresh,discoveries:fresh?['repair.recipe']:[]});
+        return ok(H.sayNpc(s,n,''+spec.text+readiness+'','dialogue'),'recipe_explained',{novel:fresh,discoveries:fresh?['repair.recipe']:[]});
       }
       if((c.intent==='show'||a.intent==='show')&&e?.recommendation){
         if(!local(s,e))return fail('refused','target_elsewhere','Рекомендация находится не здесь.');
-        if(!s.entities.some(item=>item.stockOwner===n.id))return ok(n.name+': «Вижу подпись мастера. Торговую скидку нужно обсуждать с продавцом на рынке».','recommendation_seen',{novel:false,discoveries:[]});
+        if(!s.entities.some(item=>item.stockOwner===n.id))return ok(H.sayNpc(s,n,'Вижу подпись мастера. Торговую скидку нужно обсуждать с продавцом на рынке','dialogue'),'recommendation_seen',{novel:false,discoveries:[]});
         s.world.player.discounts||={};const first=!s.world.player.discounts[n.id];s.world.player.discounts[n.id]=1;
         if(first){s.trust=Math.min(5,s.trust+1);emit(s,'trade_discount',n.id,0,1);}
-        return ok(n.name+': «Подпись мастера узнаю. Для вас скидка в одну монету на эти товары».','recommendation_used',{novel:first,discoveries:[],opportunities:['купить товар со скидкой']});
+        return ok(H.sayNpc(s,n,'Подпись мастера узнаю. Для вас скидка в одну монету на эти товары','dialogue'),'recommendation_used',{novel:first,discoveries:[],opportunities:['купить товар со скидкой']});
       }
       if((c.intent==='show'||a.intent==='show'||c.question)&&e&&(e.kind==='clue'||e.localFacts?.length||e.writtenText)){
         if(e.evidence)return null; // The belief system handles testimony and fabricated evidence.
         n.researchKnowledge||={};
         const known=Object.values(n.researchKnowledge).filter(f=>f.sourceId===e.id);
-        if(c.question&&known.length)return ok(n.name+': «Я знаю из этого источника: '+known.map(f=>f.text).join(' ')+'»','npc_source_knowledge',{novel:false,discoveries:[]});
-        if(c.question&&!e.localKey)return ok(n.name+': «Я не знаю содержимого этого источника. Ваше знание само по себе не становится моим».','npc_unknown_source',{novel:false,discoveries:[]});
+        if(c.question&&known.length)return ok(H.sayNpc(s,n,'Я знаю из этого источника: '+known.map(f=>f.text).join(' ')+'','dialogue'),'npc_source_knowledge',{novel:false,discoveries:[]});
+        if(c.question&&!e.localKey)return ok(H.sayNpc(s,n,'Я не знаю содержимого этого источника. Ваше знание само по себе не становится моим','dialogue'),'npc_unknown_source',{novel:false,discoveries:[]});
         if(!local(s,e))return fail('refused','target_elsewhere','Источник не находится рядом.');
         const visible=sourceFacts(s,e).filter(f=>availableFact(s,e,f,'read'));
-        if(!visible.length)return ok(n.name+': «Содержимое не доступно для чтения. Сначала откройте источник».','source_unreadable',{novel:false,discoveries:[]});
+        if(!visible.length)return ok(H.sayNpc(s,n,'Содержимое не доступно для чтения. Сначала откройте источник','dialogue'),'source_unreadable',{novel:false,discoveries:[]});
         for(const f of visible)n.researchKnowledge[f.key]={...clone(f),sourceId:e.id,turn:s.turn};
         emit(s,'npc_source_read',n.id,null,{sourceId:e.id,facts:visible.map(f=>f.key)});
-        return ok(n.name+': «Здесь сказано: '+visible.map(f=>f.text).join(' ')+'»','source_shared',{novel:true,discoveries:[]});
+        return ok(H.sayNpc(s,n,'Здесь сказано: '+visible.map(f=>f.text).join(' ')+'','dialogue'),'source_shared',{novel:true,discoveries:[]});
       }
       return null;
     }
@@ -997,10 +1438,10 @@
     const number=v=>Number.isFinite(v)?v:0;
     const rawFields=text=>clean(text).split('\n').map(line=>{const i=line.indexOf(':');return i>0?[norm(line.slice(0,i)),clean(line.slice(i+1))]:[];}).filter(v=>v.length);
     const field=(config,key)=>rawFields(config.canon).find(([k])=>k===key)?.[1]||'';
-    const npc=s=>s.world?.npcs?.[s.world.activeNpcId]||null;
+    const npc=s=>s.world?.npcs?.[s.world.boundNpcId]||null;
     const loc=s=>s.world.locations.find(l=>l.id===s.world.player.location);
     const byLoc=(s,id)=>s.world.locations.find(l=>l.id===id);
-    const here=(s,n)=>Boolean(n&&n.location===s.world.player.location);
+    const here=(s,n)=>Boolean(n&&n.location===s.world.player.location&&!n.hidden&&!['incapacitated','dead'].includes(n.status));
     function findLocation(s,text) {
       const q=norm(text).replace(/^(?:в|на|к|из)\s+/,'').replace(/[.!?]+$/,'');
       if(/^(?:наружу|снаружи|улицу|выход)$/.test(q))return byLoc(s,s.world.outdoorId);
@@ -1050,7 +1491,7 @@
     }
     function init(s,p,config) {
       const reusable=s.world?.schema===4&&Array.isArray(s.world.locations)&&Array.isArray(s.world.edges)&&s.world.player&&s.world.npcs&&Array.isArray(s.world.events)&&Array.isArray(s.world.deferred)&&s.world.locations.some(l=>l.id===s.world.player.location);
-      if(reusable && JSON.stringify(s.world.authorCanon)===JSON.stringify(config)) { bind(s,s.world.activeNpcId);s.place=byLoc(s,s.world.player.location).name;presence(s);scenes.init(s,p,config);for(const e of s.entities){annotate(s,e,p);syncEntityTruth(s,e,'canon');}return; }
+      if(reusable && JSON.stringify(s.world.authorCanon)===JSON.stringify(config)) { dialogue.init(s);bind(s,s.world.boundNpcId);s.place=byLoc(s,s.world.player.location).name;presence(s);scenes.init(s,p,config);social.init(s,config);developer.init(s,config);for(const e of s.entities){annotate(s,e,p);syncEntityTruth(s,e,'canon');}return; }
       const old=s.world;const previousPlace=s.place;
       const w={schema:4,authorCanon:clone(config),locations:[],edges:[],npcs:{},activeNpcId:null,player:{location:null,previousLocation:null,counters:{},variants:{},money:0},facts:{},events:[],nextEvent:1,plans:[],deferred:[],loops:{work:{status:'idle',serial:0},exploration:{visited:[],discoveries:[]},social:{contacts:[]}},storyUsed:{}};
       s.world=w;
@@ -1119,7 +1560,7 @@
         addEntity(s,label,{id:'stock:'+hash(label),location:merchant.id,source:'stock',kind:'tool',portable:true,price,stockOwner:merchant.id});
       }
       for(const e of s.entities){annotate(s,e,p);syncEntityTruth(s,e,'canon');}
-      w.loops.exploration.visited.push(current.id);bind(s,main.id);presence(s);scenes.init(s,p,config);for(const e of s.entities){annotate(s,e,p);syncEntityTruth(s,e,'canon');}
+      dialogue.init(s);w.loops.exploration.visited.push(current.id);bind(s,main.id);presence(s);scenes.init(s,p,config);social.init(s,config);developer.init(s,config);for(const e of s.entities){annotate(s,e,p);syncEntityTruth(s,e,'canon');}
     }
     function annotate(s,e,p) {
       if(e.portable===undefined)e.portable=!['fixed','barrier'].includes(e.kind)||/ларец|сундук|ящик|шкатулк/.test(norm(e.label));
@@ -1134,14 +1575,15 @@
     }
     function bind(s,id) {
       const n=s.world.npcs[id];
-      s.world.activeNpcId=n?id:null;
+      s.world.boundNpcId=n?id:null;
       s.trust=n?.trust||0;s.tension=n?.tension||0;s.seen=n?n.seen:s.world.player.counters;s.used=n?n.used:s.world.player.variants;s.pending=n?.pending||null;s.secretRevealed=Boolean(n?.secretRevealed);
       for(const key of memoryKeys){delete s.facts[key];if(n?.memory[key]!==undefined)s.facts[key]=clone(n.memory[key]);}
       s.npcPresent=here(s,n);
     }
     function presence(s) {
-      const current=npc(s);if(here(s,current)){s.npcPresent=true;return;}
-      const local=Object.values(s.world.npcs).find(n=>here(s,n));bind(s,local?.id||null);
+      if(s.world.activeNpcId&&!dialogue.here(s,s.world.npcs[s.world.activeNpcId]))dialogue.close(s,'separated');
+      const current=npc(s),speaker=s.world.npcs[s.world.activeNpcId];if(dialogue.here(s,speaker)&&speaker.id!==current?.id){if(current)flush(s);bind(s,speaker.id);return;}if(here(s,current)){s.npcPresent=true;return;}
+      const local=Object.values(s.world.npcs).find(n=>dialogue.here(s,n));if(current)flush(s);bind(s,local?.id||null);
     }
     function npcProfile(s,config,fallback) {
       const n=npc(s);if(!n)return fallback;
@@ -1159,17 +1601,23 @@
       return Boolean(n.cherished&&words(n.cherished).map(stem).some(w=>w.length>=3&&words(labels).map(stem).includes(w)));
     }
     function reconcile(s,n) {
-      let count=0;for(const g of openGrievances(n))if(g.apology&&g.reparation){g.resolved=true;g.resolvedTurn=s.turn;count++;}
-      if(!count)return false;
-      n.reconciliations.push({turn:s.turn,conflicts:n.grievances.filter(g=>g.resolvedTurn===s.turn).map(g=>g.id)});s.trust=Math.max(1,s.trust);s.tension=Math.max(0,s.tension-2);
+      const repaired=openGrievances(n).filter(g=>g.apology&&g.reparation);
+      if(!repaired.length)return false;
+      for(const g of repaired){g.resolved=true;g.resolvedTurn=s.turn;}
+      n.reconciliations.push({turn:s.turn,conflicts:repaired.map(g=>g.id)});
+      const property=repaired.filter(g=>g.socialEventId&&!['insult','threat'].includes(g.kind));
+      if(property.length){const cap=Math.min(...property.map(g=>(g.trustBefore??1)-(n.social.profile.forgiveness>=.6?1:2)));s.trust=Math.min(s.trust,cap);n.social.cautious=true;}
+      else s.trust=Math.max(1,s.trust);
+      s.tension=Math.max(0,s.tension-2);n.social.accessRestricted=openGrievances(n).length>0;
       emit(s,'reconciliation',n.id,null,n.reconciliations.at(-1));log(s,'reconciliation',n.name+': причина конфликта признана и выполнено условие примирения.');return true;
     }
     function syncEntityTruth(s,e,source='event') {
       for(const key of ['location','opened','locked','destroyed','hidden','condition','pinInstalled','moved','containerId','supportId','openingDegree'])truth(s,'entity:'+e.id+':'+key,e[key]??false,source);
     }
-    function snapshot(s){return clone({entities:s.entities,inventory:s.inventory,clocks:s.clocks,stage:s.stage,player:s.world.player,relationships:Object.values(s.world.npcs).map(n=>({id:n.id,trust:n.trust,tension:n.tension,location:n.location})),facts:s.world.facts});}
+    function snapshot(s){return clone({entities:s.entities,inventory:s.inventory,clocks:s.clocks,stage:s.stage,player:s.world.player,relationships:Object.values(s.world.npcs).map(n=>({id:n.id,trust:n.trust,tension:n.tension,location:n.location,health:n.health,status:n.status,relationship:n.social?.relationship})),npcBeliefs:Object.fromEntries(Object.values(s.world.npcs).map(n=>[n.id,n.beliefs])),facts:s.world.facts});}
     function observeProperty(s,e,key,value,action) {
       for(const n of Object.values(s.world.npcs)) {
+        if(!social.permitsObservation(s,n,e,action))continue;
         const ownItem=e.location===n.id;
         const isHere=n.location===s.world.player.location;
         const actorHere=action.actor===n.id;
@@ -1196,7 +1644,7 @@
       }
       for(const n of Object.values(s.world.npcs)) {
         const old=before.relationships.find(v=>v.id===n.id);if(!old)continue;
-        for(const key of ['trust','tension','location'])if(old[key]!==n[key])emit(s,'npc_'+key,n.id,old[key],n[key],action.id);
+        for(const key of ['trust','tension','location','health','status'])if(old[key]!==n[key])emit(s,'npc_'+key,n.id,old[key],n[key],action.id);
       }
       for(const key of ['danger','discovery'])if(before.clocks[key]!==s.clocks[key]){emit(s,'clock_'+key,key,before.clocks[key],s.clocks[key],action.id);truth(s,'clock:'+key,s.clocks[key]);}
       if(before.player.location!==s.world.player.location)emit(s,'player_move','player',before.player.location,s.world.player.location,action.id);
@@ -1232,6 +1680,16 @@
       if(!c.question&&!c.speech&&/^(?:я )?(?:осмотр|осматр|огляд|исслед|изуч|рассматри|разгляды|обыски|слуш|прислуш|провер|читаю|прочита)/.test(lower))intent='inspect';
       if(!c.question&&/устан[оа]в|вставля/.test(lower)&&/штифт/.test(lower))intent='repair_install';
       if(!c.question&&/изгот[оа]в|сдела/.test(lower)&&/штифт/.test(lower))intent='repair_craft';
+      if(/^(?:я )?(?:отхожу|отойти|отступаю) от|заканчиваю разговор|прекращаю разговор|до свидания/.test(lower))intent='end_dialogue';
+      if(/^(?:я )?(?:прошу одолжить|одолжи|беру в долг|одолжить)/.test(lower))intent='borrow';
+      if(/^(?:я )?(?:(?:незаметно|тайно) )?(?:возвращаю|верну|вернуть) .*(?:молот|ключ|инструмент|вещ|письм|ларец|книг)/.test(lower))intent='return_property';
+      if(/^(?:я )?(?:возмещаю|компенсирую|плачу компенсацию)/.test(lower))intent='compensate';
+      if(/^(?:я )?(?:арендую|беру .* в аренду)/.test(lower))intent='rent';
+      if(/^(?:я )?(?:плачу|оплачиваю) штраф/.test(lower))intent='pay_fine';
+      if(/^(?:я )?(?:рассказываю|сообщаю).*о (?:краже|нападении|порче)/.test(lower))intent='report_event';
+      if(/^(?:я )?(?:прикрываю|помогаю .* скрыть (?:кражу|нападение))/.test(lower))intent='complicity';
+      if(/^(?:я )?(?:признаюсь|сознаюсь)/.test(lower))intent='confess';
+      if(/^(?:я )?(?:обещаю|клянусь)/.test(lower))intent='promise';
       if(c.hypothetical||c.negated)intent=c.intent;
       const semantic=c.semantic;
       if(semantic?.recognized){
@@ -1244,12 +1702,14 @@
         else if(semantic.mode==='question')intent='question';
         else if(semantic.mode==='negated')intent='refuse';
       }
+      if(!c.negated&&!c.hypothetical&&/^(?:я )?(?:прошу разреш|разреши|разрешите|можно.*(?:инструмент|верстак|личный ящик))/.test(norm(c.originalText||c.text)))intent='request_permission';
+      if(['borrow','rent','return_property'].includes(intent)&&!semantic?.recognized){const options=s.entities.filter(e=>!e.destroyed&&(intent==='return_property'?e.location==='inventory':e.ownerId&&here(s,s.world.npcs[e.ownerId])&&[s.place,e.ownerId].includes(e.location)));target=matchEntity({...s,entities:options},c.text,true)||target;}
       const explicitGoal=fullText.match(/(?:чтобы|с целью|ради того чтобы)\s+([^,.!?]+)/iu)?.[1];
       const goal=clean(explicitGoal||s.facts.goal||'');
       const method=clean(c.text.match(/(?:с помощью|используя|посредством)\s+([^,.!?]+)/iu)?.[1]||(/^(?:прошу|договариваюсь)/.test(lower)?'договорённость':/незаметно/.test(lower)?'скрытно':intent==='craft_gift'?(/превращаю/.test(lower)&&profile(config).magic?'преобразование':'ремесло'):intent));
       let expectedEffect=/довер|располож|примир/.test(norm(goal))?'изменить отношение адресата':intent==='claim'||intent==='plant_evidence'?'изменить убеждение адресата':intent==='move'||intent==='return'?'оказаться в соседней локации':intent==='request_plan'?'согласовать перенос, укрытие и отложенный шаг':intent==='open'?'получить доступ к содержимому':goal||'получить результат указанного действия';
       if(c.negated)expectedEffect='воздержаться от действия';
-      return {id:'action:'+s.turn+':'+s.world.nextEvent+':'+hash(c.originalText||c.text),actor:semantic?.recognized&&semantic.mode==='request'?semantic.actorId||semantic.actor:'player',intent,intention:intent,targetId:target?.id||null,targetLabel:target?.label||semantic?.targetLabel||null,recipientId:semantic?.recipientId||receiver?.id||s.world.activeNpcId,unresolvedActor:semantic?.recognized&&semantic.mode==='request'&&!semantic.actorId,unresolvedRecipient:semantic?.recognized?Boolean(semantic.recipient&&!semantic.recipientId):unresolvedRecipient,destinationId:semantic?.destinationId||null,goal,goalSource:explicitGoal?'explicit':goal?'player-context':'unspecified',method:semantic?.manner?.length?semantic.manner.join(', '):method,expectedEffect,text:c.originalText||c.text,scope:semantic?.scope||'play',hypothetical:c.hypothetical,negated:c.negated,semantic};
+      return {id:'action:'+s.turn+':'+s.world.nextEvent+':'+hash(c.originalText||c.text),actor:semantic?.recognized&&semantic.mode==='request'?semantic.actorId||semantic.actor:'player',intent,intention:intent,targetId:target?.id||null,targetLabel:target?.label||semantic?.targetLabel||null,recipientId:semantic?.recipientId||receiver?.id||s.world.boundNpcId,unresolvedActor:semantic?.recognized&&semantic.mode==='request'&&!semantic.actorId,unresolvedRecipient:semantic?.recognized?Boolean(semantic.recipient&&!semantic.recipientId):unresolvedRecipient,destinationId:semantic?.destinationId||null,goal,goalSource:explicitGoal?'explicit':goal?'player-context':'unspecified',method:semantic?.manner?.length?semantic.manner.join(', '):method,expectedEffect,text:c.originalText||c.text,scope:semantic?.scope||'play',hypothetical:c.hypothetical,negated:c.negated,semantic};
     }
     function containerAccess(s,e,seen=new Set()){
       if(!e?.containerId)return true;
@@ -1307,8 +1767,8 @@
       if(meta.witnessedBy?.includes(n.id)) {
         hear(s,n,meta.proposition,'evidence:'+e.id,0,true);
         conflict(s,n,'staged_evidence','Вы пытались выдать подброшенную улику за независимое подтверждение.');
-        if(n.id===s.world.activeNpcId){s.trust=Math.max(-5,s.trust-1);s.tension++;}
-        return voice(s,npcProfile(s,s.world.authorCanon,profile(s.world.authorCanon)),'Я видел, откуда появилась эта улика. Она не подтверждает вашу версию независимо.');
+        if(n.id===s.world.boundNpcId){s.trust=Math.max(-5,s.trust-1);s.tension++;}
+        return dialogue.say(s,n,'Я видел, откуда появилась эта улика. Она не подтверждает вашу версию независимо.','witness_event');
       }
       const belief=hear(s,n,meta.proposition,'evidence:'+e.id,.68,false);
       return `${n.name} изучает «${e.label}». ${belief.confidence>=.7?'Теперь версия кажется убедительной':'Пока это только предположение'}: ${belief.text}.`;
@@ -1318,7 +1778,7 @@
       if(!accessible(s,e,n.id))return no('Предмет находится не там, где персонаж.','target_not_present');
       if(e.opened)return ok('Предмет уже открыт.','already_open');
       if(openGrievances(n).length)return no(n.name+' помнит конфликт и не соглашается помогать до примирения.','unresolved_conflict');
-      if(e.locked&&!canUnlock(s,n,e))return no(n.name+': подходящего ключа или права доступа у меня нет.','npc_has_no_access');
+      if(e.locked&&!canUnlock(s,n,e))return no(n.name+': подходящего ключа или права доступа нет.','npc_has_no_access');
       const old=s.place;s.place=byLoc(s,n.location).name;const text=resolveBarrier(s,p,e,'помощь '+n.name);s.place=old;return ok(text,'npc_opened');
     }
     function makeDeferred(s,actor,e,text,planId) {
@@ -1371,7 +1831,7 @@
       if(a.unresolvedActor)return ask('Кого из существующих персонажей вы просите выполнить действие?','unknown_actor');
       if(a.unresolvedRecipient)return ask('К какому из существующих персонажей вы обращаетесь?','unknown_recipient');
       const conversation=a.intent==='request_npc'?a.actor:a.recipientId;
-      if(conversation&&conversation!=='player'&&conversation!==s.world.activeNpcId) {
+      if(conversation&&conversation!=='player'&&conversation!==s.world.boundNpcId) {
         const receiver=s.world.npcs[conversation];
         if(!here(s,receiver))return no('Персонаж '+receiver.name+' находится в другом месте. Разговор и передача отсюда невозможны.','npc_absent');
         flush(s);bind(s,receiver.id);n=receiver;p=npcProfile(s,config,p);
@@ -1379,12 +1839,12 @@
       if(a.intent==='request_npc'){
         if(!a.semantic?.actorId||!n||!here(s,n))return ask('Кого из находящихся рядом персонажей вы просите выполнить действие?','unknown_actor');
         if(a.semantic.intent==='GREET'){
-          if(openGrievances(n).length)return no(n.name+': «Я помню нашу ссору. Сначала давайте уладим её».','unresolved_conflict');
+          if(openGrievances(n).length)return no(dialogue.say(s,n,'Я помню нашу ссору. Сначала давайте уладим её.'),'unresolved_conflict');
           const recipient=a.semantic.recipientId||'player';const person=s.world.npcs[recipient];
           if(recipient!=='player'&&!here(s,person))return no('Адресат приветствия находится в другом месте.','npc_absent');
           n.memory.outgoingGreetings||={};n.memory.outgoingGreetings[recipient]=(n.memory.outgoingGreetings[recipient]||0)+1;
           emit(s,'greeting',n.id,null,{actor:n.id,recipient});
-          return ok(n.name+' '+(n.memory.outgoingGreetings[recipient]>1?'снова ':'')+'приветствует '+(recipient==='player'?'вас':person.name)+': «Здравствуйте».','npc_greeted');
+          return ok(dialogue.say(s,n,(n.memory.outgoingGreetings[recipient]>1?'Снова здравствуйте':'Здравствуйте')+(recipient==='player'?'':', '+person.name)+'.','greeting_requested'),'npc_greeted');
         }
         if(a.semantic.intent==='APPROACH')return spatial.approach(s,a.semantic,n.id);
         if(a.semantic.intent==='OPEN'){
@@ -1397,6 +1857,7 @@
         }
         return ask('Просьба адресована '+n.name+'. Для этого способа помощи пока нет исполнимого действия; уточните конкретный шаг.','unsupported_npc_action');
       }
+      if(a.intent==='end_dialogue')return ok('Вы заканчиваете разговор и отступаете. Местоположение не изменилось.','dialogue_ended');
       if(a.intent==='approach')return spatial.approach(s,a.semantic);
       if(a.intent==='greet'&&a.recipientId==='player')return ok('Вы приветствуете себя. На отношения с другими людьми это не влияет.','self_greeting');
       if(a.semantic?.intent==='OPEN'&&['unlock','slightly'].includes(a.semantic.variant)&&e){
@@ -1439,7 +1900,7 @@
         if(!paper||paper.location!=='inventory'||paper.destroyed)return no('Для такой улики нужен реальный носитель при вас: записка, письмо или бумага.','missing_evidence_carrier');
         const payload=c.text.match(/[:«]\s*([^»]+)/u)?.[1];
         if(!payload&&!paper.evidence)return ask('Что именно должно быть написано на улике?','missing_evidence_content');
-        const witnesses=Object.values(s.world.npcs).filter(v=>here(s,v)&&!s.facts.hidden&&!/незаметно|тайно/.test(c.lower)).map(v=>v.id);
+        const witnesses=Object.values(s.world.npcs).filter(v=>social.visible(s,v,a)).map(v=>v.id);
         if(payload)paper.evidence={proposition:proposition(s,payload),authenticity:'fabricated',createdBy:'player',witnessedBy:witnesses};
         if(/подбрасыва/.test(c.lower)){paper.location=s.place;paper.hidden=false;s.inventory=s.inventory.filter(v=>v!==paper.label);}
         emit(s,'evidence_created',paper.id,null,paper.evidence);log(s,'evidence','На носителе '+paper.label+' записана версия: '+paper.evidence.proposition.text);
@@ -1508,7 +1969,7 @@
         if(!e||e.location!=='inventory'||e.destroyed)return no('Этого предмета у вас нет.','item_not_owned');
         const important=meaningful(s,n,e),effort=Boolean(e.craftedEffort);e.location=n.id;s.inventory=s.inventory.filter(v=>v!==e.label);s.facts.lastGift=e.label;s.focus=e.id;
         const before=s.trust;s.trust=Math.min(5,s.trust+(important?2:1));
-        if(important)for(const g of openGrievances(n))g.reparation=true;
+        if(important)for(const g of openGrievances(n))if(!g.socialEventId||['insult','threat'].includes(g.kind))g.reparation=true;
         const repaired=reconcile(s,n);
         emit(s,'gift_received',n.id,null,{itemId:e.id,lineage:e.lineage,meaningful:important,crafted:effort,expectedEffect:a.expectedEffect});
         const eligible=s.trust>=1&&!openGrievances(n).length;emit(s,'cooperation_access',n.id,before>=1,{eligible,reason:repaired?'reconciliation':important?'meaningful_gift':'gift'},a.id);
@@ -1517,7 +1978,7 @@
       }
       if(c.intent==='apology'&&n&&openGrievances(n).length) {
         for(const g of openGrievances(n))g.apology=true;
-        s.trust=Math.min(5,s.trust+1);s.tension=Math.max(1,s.tension-1);const repaired=reconcile(s,n);
+        if(!n.grievances.some(g=>g.apology&&g.apologyTurn<s.turn))s.trust=Math.min(5,s.trust+1);for(const g of openGrievances(n))g.apologyTurn??=s.turn;s.tension=Math.max(1,s.tension-1);const repaired=reconcile(s,n);
         return repaired?ok(voice(s,p,'Извинение и поступок приняты. Мы можем продолжить.'),'reconciled'):partial(voice(s,p,`Я услышал извинение. Причина ссоры — «${openGrievances(n)[0].reason}». Покажите серьёзность намерения: для меня важно ${n.cherished||n.motive}.`),'reconciliation_pending');
       }
       if(['help','bargain'].includes(c.intent)||c.intent==='question'&&/секрет|откроешь|поможешь/.test(c.lower)) {
@@ -1590,10 +2051,10 @@
     function after(s,p,c,a,r) {
       scenes.sourceLearnedAfter(s,c,a,r);
       const n=npc(s);
-      if(n&&here(s,n)&&!c.hypothetical&&!c.negated) {
+      if(n&&here(s,n)&&!c.hypothetical&&!c.negated&&dialogue.active(s,n)) {
         if(/меня зовут|мое имя|зови меня/.test(c.lower)&&s.facts.name){n.memory.playerName=s.facts.name;hear(s,n,{key:'player:name',value:s.facts.name,text:'Игрок представился: '+s.facts.name},'player:identity',.6);}
         if(/хочу|моя цель|мне нужно|собираюсь/.test(c.lower)&&s.facts.goal&&!c.question)n.memory.playerGoal=s.facts.goal;
-        if(['insult','threat','attack'].includes(c.intent)&&r.status!=='clarification'&&r.status!=='refused'&&!r.text.includes('не нападение на собеседника'))conflict(s,n,c.intent,c.text);
+        if(!r.socialHandled&&['insult','threat','attack'].includes(c.intent)&&r.status!=='clarification'&&r.status!=='refused'&&!r.text.includes('не нападение на собеседника'))conflict(s,n,c.intent,c.text);
         if((['greet','identity','talk','comfort'].includes(c.intent)||['select_npc','find_job','show','buy','give','bargain'].includes(a.intent))&&!s.world.loops.social.contacts.includes(n.id))s.world.loops.social.contacts.push(n.id);
       }
       if(c.intent==='open'&&r.status==='success')for(const task of s.world.deferred)if(task.targetId===a.targetId&&task.actor==='player'&&task.status==='pending'&&s.entities.find(e=>e.id===task.targetId)?.opened){task.status='completed';task.completedTurn=s.turn;}
@@ -1605,9 +2066,9 @@
         if(task.actor==='player')continue;
         const actor=s.world.npcs[task.actor],target=s.entities.find(v=>v.id===task.targetId);
         if(!actor||!target||!here(s,actor))continue;
-        const before=snapshot(s);const previousCause=s.currentActionId;s.currentActionId=task.id;
+        root.StoryMessages.begin(s);const before=snapshot(s);const previousCause=s.currentActionId;s.currentActionId=task.id;
         const r=npcOpen(s,p,actor,target,task.id);task.lastOutcome=r.status;
-        if(r.status==='success'){task.status='completed';task.completedTurn=s.turn;}emit(s,'deferred_result',task.id,null,{status:task.status,outcome:r.status},task.id);lines.push({...r,action:{id:task.id,actor:task.actor,intent:'open',intention:'open',targetId:task.targetId,goal:'исполнить отложенное действие',method:'договорённость',expectedEffect:'получить доступ',scope:'play'},effects:effects(s,before,{id:task.id})});s.currentActionId=previousCause;
+        if(r.status==='success'){task.status='completed';task.completedTurn=s.turn;}emit(s,'deferred_result',task.id,null,{status:task.status,outcome:r.status},task.id);lines.push(root.StoryMessages.finish(s,{...r,action:{id:task.id,actor:task.actor,intent:'open',intention:'open',targetId:task.targetId,goal:'исполнить отложенное действие',method:'договорённость',expectedEffect:'получить доступ',scope:'play'},effects:effects(s,before,{id:task.id})}));s.currentActionId=previousCause;
       }return lines;
     }
     function assessGoal(s,results) {
@@ -1621,9 +2082,12 @@
       return {status:achieved?'achieved':'pending',goal:relevant[0].action.goal,recipientId:recipient,observedTrust:n?.trust??null,openConflicts:openGrievances(n).map(g=>g.id),reason:achieved?'Достигнуты условия сотрудничества.':'Предмет мог быть передан, но требуемое доверие пока не достигнуто.'};
     }
     function map(s){return {current:s.world.player.location,locations:s.world.locations.map(v=>({...v,people:Object.values(s.world.npcs).filter(n=>n.location===v.id).map(n=>n.name)})),edges:clone(s.world.edges),exits:exits(s)};}
+    const dialogue=root.StoryDialogue.create({emit});
+    const developer=root.DeveloperIntervention.create({...H,emit});
+    const social=root.StorySocial.create({...H,emit,truth,findNpc,findLocation,here,npc,flush,bind,moveActor,conflict,openGrievances,reconcile,dialogue});
     const spatial=root.StorySpatial.create({...H,emit,containerAccess});
-    const scenes=root.StoryScenes.create({...H,npc,here,findLocation,openGrievances,emit,truth,containerAccess,spatial});
-    return {containerAccess,inspectScene:scenes.inspect,openedText:scenes.openedText,init,analyze,handle,after,flush,bind,presence,npc,npcProfile,openGrievances,snapshot,effects,runDue,map,assessGoal,proposition,emit,truth,annotate,statuses,result};
+    const scenes=root.StoryScenes.create({...H,npc,here,findLocation,openGrievances,emit,truth,containerAccess,spatial,dialogue,sayNpc:(s,n,text,trigger)=>dialogue.say(s,n,text,trigger)});
+    return {dialogue,developer,social,containerAccess,inspectScene:scenes.inspect,openedText:scenes.openedText,init,analyze,handle,after,flush,bind,presence,npc,npcProfile,openGrievances,snapshot,effects,runDue,map,assessGoal,proposition,emit,truth,annotate,statuses,result};
   }};
 })(globalThis);
 </script>
@@ -1924,7 +2388,7 @@
     return { text, lower, intent, hypothetical, question, speech, negated };
   }
   function knownPlayer(s,key) { const n=s.world?.npcs[s.world.activeNpcId];return n?.memory[key==='name'?'playerName':'playerGoal']; }
-  function npcHolder(s) { return s.world?.activeNpcId || 'npc:absent'; }
+  function npcHolder(s) { return s.world?.boundNpcId || 'npc:absent'; }
   function verdict(s,status,code,text) {
     if(s.currentResolution){s.currentResolution.status=status;s.currentResolution.code=code;}
     return text;
@@ -1934,7 +2398,7 @@
     const candidates = s.entities.filter(e => includeAbsent || !e.destroyed && (e.location === s.place || e.location === 'inventory' || e.location === npcHolder(s)));
     const scored = candidates.map(e => {
       let score = 0;
-      if (lower.includes(norm(e.label))) score += 12;
+      if (lower.includes(norm(e.label))) score += 12+words(e.label).length;
       for (const token of words(e.label).map(stem)) if (token.length >= 3 && tokens.includes(token)) score += 3;
       const key = OBJECTS.find(([label]) => label === e.label);
       if (key && new RegExp(key[1]).test(lower)) score += 3;
@@ -1953,9 +2417,10 @@
       const feminine = {рад:'рада',готов:'готова',услышал:'услышала',видел:'видела',слышал:'слышала',скрывал:'скрывала',рассмеялся:'рассмеялась',отвлекся:'отвлеклась',перестал:'перестала',запомнил:'запомнила',понял:'поняла',пробовал:'пробовала',мог:'могла'};
       line=line.replace(/[А-Яа-яЁё]+/gu, token => { const replacement=feminine[norm(token)];return replacement ? (token[0]===token[0].toUpperCase()?replacement[0].toUpperCase()+replacement.slice(1):replacement) : token; });
     }
-    if (!s.npcPresent) return 'Вокруг нет собеседника. Вы можете вернуться или исследовать новое место.';
+    const person=simulation.npc(s);
+    if(!simulation.dialogue.canSpeak(s,person,'dialogue'))return 'Вы ещё не начали разговор. Можно обратиться к персонажу или продолжить действовать самостоятельно.';
     const manner = s.tension >= 3 ? 'Ответ звучит настороженно.' : p.timid ? 'Голос тихий; каждое слово даётся с осторожностью.' : p.warm ? choose(s, 'warm', ['В голосе чувствуется участие.', 'Интонация становится мягче.', 'В ответе нет торопливости.']) : p.cold ? choose(s, 'cold', ['Ответ звучит сдержанно.', 'После короткой паузы следует ответ.', 'Ни одного лишнего слова.']) : '';
-    return `${p.name}${manner ? '. ' + manner : ':'}\n«${line}»`;
+    return simulation.dialogue.say(s,person,line,'dialogue',{manner});
   }
   function thread(s, text, id = hash(text)) {
     if (!s.threads.some(t => t.id === id)) s.threads.push({ id, text: clean(text).slice(0,180), status: 'open' });
@@ -2044,12 +2509,14 @@
   function execute(s, p, c, config) {
     const primary=['take','drop','give','use','combine'].includes(c.intent) ? c.text.split(/\s+(?:в|на|под|за|через|чтобы)\s+/iu)[0] : c.text;
     const item = c.semantic?.recognized&&!c.semantic.targetIds ? s.entities.find(e=>e.id===c.semantic.targetId)||null : matchEntity(s,primary,true);
-    if (c.hypothetical) return voice(s,p,`Пока это только план. ${/маг|превращ|телепорт/.test(c.lower) && !p.magic ? 'В этом мире магия не подтверждена; понадобится обычный способ.' : item?.kind === 'barrier' ? 'Можно попробовать, но замок, инструмент и шум повлияют на результат.' : 'Результат будет зависеть от способа и того, что есть рядом.'} Само действие ещё не произошло.`);
-    if (c.negated) { log(s,'boundary',c.text); return voice(s,p,'Хорошо. Вы этого не делаете. Можно выбрать другой способ; я не стану решать за вас.'); }
+    if (c.hypothetical) return (`Пока это только план. ${/маг|превращ|телепорт/.test(c.lower) && !p.magic ? 'В этом мире магия не подтверждена; понадобится обычный способ.' : item?.kind === 'barrier' ? 'Можно попробовать, но замок, инструмент и шум повлияют на результат.' : 'Результат будет зависеть от способа и того, что есть рядом.'} Само действие ещё не произошло.`);
+    if (c.negated) { log(s,'boundary',c.text); return 'Вы этого не делаете. Можно выбрать другой способ.'; }
+    if(c.intent==='custom'){thread(s,c.originalText||c.text,'unresolved:'+hash(c.originalText||c.text));return verdict(s,'clarification','unknown_intent','Такой способ пока не реализован. Уточните цель, предмет и ожидаемое изменение.');}
     learnFacts(s,c);
+    if(['gesture','emotion','fear','perform','rest'].includes(c.intent)&&!simulation.dialogue.active(s,simulation.npc(s))){if(c.intent==='emotion'){s.facts.mood=(s.feelingTurn===s.turn?s.facts.mood+'; '+c.text:c.text).slice(0,240);s.feelingTurn=s.turn;}if(c.intent==='perform')s.facts.performance=c.text;log(s,c.intent,c.text);return 'Вы '+({gesture:'делаете жест',emotion:'отмечаете своё настроение',fear:'чувствуете тревогу',perform:'выступаете',rest:'отдыхаете'}[c.intent])+'. Разговор не начат.';}
     if (!s.npcPresent && ['greet','thanks','apology','comfort','joke','insult','bargain','lie','threat','attack','perform','identity'].includes(c.intent))return verdict(s,'refused','npc_absent','Здесь нет прежнего собеседника. Можно вернуться к нему или установить нового участника через вводные.');
     const count = s.seen[c.intent] || 0; s.seen[c.intent] = count + 1;
-    const available = item && !item.destroyed && [s.place,'inventory',npcHolder(s)].includes(item.location)&&simulation.containerAccess(s,item);
+    const available = item && !item.destroyed && ([s.place,'inventory',npcHolder(s)].includes(item.location)||c.allowTakingHeld&&s.world.npcs[item.location]?.location===s.world.player.location)&&simulation.containerAccess(s,item);
     const targetText = c.text.replace(/^\s*(?:я\s+)?\S+\s*/u,'').replace(/[.!?]+$/,'').slice(0,100);
     switch (c.intent) {
       case 'name': return voice(s,p,s.facts.name ? `${s.facts.name}. Запомню. ${s.facts.goal ? 'Вы всё ещё хотите ' + s.facts.goal + '?' : 'Что привело вас сюда?'}` : 'Как мне к вам обращаться?');
@@ -2063,7 +2530,7 @@
       case 'inventory': return s.inventory.length ? 'При вас: ' + s.inventory.map(v=>'«'+v+'»').join(', ') + '.' : 'При вас нет учтённых предметов. Можно добавить стартовые вещи в описание героя или явно сказать: «У меня есть …».';
       case 'greet': if(simulation.openGrievances(simulation.npc(s)).length)return voice(s,p,'Здравствуйте. Я помню нашу ссору; приветствие само по себе её не уладит. Если хотите, обсудим, как её исправить.');if (count === 0) s.trust++; return voice(s,p,choose(s,'greeting',[`Здравствуйте${knownPlayer(s,'name') ? ', ' + knownPlayer(s,'name') : ''}. ${knownPlayer(s,'goal') ? 'Вы ищете: ' + knownPlayer(s,'goal') + '?' : 'С чем вы пришли?'}`, 'Я здесь. Продолжим с того, на чём остановились?', 'Снова здравствуйте. За это время вы ничего не обязаны были решить.']));
       case 'thanks': if (count < 2) s.trust++; return voice(s,p,choose(s,'thanks',[p.ironic ? 'Благодарность принята. Сдачи, правда, не будет.' : 'Спасибо, что сказали. Это не прошло незамеченным.', 'Я рад, что помощь оказалась кстати. Дальше решение за вами.', 'Мы можем обойтись без церемоний. Но я вас услышал.']));
-      case 'apology': s.trust = clamp(s.trust+1);s.tension=Math.max(0,s.tension-2);return voice(s,p,'Принимаю извинение. Последствия не исчезнут, но разговор можно продолжить иначе.');
+      case 'apology': if(simulation.npc(s)?.social.cautious)return voice(s,p,'Я услышал извинение. История не забыта; доверие будут восстанавливать дальнейшие поступки.');s.trust = clamp(s.trust+1);s.tension=Math.max(0,s.tension-2);return voice(s,p,'Принимаю извинение. Последствия не исчезнут, но разговор можно продолжить иначе.');
       case 'refuse': s.pending=null;log(s,'boundary',c.text);return voice(s,p,'Нет — значит нет. Этот путь закрыт по вашему решению, а не вся история. Что вы предложите вместо него?');
       case 'emotion': {
         s.facts.mood=(s.feelingTurn===s.turn ? s.facts.mood+'; '+c.text : c.text).slice(0,240);s.feelingTurn=s.turn;log(s,'feeling',s.facts.mood);if(count<2)s.trust++;
@@ -2072,7 +2539,7 @@
       }
       case 'fear': s.trust++;return voice(s,p,p.warm ? 'Можно остановиться и выдохнуть. Скажите, что вас пугает, и мы подумаем, как снизить риск.' : 'Страх сообщает о риске. Можно осмотреться, подготовить путь отхода или попросить поддержки.');
       case 'comfort': if (count < 3) s.trust++;s.tension=Math.max(0,s.tension-1);return voice(s,p,p.cold && s.trust<2 ? 'Не так близко, пожалуйста. Но намерение я понимаю. Лучше побудьте рядом.' : p.warm ? 'Спасибо. С вами стало легче говорить. Что бы ни случилось дальше, это я запомню.' : 'Неожиданно. Я не сразу нахожу ответ, но отстраняться не хочется.');
-      case 'insult': s.trust-=1;s.tension++;return voice(s,p,p.ironic ? 'Остроумие пока уступает громкости. Попробуем говорить о деле?' : 'Мне неприятно это слышать. Я готов говорить, но не на таких условиях.');
+      case 'insult': s.trust-=1;s.tension++;return 'Вы произносите оскорбление.';
       case 'gesture':
         if(/сжимаю кулак|закатываю глаз/.test(c.lower)){s.tension++;return voice(s,p,'Я вижу, что вы напряжены. Скажите прямо, что вас не устраивает.');}
         s.tension=Math.max(0,s.tension-1);log(s,'gesture',c.text);return voice(s,p,choose(s,'gesture',[p.ironic?'Этот взгляд красноречивее длинной речи. Что за ним стоит?':'Я замечаю ваш жест. Не буду додумывать за вас — хотите продолжить?', 'Я понял, что вы отреагировали. Если это согласие или сомнение, скажите, к чему именно оно относится.', 'Пауза и жест меняют тон разговора. Можно обойтись без спешки.']));
@@ -2104,7 +2571,7 @@
         if(!available || !item.known) return verdict(s,item?'refused':'clarification',item?'target_not_present':'missing_target',item?.destroyed ? 'Эта вещь разрушена. Взять её в прежнем виде нельзя.' : `Не удаётся найти здесь ${item ? '«'+item.label+'»' : 'такой предмет'}. Можно осмотреться или изменить авторские вводные.`);
         if(item.location==='inventory')return `«${item.label}» уже у вас.`;
         if(['barrier','fixed'].includes(item.kind) && !item.portable)return verdict(s,'refused','not_portable',`«${item.label}» не получится просто унести. Его можно исследовать или использовать на месте.`);
-        if(item.location===npcHolder(s) && s.trust<2)return verdict(s,'refused','item_not_owned',voice(s,p,'Теперь эта вещь у меня. Попросите вернуть или предложите обмен.'));
+        if(item.location===npcHolder(s) && s.trust<2&&!c.allowTakingHeld)return verdict(s,'refused','item_not_owned',voice(s,p,'Теперь эта вещь у меня. Попросите вернуть или предложите обмен.'));
         addInventory(s,item);s.focus=item.id;if(item.unlocks?.length)s.stage=Math.max(s.stage,2);log(s,'item','Получено: '+item.label);return `Вы берёте «${item.label}». Предмет теперь при вас.`;
       }
       case 'drop': case 'give': {
@@ -2218,22 +2685,9 @@
       case 'eat': if(!available || item.kind!=='food')return verdict(s,'refused','missing_food','Назовите доступную еду или напиток. От желания поесть предметы не появляются.');removeInventory(s,item,'consumed');item.destroyed=true;s.tension=Math.max(0,s.tension-1);log(s,'item','Использовано: '+item.label);return `Вы пробуете «${item.label}». Небольшая пауза помогает собраться; этот запас уже израсходован.`;
       case 'write': {const note=c.text.replace(/^\s*(?:я\s+)?(?:пишу|рисую|черчу|записываю)\s*/iu,'').slice(0,180);s.facts.writing=note;log(s,'creation',note);return `На месте остаётся ваша запись или рисунок: «${note}». Это след, к которому можно вернуться или который можно показать собеседнику.`;}
       case 'knock': if(!s.npcPresent)return 'Стук расходится в тишине. Известный вам собеседник остался в другом месте; ответа пока нет.';return voice(s,p,choose(s,'knock',['Я слышу. Входите в разговор — что вам нужно?', 'Вы не обязаны стучать снова. Я уже здесь и жду ваших слов.', 'Стук привлёк внимание. Теперь тихо наблюдать будет сложнее.']));
-      case 'wait': if(s.clocks.danger)danger(s);return s.npcPresent?voice(s,p,choose(s,'wait',[`Не буду заполнять паузу за вас. Для меня по-прежнему важно ${p.motive}.`, 'Можно не отвечать сразу. Иногда пауза честнее обещания.', 'Пока мы молчим, решение остаётся открытым.'])):'Вы ждёте. Необычных изменений пока не видно; можно осмотреть новое место или вернуться.';
+      case 'wait': if(s.clocks.danger)danger(s);return simulation.dialogue.active(s,simulation.npc(s))?voice(s,p,choose(s,'wait',[`Не буду заполнять паузу за вас. Для меня по-прежнему важно ${p.motive}.`, 'Можно не отвечать сразу. Иногда пауза честнее обещания.', 'Пока мы молчим, решение остаётся открытым.'])):'Вы ждёте. Необычных изменений пока не видно; можно осмотреть новое место или вернуться.';
       case 'talk': s.facts.topic=c.text.slice(0,160);return voice(s,p,`Я услышал вашу версию. ${knownPlayer(s,'goal')?'Как это поможет вам '+knownPlayer(s,'goal')+'?':'Чего вы хотите добиться этим разговором?'}`);
-      default: {
-        verdict(s,'clarification','unknown_intent','');
-        if(/обещаю|клянусь/.test(c.lower)){verdict(s,'success','promise_recorded','');s.facts.promise=c.text.slice(0,180);log(s,'promise',s.facts.promise);return voice(s,p,'Я запомню обещание. Доверие будет зависеть от того, что вы сделаете дальше.');}
-        if(item && available) {
-          s.focus=item.id;log(s,'attempt',c.text);
-          return `Вы пробуете необычный подход к «${item.label}». ${item.opened?'Доступ уже открыт; способ не отменяет найденного.':item.kind==='barrier'?'Преграда остаётся на месте: опишите, как ваш способ должен обойти запор.':'Предмет остаётся в сцене. Уточните ожидаемый эффект, и можно будет проверить способ.'}\n${s.npcPresent?voice(s,p,p.ironic?'Я такого ещё не видел. Объясните замысел — возможно, в нём есть смысл.':'Любопытно. Вы хотите что-то проверить или показать мне?'):''}`;
-        }
-        s.facts.topic=c.text.slice(0,140);thread(s,c.text,'player-topic');
-        return voice(s,p,choose(s,'unfamiliar',[
-          `Похоже, вы предлагаете другой ход. Я пока не понимаю его цели. Это поступок, новая деталь мира или реплика мне? Можно описать желаемый результат своими словами.`,
-          `Мы ещё не пробовали такой путь. ${knownPlayer(s,'goal')?'Ваша цель — '+knownPlayer(s,'goal')+'. ':''}Что должно измениться после этого? Объясните, с чем вы хотите взаимодействовать и каким способом.`,
-          `Я не хочу приписать вам чужой замысел. Что в вашем предложении главное — изменить обстановку, повлиять на меня или установить факт истории?`
-        ]));
-      }
+      default: thread(s,c.originalText||c.text,'unresolved:'+hash(c.originalText||c.text));return verdict(s,'clarification','unknown_intent','Такой способ пока не реализован. Уточните цель, предмет и ожидаемое изменение.');
     }
   }
   function move(s,p,c,magic) {
@@ -2246,7 +2700,7 @@
     // Storylets have eligibility conditions and fire once, rather than hijacking every turn.
     const events=[
       {id:'pressure',when:s.clocks.danger>=4 && !s.facts.hidden, text:p.pressure,kind:'danger'},
-      {id:'connection',when:s.trust>=3 && !simulation.openGrievances(simulation.npc(s)).length && s.npcPresent && !s.secretRevealed && !intents.includes('question'), text:`${p.name} решается сказать больше: «${p.secret}».`,kind:'secret'},
+      {id:'connection',when:s.trust>=3 && !simulation.openGrievances(simulation.npc(s)).length && simulation.dialogue.active(s,simulation.npc(s)) && !s.secretRevealed && !intents.includes('question'), text:`${p.name} решается сказать больше: «${p.secret}».`,kind:'secret'},
       {id:'discovery',when:s.clocks.discovery>=4 && s.stage<3, text:'Зацепки начинают сходиться. Есть основания попробовать другой способ, а не повторять прежний.',kind:'clue'}
     ];
     const eventKey=e=>'event:'+e.id+(e.id==='connection'?':'+s.world.activeNpcId:'');
@@ -2254,13 +2708,13 @@
     if(!event)return '';
     s.world.storyUsed[eventKey(event)]=1;log(s,event.kind,event.text);
     if(event.kind==='secret'){s.secretRevealed=true;s.facts.secret=p.secret;}
-    return event.text;
+    return event.kind==='secret'?simulation.dialogue.say(s,simulation.npc(s),p.secret,'plot_initiative'):event.text;
   }
   const semantic=root.StorySemantic;
   const semanticIntents={MOVE:'move',APPROACH:'approach',GREET:'greet',INSPECT:'inspect',SEARCH:'inspect',TAKE:'take',OPEN:'open',CLOSE:'close',USE:'use',GIVE:'give',DROP:'drop',SHOW:'show',TALK:'talk',REPAIR:'repair'};
   function legacyStarts(text) {
     const head=normalizedInput(text).replace(/^(?:(?:я|мы|не|осторожно|быстро|медленно|теперь|сейчас)\s+)+/u,'');
-    const delegated=/^(?:приподнима|отодвига|сдвига|передвига|изгот[оа]в|устан[оа]в|делаю|сделать|вытач|согну|очища|чищу|смазыва|калибру|подбрасыва|подделыва|фабрикую|выношу|переношу|уношу|тащу|несу|покупаю|куплю|знакомлюсь)/u;
+    const delegated=/^(?:разреши|разрешите|оскорбляю|сообщаю|утверждаю|заявляю|арендую|оплачиваю|прикрываю|отхожу|отойти|отступаю|заканчиваю|прекращаю|одолжи|прошу одолжить|беру в долг|возмещаю|компенсирую|плачу|признаюсь|сознаюсь|обещаю|клянусь|верну|вернуть|приподнима|отодвига|сдвига|передвига|изгот[оа]в|устан[оа]в|делаю|сделать|вытач|согну|очища|чищу|смазыва|калибру|подбрасыва|подделыва|фабрикую|выношу|переношу|уношу|тащу|несу|покупаю|куплю|знакомлюсь)/u;
     return delegated.test(head)||ACTIONS.some(([,re])=>new RegExp('^(?:'+re.source+')',re.flags).test(head));
   }
   function resolveInput(s,text) {
@@ -2278,7 +2732,7 @@
   function semanticCommand(step,s) {
     const bound=semantic.bind(step,s);
     if(!step.recognized){
-      const c=parse(step.raw);
+      const c=parse(step.raw);c.negated=step.mode==='negated'||c.negated;
       // Legacy narrative acts still need a real predicate, never a keyword in a description.
       if(['move','open','close','take','drop','give','use','destroy','burn','magic','attack'].includes(c.intent)&&!legacyStarts(step.raw)&&!/^приподнима/.test(c.lower))c.intent='custom';
       if(['intention','question','hypothetical','speech','report'].includes(step.mode)&&step.dependsOnPrevious){c.hypothetical=true;c.intent=step.mode==='intention'?'goal':'talk';}
@@ -2295,6 +2749,7 @@
   }
   function semanticMode(s,c,action) {
     const step=c.semantic;
+    if(action.intent==='request_permission')return null;
     if(step?.unsupportedVerb){
       thread(s,'Не разобрано действие: '+step.raw,'unresolved:'+hash(step.raw));log(s,'intention',step.raw);
       return {status:'clarification',code:'unsupported_action',performed:false,effects:[],text:'Не удалось разобрать действие «'+step.unsupportedVerb+'» в команде «'+step.raw+'». Замысел сохранён в журнале. Уточните, что должно измениться и каким способом.'};
@@ -2325,7 +2780,12 @@
     return {...response,code:'capability_question',text:'Вы спрашиваете о действии: «'+target+'». '+detail+' Действие не выполнено.'};
   }
   function semanticAccess(s,c) {
-    const step=c.semantic;if(!step?.recognized||!['execute','attempt','request'].includes(step.mode))return null;
+    const step=c.semantic;
+    if(step?.condition&&['execute','attempt','request'].includes(step.mode)){
+      const person=Object.values(s.world.npcs).find(n=>root.StorySpatial.same(n.name,step.condition.name));
+      if(!person||person.location!==s.world.player.location||person.social.attention!==step.condition.attention)return {status:'refused',code:'condition_unmet',text:'Условие не выполнено: персонаж сейчас не находится в указанном состоянии. Действие не произошло.',effects:[]};
+    }
+    if(!step?.recognized||!['execute','attempt','request'].includes(step.mode))return null;
     if(['TALK','GREET','APPROACH'].includes(step.intent)||step.targetRef&&!step.targetId)return null;
     if(step.ambiguous)return {status:'clarification',code:'ambiguous_target',text:'Какой именно предмет вы имеете в виду: «'+step.target+'»? Уточните название или источник.',effects:[]};
     const e=s.entities.find(e=>e.id===step.targetId);
@@ -2370,8 +2830,14 @@
       if(step.dependsOnPrevious&&previousResult&&((previousResult.status!=='success'&&!(previousResult.status==='partial_success'&&previousResult.completed))||previousResult.performed===false&&['execute','attempt','request'].includes(step.mode))){
         results.push({status:'refused',code:'dependency_failed',reason:'dependency_failed',skipped:true,performed:false,text:'Шаг «'+step.raw+'» не выполнен: предыдущее действие не завершено.',action,effects:[]});continue;
       }
+      const physicalHolder=s.world.npcs[s.entities.find(e=>e.id===action.targetId)?.location];
+      const view=action.intent==='take'&&simulation.dialogue.here(s,physicalHolder)?physicalHolder:null;
+      if(view&&view.id!==s.world.boundNpcId){simulation.flush(s);simulation.bind(s,view.id);p=simulation.npcProfile(s,config,profile(config));}
       const before=simulation.snapshot(s);s.currentResolution={status:'success',code:'completed'};
-      let r=semanticMode(s,c,action)||semanticAccess(s,c)||simulation.handle(s,p,c,config,action);
+      root.StoryMessages.begin(s);simulation.dialogue.before(s,c,action);
+      let r=semanticMode(s,c,action)||semanticAccess(s,c)||simulation.social.handle(s,p,c,action);
+      c.allowTakingHeld=action.allowTakingHeld;
+      if(!r)r=simulation.handle(s,p,c,config,action);
       if(!r) {
         p=simulation.npcProfile(s,config,profile(config));
         const answer=execute(s,p,c,config);r={...s.currentResolution,text:answer};
@@ -2380,10 +2846,12 @@
       if(['refused','clarification'].includes(r.status))r.performed=false;
       if(['refused','clarification'].includes(r.status))r.completed=false;else if(r.completed===undefined)r.completed=r.status==='success';
       if(['refused','clarification'].includes(r.status)){s.entities=clone(before.entities);s.inventory=clone(before.inventory);s.clocks=clone(before.clocks);s.stage=before.stage;}
-      r.reason=r.code;
+      r=simulation.developer.route(s,c,action,r);r.reason=r.code;
       if(r.performed!==false)simulation.after(s,p,c,action,r);
-      else if(action.intent==='goal'&&s.npcPresent&&s.facts.goal){const person=simulation.npc(s);if(person)person.memory.playerGoal=s.facts.goal;}
+      else if(action.intent==='goal'&&simulation.dialogue.active(s,simulation.npc(s))&&s.facts.goal){const person=simulation.npc(s);if(person)person.memory.playerGoal=s.facts.goal;}
+      simulation.social.after(s,before,c,action,r);
       r.action=action;r.effects=simulation.effects(s,before,action);
+      root.StoryMessages.finish(s,r);
       results.push(r);intents.push(action.intent);s.lastIntent=c.negated?'refuse':action.intent;
       if(c.semantic?.mode==='negated')s.lastIntent='refuse';
       if(r.status==='clarification'&&step.recognized&&!pendingAction){
@@ -2394,14 +2862,19 @@
     }
     if(pendingAction)s.world.player.pendingAction=pendingAction;
     const p=simulation.npcProfile(s,config,profile(config));
-    const event=director(s,p,intents);simulation.flush(s);
+    root.StoryMessages.begin(s);
+    const event=director(s,p,intents);simulation.flush(s);simulation.social.tick(s);simulation.presence(s);
+    const eventResult=root.StoryMessages.finish(s,{text:event});
+    root.StoryMessages.begin(s);
+    const metaBefore=simulation.snapshot(s),meta=simulation.developer.tick(s);
+    if(meta){meta.effects=simulation.effects(s,metaBefore,meta.action);root.StoryMessages.finish(s,meta);results.push(meta);}else root.StoryMessages.finish(s,{text:''});
     const due=simulation.runDue(s,p);results.push(...due);
-    const narration=root.StoryNarrator.compose({intro:s.turn===1?clean(config.world)||'История начинается.':'',results,event});
+    const narration=root.StoryNarrator.compose({intro:s.turn===1?clean(config.world)||'История начинается.':'',results,event:eventResult.narration});
     let output=narration.text;
     const statuses=results.map(r=>r.status);
     let status=statuses.every(v=>v==='success')?'success':statuses.includes('partial_success')||statuses.includes('success')?'partial_success':statuses.includes('refused')?'refused':'clarification';
     const goalAssessment=simulation.assessGoal(s,results);
-    if(goalAssessment?.status==='pending' && ['success','partial_success'].includes(status)){status='partial_success';output+='\n\n'+goalAssessment.reason;}
+    if(goalAssessment?.status==='pending' && ['success','partial_success'].includes(status)){status='partial_success';narration.blocks.push({speaker:{type:'narrator'},trigger:'goal_assessment',text:goalAssessment.reason,effects:[]});output+='\n\n'+goalAssessment.reason;}
     const effects=results.flatMap(r=>r.effects||[]);
     const information={novel:results.some(r=>r.information?.novel),discoveries:[...new Set(results.flatMap(r=>r.information?.discoveries||[]))],opportunities:[...new Set(results.flatMap(r=>r.information?.opportunities||[]))]};
     const outcome={status,goalAssessment,information,semanticPlan,results:results.map(r=>({status:r.status,code:r.code,reason:r.text,information:r.information||null,skipped:Boolean(r.skipped),performed:r.performed!==false,completed:Boolean(r.completed),action:r.action,effects:r.effects})),effects};
@@ -2411,7 +2884,7 @@
     }
     s.facts.activePlace=s.place;s.lastReply=output;s.lastOutcome=outcome;log(s,'turn',text);s.version=VERSION;
     delete s.currentResolution;delete s.currentActionId;
-    return {text:output,narrative:narration.blocks,memory:s,outcome,semantic:semanticPlan,results:outcome.results,analysis:outcome.results.map(r=>r.action)};
+    return {text:output,messages:narration.blocks,narrative:narration.blocks,memory:s,outcome,semantic:semanticPlan,results:outcome.results,analysis:outcome.results.map(r=>r.action)};
   }
   const simulation=root.StorySimulation.create({clean,norm,normalizedInput,words,stem,hash,clone,profile,matchEntity,addEntity,log,voice,resolveBarrier,containerText});
   root.StoryEngine={version:VERSION,fresh,reply,profile,restore:init,reframe,parse,clauses,
@@ -2461,9 +2934,13 @@ function render() {
   }
   for (const message of state.messages) {
     const item = document.createElement('article'); item.className = message.role;
-    const label = document.createElement('small'); label.textContent = message.role === 'user' ? 'ВЫ' : 'РАССКАЗЧИК';
-    const text = document.createElement('p'); text.textContent = message.content;
-    item.append(label, text);
+    const utterances=message.role==='assistant'&&Array.isArray(message.utterances)&&message.utterances.length?message.utterances:[{speaker:{type:message.role==='user'?'player':'narrator'},text:message.content}];
+    for(const row of utterances){
+      const type=['player','narrator','npc','developer'].includes(row.speaker?.type)?row.speaker.type:'narrator';
+      const section=document.createElement('section');section.className='utterance speaker-'+type;section.dataset.speaker=type;section.dataset.trigger=row.trigger||'legacy';
+      const label=document.createElement('small');label.textContent=type==='player'?'ВЫ':type==='npc'?(row.speaker.name||'ПЕРСОНАЖ'):type==='developer'?'РАЗРАБОТЧИК':'РАССКАЗЧИК';
+      const text=document.createElement('p');text.textContent=row.text;section.append(label,text);item.append(section);
+    }
     if(debugView&&message.outcome?.status) {
       const result = document.createElement('small');result.className='outcome-label';result.dataset.status=message.outcome.status;
       result.textContent=outcomeLabels[message.outcome.status]||'Результат';item.append(result);
@@ -2479,13 +2956,13 @@ function render() {
     list.append(item);
   }
   const profile = engine.profile(state.config);
-  document.querySelector('#badge').textContent = '● Локально · 4.3';
+  document.querySelector('#badge').textContent = '● Локально · 4.4';
   const currentNpc=state.memory.world.npcs[state.memory.world.activeNpcId];
   const title = state.memory.place || profile.title || 'Ваша история';
   document.querySelector('#story-title').textContent = title[0].toUpperCase() + title.slice(1);
   document.querySelector('#memory').textContent = `${currentNpc?.name||'Нет собеседника'} · Доверие: ${currentNpc?.trust??'—'} · Монеты: ${state.memory.world.player.money} · Вещи: ${state.memory.inventory.join(', ') || 'нет'}`;
   list.scrollTop = list.scrollHeight;
-  document.querySelector('#remembered-goal').textContent = `Цель героя: ${state.memory.facts.goal || 'пока не названа'}. Цель собеседника: ${currentNpc?.motive||'рядом никого' }.`;
+  document.querySelector('#remembered-goal').textContent = `Цель героя: ${state.memory.facts.goal || 'пока не названа'}. Цель собеседника: ${currentNpc?.motive||'разговор не начат' }.`;
   const journal = document.querySelector('#journal'); journal.replaceChildren();
   for (const event of state.memory.journal.filter(e => e.kind !== 'turn').slice(-14)) {
     const row = document.createElement('li'); row.textContent = event.text; journal.append(row);
@@ -2505,7 +2982,8 @@ settings.addEventListener('submit', event => {
     state.config = config;
     if (changed && state.messages.length) {
       const p = engine.profile(config);
-      state.messages.push({ role: 'assistant', content: `Вводные обновлены. Место: ${state.memory.place}. Персонаж: ${p.name}. Переписка сохранена; дальнейшие события учитывают новые условия.` });
+      const content=`Вводные обновлены. Место: ${state.memory.place}. Персонаж: ${p.name}. Переписка сохранена; дальнейшие события учитывают новые условия.`;
+      state.messages.push({role:'assistant',content,utterances:[{speaker:{type:'developer',id:'developer'},trigger:'author_settings',text:content,effects:[]}]});
     }
     status.textContent = 'Вводные применены. История продолжается.'; save(); render(); showSettings(false);
   } catch (error) { status.textContent = 'Не удалось применить вводные: ' + error.message; showSettings(false); }
@@ -2521,12 +2999,12 @@ chat.addEventListener('submit', async event => {
   busy = true; send.disabled = true; settings.querySelector('button').disabled = true;
   try {
     state.messages.push({ role: 'user', content: text }); field.value = '';
-    status.textContent = 'Персонаж обдумывает ответ…';
+    status.textContent = 'История продолжается…';
     render();
     const result = engine.reply(state.config, state.memory, text);
     state.memory = result.memory;
     const answer = result.text;
-    state.messages.push({ role: 'assistant', content: answer, outcome: { status:result.outcome.status, information:result.outcome.information, steps:result.results.map(r=>({status:r.status,intent:r.action.intent,target:r.action.targetLabel,goal:r.action.goal,method:r.action.method,expectedEffect:r.action.expectedEffect})) } }); status.textContent = ''; save();
+    state.messages.push({ role: 'assistant', content: answer, utterances:result.messages, outcome: { status:result.outcome.status, information:result.outcome.information, steps:result.results.map(r=>({status:r.status,intent:r.action.intent,target:r.action.targetLabel,goal:r.action.goal,method:r.action.method,expectedEffect:r.action.expectedEffect})) } }); status.textContent = ''; save();
   } catch (error) {
     state.messages.pop(); field.value = text; status.textContent = `${error.message} Сообщение возвращено в поле ввода — попробуйте снова.`; save();
   } finally { busy = false; send.disabled = false; settings.querySelector('button').disabled = false; render(); }
@@ -2575,7 +3053,7 @@ function renderWorld() {
   const exits=document.querySelector('#map-exits');exits.replaceChildren();
   for(const exit of map.exits) {const b=document.createElement('button');b.type='button';b.textContent=exit.name+(exit.blocked?' · заперто':' →');b.disabled=exit.blocked;b.addEventListener('click',()=>issueCommand('Иду в '+exit.name));exits.append(b);}
   const people=document.querySelector('#nearby-people');people.replaceChildren();
-  for(const person of Object.values(world.npcs).filter(n=>n.location===world.player.location)){const b=document.createElement('button');b.type='button';b.textContent=person.name;b.addEventListener('click',()=>issueCommand('Говорю с '+person.name));people.append(b);}
+  for(const person of Object.values(world.npcs).filter(n=>n.location===world.player.location&&n.dialogueState?.status!=='undiscovered')){const b=document.createElement('button');b.type='button';b.textContent=person.name;b.addEventListener('click',()=>issueCommand('Говорю с '+person.name));people.append(b);}
   const research=world.player.research;
   const discoveries=document.querySelector('#learned-facts');discoveries.replaceChildren();
   for(const knowledge of Object.values(research.knowledge)){const row=document.createElement('li');const source=memory.entities.find(e=>e.id===knowledge.sourceId)?.label||world.npcs[knowledge.sourceId]?.name||world.locations.find(l=>l.id===knowledge.locationId)?.name;row.textContent=knowledge.text+(source?' · Источник: '+source:'');discoveries.append(row);}
@@ -2587,10 +3065,18 @@ function renderWorld() {
   document.querySelector('#world-work').textContent=`${workLabels[world.loops.work.status]||'Работа'} · Монеты: ${world.player.money} · Знакомства: ${world.loops.social.contacts.length}`;
   const tasks=document.querySelector('#deferred-actions');tasks.replaceChildren();
   for(const task of world.deferred.filter(t=>t.status==='pending')){const row=document.createElement('li');const actor=world.npcs[task.actor]?.name||'Вы';const target=memory.entities.find(e=>e.id===task.targetId)?.label||'предмет';row.textContent=`${actor}: открыть «${target}» ${task.trigger==='manual'?'по отдельному сигналу':'по возвращении'}, если условия позволят.`;tasks.append(row);}
+  const values=document.querySelector('#relationship-values');values.replaceChildren();
+  const socialEvents=document.querySelector('#social-event-records');socialEvents.replaceChildren();
+  const socialKnowledge=document.querySelector('#social-knowledge-records');socialKnowledge.replaceChildren();
+  const eventNames={theft:'кража',theft_attempt:'попытка кражи',damage:'порча',assault:'нападение',threat:'угроза',insult:'оскорбление',deception:'раскрытый обман',framing:'подстава',trespass:'нарушение границ',unauthorized_use:'использование без разрешения',broken_promise:'нарушенное обещание',complicity:'соучастие'};
+  for(const event of world.social.events.slice(-15)){const row=document.createElement('li');row.textContent=`${eventNames[event.type]||'Поступок'} · ${memory.entities.find(e=>e.id===event.targetId)?.label||world.npcs[event.targetId]?.name||'событие'} · свидетели: ${event.witnesses.map(id=>world.npcs[id]?.name||id).join(', ')||'нет'}${event.resolved?' · последствия урегулированы':''}`;socialEvents.append(row);}
   const conflicts=document.querySelector('#relationship-records');conflicts.replaceChildren();
   const beliefs=document.querySelector('#belief-records');beliefs.replaceChildren();
   for(const n of Object.values(world.npcs)) {
-    for(const g of n.grievances){const row=document.createElement('li');row.textContent=`${n.name}: ${g.reason} · ${g.resolved?'примирение состоялось':`нужны извинение${g.apology?' (получено)':''} и значимый поступок: ${g.requiredItem||n.motive}${g.reparation?' (получено)':''}`}`;conflicts.append(row);}
+    if(n.dialogueState.status!=='undiscovered'){const rel=n.social.relationship,row=document.createElement('li');row.textContent=`${n.name}: доверие ${n.trust}, уважение ${rel.respect}, страх ${rel.fear}, подозрение ${rel.suspicion}, враждебность ${rel.hostility}, симпатия ${rel.affection}${n.social.cautious?' · сохраняет осторожность':''}`;values.append(row);}
+    const sources={witness:'собственное наблюдение',report:'пересказ',missing:'обнаружена пропажа',confession:'признание',property_identified:'опознана вещь',promise:'срок обещания',agreement:'условия договора',damage_discovered:'обнаружен ущерб'};
+    for(const k of Object.values(n.social.knowledge).slice(-8)){const row=document.createElement('li');row.textContent=`${n.name}: ${sources[k.source]||'получены сведения'} · виновник: ${k.actorId==='player'?'герой':world.npcs[k.actorId]?.name||'не установлен'} · уверенность ${Math.round(k.confidence*100)}%`;socialKnowledge.append(row);}
+    for(const g of n.grievances){const row=document.createElement('li');row.textContent=`${n.name}: ${g.reason} · ${g.resolved?'примирение состоялось':`нужны извинение${g.apology?' (получено)':''} и значимый поступок: ${g.compensation?'возместить ущерб: '+g.compensation+' монеты':g.requiredItem||n.motive}${g.reparation?' (получено)':''}`}`;conflicts.append(row);}
     for(const belief of Object.values(n.beliefs).filter(b=>!b.key.startsWith('entity:'))){const row=document.createElement('li');row.textContent=`${n.name}: ${belief.text} · уверенность ${Math.round(belief.confidence*100)}%`;beliefs.append(row);}
   }
 }
