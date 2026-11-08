@@ -9,7 +9,7 @@ const send = document.querySelector('#send');
 const engine = globalThis.StoryEngine;
 const key = 'between-lines-offline-v2';
 const outcomeLabels={success:'Успех',partial_success:'Частичный успех',refused:'Отказ',clarification:'Нужно уточнение'};
-const intentLabels={claim:'сообщить версию',plant_evidence:'подбросить улику',request_plan:'предложить план',carry:'перенести',hide_item:'спрятать предмет',defer:'отложить действие',craft_gift:'сделать подарок',give:'передать предмет',move:'перейти',return:'вернуться',open:'открыть',close:'закрыть',take:'взять',inspect:'осмотреть',agree:'согласиться',help:'попросить помощи',apology:'извиниться',insult:'оскорбить',greet:'поздороваться',find_job:'найти работу',work:'выполнить работу',collect_pay:'получить плату',deliver_job:'доставить посылку',explore:'исследовать',buy:'купить',select_npc:'обратиться к персонажу',magic:'магия',use:'использовать',destroy:'сломать',drop:'оставить предмет',goal:'обозначить цель',question:'задать вопрос',remember:'вспомнить',custom:'уточнить замысел'};
+const intentLabels={conversation_answer:'ответить собеседнику',claim:'сообщить версию',plant_evidence:'подбросить улику',request_plan:'предложить план',carry:'перенести',hide_item:'спрятать предмет',defer:'отложить действие',craft_gift:'сделать подарок',give:'передать предмет',move:'перейти',return:'вернуться',open:'открыть',close:'закрыть',take:'взять',inspect:'осмотреть',agree:'согласиться',help:'попросить помощи',apology:'извиниться',insult:'оскорбить',greet:'поздороваться',find_job:'найти работу',work:'выполнить работу',collect_pay:'получить плату',deliver_job:'доставить посылку',explore:'исследовать',buy:'купить',select_npc:'обратиться к персонажу',magic:'магия',use:'использовать',destroy:'сломать',drop:'оставить предмет',goal:'обозначить цель',question:'задать вопрос',remember:'вспомнить',custom:'уточнить замысел'};
 let debugView=false;
 try {debugView=localStorage.getItem('between-lines-debug')==='true';}catch{}
 document.querySelector('#debug-view').checked=debugView;
@@ -61,7 +61,7 @@ function render() {
     list.append(item);
   }
   const profile = engine.profile(state.config);
-  document.querySelector('#badge').textContent = '● Локально · 4.4';
+  document.querySelector('#badge').textContent = '● Локально · 5.0';
   const currentNpc=state.memory.world.npcs[state.memory.world.activeNpcId];
   const title = state.memory.place || profile.title || 'Ваша история';
   document.querySelector('#story-title').textContent = title[0].toUpperCase() + title.slice(1);
@@ -159,6 +159,11 @@ function renderWorld() {
   for(const exit of map.exits) {const b=document.createElement('button');b.type='button';b.textContent=exit.name+(exit.blocked?' · заперто':' →');b.disabled=exit.blocked;b.addEventListener('click',()=>issueCommand('Иду в '+exit.name));exits.append(b);}
   const people=document.querySelector('#nearby-people');people.replaceChildren();
   for(const person of Object.values(world.npcs).filter(n=>n.location===world.player.location&&n.dialogueState?.status!=='undiscovered')){const b=document.createElement('button');b.type='button';b.textContent=person.name;b.addEventListener('click',()=>issueCommand('Говорю с '+person.name));people.append(b);}
+  const interlocutor=world.npcs[world.activeNpcId],topicButtons=document.querySelector('#conversation-topics');topicButtons.replaceChildren();
+  const summary=document.querySelector('#conversation-summary');summary.textContent=interlocutor?`${interlocutor.name} · Тема: ${interlocutor.conversation.activeTopic?globalThis.ConversationTopics.topic(interlocutor.conversation.activeTopic).label:'знакомство'} · Обсуждено тем: ${Object.keys(interlocutor.conversation.discussedTopics).length}`:'Обратитесь к замеченному персонажу, чтобы начать разговор.';
+  if(interlocutor)for(const id of ['name','identity','place','occupation','hobbies','goal','trust'].filter(id=>!interlocutor.conversation.discussedTopics[id]).slice(0,4)){const topic=globalThis.ConversationTopics.topic(id),button=document.createElement('button');button.type='button';button.textContent=topic.questions[0];button.addEventListener('click',()=>issueCommand(topic.questions[0]));topicButtons.append(button);}
+  const conversationRecords=document.querySelector('#conversation-records');conversationRecords.replaceChildren();
+  for(const person of Object.values(world.npcs).filter(n=>n.dialogueState.status!=='undiscovered')){const m=person.conversation,row=document.createElement('li');row.textContent=`${person.name}: ${m.activeTopic?globalThis.ConversationTopics.topic(m.activeTopic).label:'тем пока нет'} · раскрыто сведений: ${m.disclosedFacts.length} · неотвеченных вопросов: ${m.unresolvedQuestions.length}${m.pendingNpcQuestion?' · вопрос герою: '+m.pendingNpcQuestion.text:''}`;conversationRecords.append(row);}
   const research=world.player.research;
   const discoveries=document.querySelector('#learned-facts');discoveries.replaceChildren();
   for(const knowledge of Object.values(research.knowledge)){const row=document.createElement('li');const source=memory.entities.find(e=>e.id===knowledge.sourceId)?.label||world.npcs[knowledge.sourceId]?.name||world.locations.find(l=>l.id===knowledge.locationId)?.name;row.textContent=knowledge.text+(source?' · Источник: '+source:'');discoveries.append(row);}

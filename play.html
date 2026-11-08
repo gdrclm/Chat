@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ru" data-version="4.4">
+<html lang="ru" data-version="5.0">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content"><title>Между строк — локальная история</title><style>:root{color-scheme:dark;font-family:system-ui,-apple-system,sans-serif;color:#e8e5dd;background:#151917;font-size:14px;--app-height:100dvh;--app-top:0px}*{box-sizing:border-box}[hidden]{display:none!important}html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:none}body{position:fixed;top:var(--app-top);height:var(--app-height);left:0}button,input,textarea{font:inherit}button{cursor:pointer;touch-action:manipulation;border:0;border-radius:12px;padding:12px 16px;min-height:44px;background:#c4d5a5;color:#20291c}button:disabled{opacity:.5}button:focus-visible{outline:2px solid #fff;outline-offset:3px}main{width:100%;max-width:900px;margin:auto;height:100%;display:flex;flex-direction:column;min-height:0;padding-top:env(safe-area-inset-top)}header{flex-shrink:0;padding:18px 24px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #30372e;gap:12px}.eyebrow{font-size:10px;letter-spacing:2px;color:#a6b992}h2{font:24px Georgia,serif;margin:6px 0 0}.header-actions{display:flex;align-items:center;gap:12px}#badge{font-size:11px;color:#bacc9d;white-space:nowrap}#open-settings,.secondary{background:#303d2c;color:#d8e5cb}.hint{font-size:11px;line-height:1.5;color:#929d91}#memory{margin:0;padding:10px 24px;border-bottom:1px solid #30372e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0}#messages{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:24px;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}.intro{max-width:440px;margin:6vh auto;line-height:1.8;color:#929d91}.intro h3{font:28px Georgia,serif;color:#e1e5d8}article{margin-bottom:18px;max-width:92%;padding:16px 20px;background:#222a22;border:1px solid #333e30;border-radius:3px 16px 16px}article.user{margin-left:auto;background:#2f3829;border-color:#45503a;border-radius:16px 3px 16px 16px}article small{font-size:9px;letter-spacing:2px;color:#b6c89c}article p{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.7;margin:8px 0 0}.compose{flex-shrink:0;padding:0 20px max(10px,env(safe-area-inset-bottom));background:#151917}#status{color:#d8c899;font-size:12px;margin:6px 0;line-height:1.4}#status:empty{display:none}#chat{display:flex;align-items:end;gap:8px;background:#20271f;padding:8px;border:1px solid #46513c;border-radius:16px}#message{min-width:0;flex:1;color:#e8e5dd;font-size:16px;background:transparent;border:0;outline:none;margin:0;padding:10px;resize:none;max-height:100px}#send{flex-shrink:0}.compose>.hint{margin:6px 0 0;text-align:center}aside{height:100%;max-width:640px;margin:auto;overflow-y:auto;padding:24px 24px max(24px,env(safe-area-inset-bottom));padding-top:max(20px,env(safe-area-inset-top));background:#1d231f;overscroll-behavior:contain}.page-top{display:flex;align-items:center;justify-content:space-between;gap:12px}h1{font:38px Georgia,serif;margin:22px 0 12px}h1 br{display:none}h1 span{color:#c4d5a5;margin-left:16px}.muted{color:#929d91}label{display:block;font-size:13px;color:#bac5b5;margin:18px 0}input,textarea{width:100%;background:#151b17;border:1px solid #394336;border-radius:10px;padding:12px;color:#e8e5dd;font-size:16px;margin-top:8px}input:focus,textarea:focus{outline:1px solid #c4d5a5}#settings .secondary{width:100%}.text-button{background:transparent;color:#c4d5a5}.no-script{position:fixed;inset:20px;background:#222a22;padding:24px;z-index:20}@media(max-width:600px){header{padding:12px 16px}h2{font-size:20px}.eyebrow{font-size:9px}.header-actions{gap:8px}#badge{display:none}#open-settings{font-size:12px;padding:10px}#messages{padding:16px}#memory{padding:8px 16px;font-size:10px}.compose{padding-left:10px;padding-right:10px}#send{font-size:12px;padding:12px}article{padding:14px;max-width:95%}.compose>.hint{display:none}.intro{margin:4vh auto}.intro h3{font-size:25px}}@media(max-height:450px){header{padding:6px 12px}header .eyebrow,#memory{display:none}h2{font-size:18px;margin:0}.intro{margin:0 auto}.compose>.hint{display:none}}
 
 .memory-panel{border-top:1px solid #394336;margin-top:24px;padding-top:20px}.memory-panel h3{font-size:13px;color:#c4d5a5;margin-top:20px}.memory-panel ul{padding-left:20px;line-height:1.7;color:#bac5b5;font-size:12px}.memory-panel li{margin:8px 0;overflow-wrap:anywhere}header>div:first-child{min-width:0}#story-title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -19,7 +19,7 @@
     <label>Мир и ситуация · авторский канон<textarea name="world" maxlength="4000" rows="3">Ночной город, где воспоминания продаются в стеклянных флаконах. Я прихожу в закрытую лавку за своим потерянным прошлым.</textarea></label>
     <label>Персонаж<textarea name="character" maxlength="4000" rows="3">Мира — хозяйка лавки воспоминаний. Сдержанная, наблюдательная, с сухим юмором. Она знает обо мне больше, чем говорит.</textarea></label>
     <label>Мой герой<input name="player" maxlength="1000" value="Путник без воспоминаний, с треснувшим компасом в кармане."></label>
-    <label>Канон, карта и персонажи · необязательно<textarea name="canon" maxlength="4000" rows="6" placeholder="Место: мастерская
+    <label>Канон, карта и персонажи · необязательно<textarea name="canon" maxlength="16000" rows="6" placeholder="Место: мастерская
 Предметы: ложка, фонарь, закрытый шкаф
 Цель персонажа: вернуть пропавшего друга
 Секрет: другу угрожает прежний союзник
@@ -37,6 +37,8 @@
   <div class="page-top"><span class="eyebrow">МИР И ПЕРСОНАЖИ</span><button id="close-world" type="button" class="secondary">К чату ✕</button></div>
   <h2 id="map-title">Карта</h2><p class="hint">Переход выполняется отдельным ходом. Доступны только соединённые места.</p><div id="map-exits" class="world-buttons"></div>
   <h3>Рядом</h3><div id="nearby-people" class="world-buttons"></div>
+  <h3>Разговор</h3><p id="conversation-summary" class="hint"></p><div id="conversation-topics" class="world-buttons"></div>
+  <details><summary>Память бесед · просмотр автора</summary><ul id="conversation-records"></ul></details>
   <h3>Исследование и знания</h3><p id="exploration-progress" class="hint"></p><ul id="learned-facts"></ul><details><summary>Изученные свойства предметов</summary><ul id="known-properties"></ul></details>
   <h3>Дела и деньги</h3><p id="world-work"></p><p class="hint">На рынке и в мастерской можно искать работу. Загадку лавки для этого решать не требуется.</p>
   <h3>Отложенные действия</h3><ul id="deferred-actions"></ul>
@@ -45,7 +47,7 @@
   <details><summary>Убеждения персонажей · просмотр автора</summary><ul id="belief-records"></ul><p class="hint">Убеждение персонажа может быть ошибочным. Истина мира задаётся автором и событиями, отдельно от этих версий.</p></details>
 </aside>
 <main id="chat-page">
-  <header><div><span class="eyebrow">МЕЖДУ СТРОК · 4.4</span><h2 id="story-title">Ваша история</h2></div><div class="header-actions"><span id="badge">● Офлайн</span><button id="open-world" type="button">Мир</button><button id="open-settings" type="button" aria-label="Открыть настройки">⚙</button></div></header>
+  <header><div><span class="eyebrow">МЕЖДУ СТРОК · 5.0</span><h2 id="story-title">Ваша история</h2></div><div class="header-actions"><span id="badge">● Офлайн</span><button id="open-world" type="button">Мир</button><button id="open-settings" type="button" aria-label="Открыть настройки">⚙</button></div></header>
   <p id="memory" class="hint" aria-live="polite"></p>
   <section id="messages" aria-label="Диалог" aria-live="polite"></section>
   <div class="compose"><p id="status" role="status">Запуск… Если кнопки не отвечают, откройте файл в браузере, а не в предпросмотре мессенджера.</p><form id="chat"><textarea id="message" aria-label="Ваш ответ" placeholder="Что вы скажете или сделаете?" rows="2" maxlength="6000" required></textarea><button id="send" type="submit">Отправить</button></form><p class="hint">Enter — отправить · Shift + Enter — новая строка</p></div>
@@ -242,6 +244,7 @@
       if(!here(s,n))return false;notice(s,n);const state=n.dialogueState;
       if(s.world.activeNpcId&&s.world.activeNpcId!==n.id)close(s,'switched');
       if(state.status!=='active'){state.contactTurn??=s.turn;state.startedTurn=s.turn;state.status='active';emit(s,'dialogue_started',n.id,null,{trigger});}
+      if(!s.world.loops.social.contacts.includes(n.id))s.world.loops.social.contacts.push(n.id);
       state.lastTrigger=trigger;s.world.activeNpcId=n.id;return true;
     }
     function close(s,reason='ended'){
@@ -250,6 +253,7 @@
     }
     function active(s,n){return Boolean(here(s,n)&&s.world.activeNpcId===n.id&&n.dialogueState.status==='active');}
     function addressed(c,a){
+      if(a.conversation)return true;
       if(c.negated||c.hypothetical||['negated','hypothetical','report'].includes(c.semantic?.mode))return false;
       if(a.intent==='request_permission')return true;
       if(c.semantic?.recognized&&c.semantic.intent!=='TALK'&&['question','intention','hypothetical','negated','report'].includes(c.semantic.mode))return false;
@@ -258,7 +262,7 @@
       return ['greet','talk','question','identity','name','remember','thanks','apology','help','bargain','insult','threat','claim','agree','refuse','select_npc','find_job','collect_pay','buy','give','show','deliver_job','request_plan','request_npc','borrow','rent','pay_fine','return_property','compensate','confess','report_event','promise'].includes(a.intent)||c.speech;
     }
     function before(s,c,a){
-      if(a.semantic?.unsupportedVerb)return;
+      if(a.semantic?.unsupportedVerb&&!a.conversation)return;
       if(a.intent==='end_dialogue'){close(s,'ended');return;}
       if(['move','return','approach','work','repair','repair_craft','repair_install','inspect'].includes(a.intent)&&!addressed(c,a)){if(s.world.activeNpcId)close(s,['move','return'].includes(a.intent)?'separated':a.intent==='work'?'working':'attention_shift');return;}
       if(!addressed(c,a))return;
@@ -617,6 +621,556 @@
   root.StorySocial={create};
 })(globalThis);
 </script>
+<script>/* Conversation categories and Russian paraphrases, independent from physical actions. */
+(function(root){
+  'use strict';
+  const topics=[
+    {"number": 1, "id": "name", "label": "Имя", "depth": 0, "questions": ["Как вас зовут?", "Ваше имя?"]},
+    {"number": 2, "id": "address", "label": "Обращение", "depth": 0, "questions": ["Как к вам обращаться?", "Можно на ты?"]},
+    {"number": 3, "id": "identity", "label": "Личность", "depth": 0, "questions": ["Кто вы?", "Расскажите о себе"]},
+    {"number": 4, "id": "occupation", "label": "Занятие", "depth": 0, "questions": ["Чем занимаетесь?", "Кто вы по профессии?"]},
+    {"number": 5, "id": "age", "label": "Возраст", "depth": 1, "questions": ["Сколько вам лет?", "Вы давно здесь живёте?"]},
+    {"number": 6, "id": "origin", "label": "Происхождение", "depth": 1, "questions": ["Откуда вы родом?", "Вы местная?"]},
+    {"number": 7, "id": "presence", "label": "Причина присутствия", "depth": 0, "questions": ["Что вы здесь делаете?", "Почему пришли сюда?"]},
+    {"number": 8, "id": "impression", "label": "Первое впечатление", "depth": 1, "questions": ["Что вы обо мне думаете?", "Я вам не мешаю?"]},
+    {"number": 9, "id": "availability", "label": "Цель разговора", "depth": 0, "questions": ["У вас найдётся минутка?", "Можем поговорить?"]},
+    {"number": 10, "id": "acquaintance", "label": "Взаимное знакомство", "depth": 1, "questions": ["Хотите узнать обо мне?", "Может, познакомимся поближе?"]},
+    {"number": 11, "id": "place", "label": "Текущее место", "depth": 0, "questions": ["Что это за место?", "Куда я попал?"]},
+    {"number": 12, "id": "place.history", "label": "История места", "depth": 0, "questions": ["Как здесь всё началось?", "Кто основал это место?"]},
+    {"number": 13, "id": "people", "label": "Жители", "depth": 0, "questions": ["Кто здесь живёт?", "Кого здесь можно встретить?"]},
+    {"number": 14, "id": "rules", "label": "Местные правила", "depth": 0, "questions": ["Что здесь разрешено?", "Чего лучше не делать?"]},
+    {"number": 15, "id": "safety", "label": "Безопасность", "depth": 0, "questions": ["Здесь безопасно?", "Чего стоит опасаться?"]},
+    {"number": 16, "id": "surroundings", "label": "Окрестности", "depth": 0, "questions": ["Что находится поблизости?", "Куда отсюда можно пойти?"]},
+    {"number": 17, "id": "notables", "label": "Известные личности", "depth": 0, "questions": ["Кто тут главный?", "Кого все знают?"]},
+    {"number": 18, "id": "changes", "label": "Изменения", "depth": 1, "questions": ["Что изменилось за последнее время?", "Раньше здесь было иначе?"]},
+    {"number": 19, "id": "rumors", "label": "Слухи", "depth": 1, "questions": ["Что нового слышно?", "О чём здесь говорят?"]},
+    {"number": 20, "id": "landmark", "label": "Особенности", "depth": 0, "questions": ["Чем славится это место?", "Что здесь необычного?"]},
+    {"number": 21, "id": "work", "label": "Работа", "depth": 0, "questions": ["Чем вы зарабатываете?", "Какая у вас работа?"]},
+    {"number": 22, "id": "work.satisfaction", "label": "Удовлетворённость", "depth": 1, "questions": ["Вам нравится ваша работа?", "Не надоедает?"]},
+    {"number": 23, "id": "skills", "label": "Навыки", "depth": 1, "questions": ["Что вы умеете лучше всего?", "Какому делу обучены?"]},
+    {"number": 24, "id": "tools", "label": "Инструменты", "depth": 0, "questions": ["Чем вы работаете?", "Для чего эта вещь?"]},
+    {"number": 25, "id": "schedule", "label": "Распорядок", "depth": 1, "questions": ["Как проходит рабочий день?", "Когда вы заканчиваете?"]},
+    {"number": 26, "id": "training", "label": "Обучение", "depth": 2, "questions": ["Кто вас научил?", "Где вы этому учились?"]},
+    {"number": 27, "id": "clients", "label": "Клиенты", "depth": 1, "questions": ["Кто к вам обращается?", "У вас много посетителей?"]},
+    {"number": 28, "id": "work.difficulty", "label": "Трудности", "depth": 2, "questions": ["Что самое сложное в работе?", "Что мешает?"]},
+    {"number": 29, "id": "achievements", "label": "Достижения", "depth": 2, "questions": ["Чем вы гордитесь?", "Что у вас получилось лучше всего?"]},
+    {"number": 30, "id": "career", "label": "Профессиональные планы", "depth": 2, "questions": ["Хотите сменить дело?", "Чего хотите добиться?"]},
+    {"number": 31, "id": "day", "label": "Обычный день", "depth": 1, "questions": ["Как проходит ваш день?", "Чем обычно занимаетесь?"]},
+    {"number": 32, "id": "food", "label": "Еда", "depth": 1, "questions": ["Что любите есть?", "Что здесь обычно готовят?"]},
+    {"number": 33, "id": "drink", "label": "Напитки", "depth": 1, "questions": ["Что пьёте по утрам?", "Чай или кофе?"]},
+    {"number": 34, "id": "rest", "label": "Отдых", "depth": 1, "questions": ["Как отдыхаете?", "Что делаете в свободное время?"]},
+    {"number": 35, "id": "home", "label": "Жильё", "depth": 2, "questions": ["Где живёте?", "Далеко отсюда ваш дом?"]},
+    {"number": 36, "id": "habits", "label": "Привычки", "depth": 1, "questions": ["Есть особые привычки?", "Без чего не начинаете день?"]},
+    {"number": 37, "id": "busy", "label": "Занятость", "depth": 0, "questions": ["Вы сегодня заняты?", "Когда у вас будет время?"]},
+    {"number": 38, "id": "sleep", "label": "Сон", "depth": 2, "questions": ["Хорошо спите?", "Часто работаете ночами?"]},
+    {"number": 39, "id": "money", "label": "Деньги", "depth": 2, "questions": ["Дорого здесь жить?", "Вам хватает заработка?"]},
+    {"number": 40, "id": "supplies", "label": "Покупки", "depth": 1, "questions": ["Где достать припасы?", "Что обычно покупаете?"]},
+    {"number": 41, "id": "hobbies", "label": "Увлечения", "depth": 1, "questions": ["Чем увлекаетесь?", "Есть хобби?"]},
+    {"number": 42, "id": "books", "label": "Книги и истории", "depth": 1, "questions": ["Что любите читать?", "Знаете интересную историю?"]},
+    {"number": 43, "id": "music", "label": "Музыка", "depth": 1, "questions": ["Какая музыка вам нравится?", "Любите петь?"]},
+    {"number": 44, "id": "art", "label": "Искусство", "depth": 1, "questions": ["Нравятся картины?", "Что считаете красивым?"]},
+    {"number": 45, "id": "games", "label": "Игры", "depth": 1, "questions": ["Во что играете?", "Любите соревнования?"]},
+    {"number": 46, "id": "animals", "label": "Животные", "depth": 1, "questions": ["Любите животных?", "Есть питомец?"]},
+    {"number": 47, "id": "holidays", "label": "Праздники", "depth": 1, "questions": ["Как отмечаете праздники?", "Какой любимый?"]},
+    {"number": 48, "id": "travel", "label": "Путешествия", "depth": 2, "questions": ["Где бывали?", "Куда хотели бы отправиться?"]},
+    {"number": 49, "id": "collections", "label": "Коллекции", "depth": 2, "questions": ["Что-нибудь собираете?", "Почему храните эти вещи?"]},
+    {"number": 50, "id": "curiosity", "label": "Любопытство", "depth": 1, "questions": ["Что вас удивляет?", "О чём хочется узнать больше?"]},
+    {"number": 51, "id": "friends", "label": "Друзья", "depth": 2, "questions": ["У вас есть друзья?", "С кем обычно проводите время?"]},
+    {"number": 52, "id": "family", "label": "Семья", "depth": 2, "questions": ["Расскажите о семье", "Есть ли у вас родные?"]},
+    {"number": 53, "id": "important_person", "label": "Близкий человек", "depth": 3, "questions": ["Кто для вас важнее всех?", "О ком беспокоитесь?"]},
+    {"number": 54, "id": "acquaintances", "label": "Знакомые", "depth": 1, "questions": ["Вы знаете Илью?", "Как относитесь к Нике?"]},
+    {"number": 55, "id": "community", "label": "Окружающие", "depth": 1, "questions": ["Как вам здешние люди?", "Легко с ними уживаетесь?"]},
+    {"number": 56, "id": "trust", "label": "Доверие", "depth": 2, "questions": ["Кому вы доверяете?", "Легко доверяете незнакомцам?"]},
+    {"number": 57, "id": "conflicts", "label": "Конфликты", "depth": 2, "questions": ["Вы с кем-то поссорились?", "Что между вами произошло?"]},
+    {"number": 58, "id": "forgiveness", "label": "Примирение", "depth": 2, "questions": ["Умеете прощать?", "Как можно исправить ошибку?"]},
+    {"number": 59, "id": "loneliness", "label": "Одиночество", "depth": 2, "questions": ["Вам бывает одиноко?", "Нравится быть одному?"]},
+    {"number": 60, "id": "sociability", "label": "Общение", "depth": 1, "questions": ["Любите гостей?", "Нравится разговаривать с людьми?"]},
+    {"number": 61, "id": "childhood", "label": "Детство", "depth": 3, "questions": ["Каким было ваше детство?", "Где вы выросли?"]},
+    {"number": 62, "id": "old_home", "label": "Родной дом", "depth": 3, "questions": ["Помните свой первый дом?", "Скучаете по родине?"]},
+    {"number": 63, "id": "previous_work", "label": "Предыдущая жизнь", "depth": 2, "questions": ["Чем занимались раньше?", "Всегда жили так?"]},
+    {"number": 64, "id": "education", "label": "Образование", "depth": 2, "questions": ["Где учились?", "Кто вас воспитывал?"]},
+    {"number": 65, "id": "mentor", "label": "Наставник", "depth": 3, "questions": ["Кто повлиял на вашу жизнь?", "Был ли у вас учитель?"]},
+    {"number": 66, "id": "relocation", "label": "Переезд", "depth": 3, "questions": ["Почему уехали?", "Что заставило сменить место?"]},
+    {"number": 67, "id": "meeting", "label": "Важная встреча", "depth": 3, "questions": ["Кого запомнили навсегда?", "Кто изменил вашу жизнь?"]},
+    {"number": 68, "id": "memory", "label": "Успех прошлого", "depth": 3, "questions": ["Какое воспоминание вам дорого?", "Чем раньше гордились?"]},
+    {"number": 69, "id": "regret", "label": "Ошибка", "depth": 3, "questions": ["О чём жалеете?", "Что сделали бы иначе?"]},
+    {"number": 70, "id": "loss", "label": "Утрата", "depth": 4, "questions": ["Кого вам не хватает?", "Что вы потеряли?"]},
+    {"number": 71, "id": "good", "label": "Добро и зло", "depth": 2, "questions": ["Что считаете добром?", "Все ли поступки можно оправдать?"]},
+    {"number": 72, "id": "justice", "label": "Справедливость", "depth": 2, "questions": ["Что для вас справедливость?", "Всегда ли виновных наказывают?"]},
+    {"number": 73, "id": "law", "label": "Закон", "depth": 1, "questions": ["Нужно ли соблюдать любые законы?", "Вы уважаете местные порядки?"]},
+    {"number": 74, "id": "freedom", "label": "Свобода", "depth": 2, "questions": ["Что для вас свобода?", "Ради чего готовы рисковать?"]},
+    {"number": 75, "id": "duty", "label": "Долг", "depth": 2, "questions": ["Перед кем чувствуете обязательства?", "Что важнее личной выгоды?"]},
+    {"number": 76, "id": "honesty", "label": "Правда", "depth": 2, "questions": ["Всегда ли нужно говорить правду?", "Можно ли солгать ради другого?"]},
+    {"number": 77, "id": "risk", "label": "Риск", "depth": 2, "questions": ["Вы осторожный человек?", "Часто идёте на риск?"]},
+    {"number": 78, "id": "power", "label": "Власть", "depth": 2, "questions": ["Доверяете правителям?", "Как относитесь к начальству?"]},
+    {"number": 79, "id": "property", "label": "Собственность", "depth": 1, "questions": ["Что думаете о воровстве?", "Можно ли брать чужое ради выживания?"]},
+    {"number": 80, "id": "meaning", "label": "Смысл и вера", "depth": 3, "questions": ["Во что верите?", "Что придаёт жизни смысл?"]},
+    {"number": 81, "id": "mood", "label": "Настроение", "depth": 1, "questions": ["Как настроение?", "Всё в порядке?"]},
+    {"number": 82, "id": "joy", "label": "Радость", "depth": 2, "questions": ["Что вас радует?", "Когда вы в последний раз были счастливы?"]},
+    {"number": 83, "id": "irritation", "label": "Раздражение", "depth": 2, "questions": ["Что вас злит?", "Что терпеть не можете?"]},
+    {"number": 84, "id": "worry", "label": "Беспокойство", "depth": 3, "questions": ["Вас что-то тревожит?", "О чём сейчас думаете?"]},
+    {"number": 85, "id": "fear", "label": "Страх", "depth": 3, "questions": ["Чего боитесь?", "Что вас пугает?"]},
+    {"number": 86, "id": "shame", "label": "Стыд", "depth": 4, "questions": ["Было ли вам за что-то стыдно?", "Что предпочли бы забыть?"]},
+    {"number": 87, "id": "envy", "label": "Зависть", "depth": 3, "questions": ["Кому завидуете?", "Хотели бы оказаться на чужом месте?"]},
+    {"number": 88, "id": "hope", "label": "Надежда", "depth": 3, "questions": ["На что надеетесь?", "Верите, что всё наладится?"]},
+    {"number": 89, "id": "comfort", "label": "Утешение", "depth": 3, "questions": ["Что помогает вам успокоиться?", "Кто поддерживает вас?"]},
+    {"number": 90, "id": "boundaries", "label": "Границы", "depth": 2, "questions": ["О чём не любите говорить?", "Что вас обижает?"]},
+    {"number": 91, "id": "plans", "label": "Ближайшие планы", "depth": 1, "questions": ["Что собираетесь делать?", "Какие планы на завтра?"]},
+    {"number": 92, "id": "change", "label": "Большие перемены", "depth": 2, "questions": ["Хотите изменить свою жизнь?", "Что бы поменяли?"]},
+    {"number": 93, "id": "goal", "label": "Главная цель", "depth": 2, "questions": ["Чего больше всего хотите?", "К чему стремитесь?"]},
+    {"number": 94, "id": "obstacles", "label": "Препятствия", "depth": 3, "questions": ["Что вам мешает?", "Почему до сих пор не получилось?"]},
+    {"number": 95, "id": "help", "label": "Помощь", "depth": 1, "questions": ["Чем я могу помочь?", "Вам что-нибудь нужно?"]},
+    {"number": 96, "id": "secret", "label": "Секрет", "depth": 5, "questions": ["Что вы скрываете?", "Есть то, о чём никто не знает?"]},
+    {"number": 97, "id": "dangers", "label": "Опасности", "depth": 3, "questions": ["Кому не доверяете?", "Кто может нам помешать?"]},
+    {"number": 98, "id": "unfinished", "label": "Незавершённое дело", "depth": 3, "questions": ["Есть невыполненное обещание?", "Что вам ещё предстоит закончить?"]},
+    {"number": 99, "id": "decision", "label": "Важное решение", "depth": 4, "questions": ["Перед каким выбором стоите?", "Что не даёт решиться?"]},
+    {"number": 100, "id": "expectations", "label": "Отношение к герою", "depth": 2, "questions": ["Чего вы ждёте от меня?", "Зачем вам моё участие?"]}
+  ];
+  const byId=Object.fromEntries(topics.map(topic=>[topic.id,topic]));
+  const norm=text=>String(text||'').toLowerCase().replace(/ё/g,'е').replace(/[«»“”"?!.,:;—–]/g,' ').replace(/\s+/g,' ').trim();
+  function normalized(text){return norm(text).replace(/(?:^| )(?:пожалуйста|пожалуй|скажите|скажи)(?= |$)/gu,' ').replace(/(?:^| )(?:вы|вас|вам|вами|ты|тебя|тебе|тобой)(?= |$)/gu,' ты').replace(/(?:ваше|ваш|ваша|ваши|твое|твой|твоя|твои)/gu,'свой').replace(/\s+/g,' ').trim();}
+  const patterns={
+    name:/как.*(?:зовут|имя)|(?:свой|твое|ваше) имя/,address:/как.*обращат|можно на ты|называть.*тебя|обращаться на/,identity:/кто (?:же )?ты|расскаж.*о себе|представь(?:ся|тесь)/,
+    occupation:/чем.*занима|кто.*професси/,age:/сколько.*лет|возраст|давно.*жив/,origin:/откуда.*родом|ты местн|откуда.*приехал/,presence:/почему.*(?:здесь|сюда|тут)|что.*здесь дела/,impression:/что.*обо мне дума|я.*не мешаю|первое впечатлен/,availability:/найдется минут|можем поговор|есть.*минут/,acquaintance:/узнать обо мне|познакомимся|познакомиться поближе/,
+    place:/что это за место|куда я попал|что за.*(?:лавка|мастерская|площадь|место|станция)/,'place.history':/кто.*основа|как здесь.*начал|истори.*(?:лавк|мест|город)|давно.*(?:откры|лавк)/,people:/кто здесь жив|кого.*(?:здесь|тут).*встрет/,rules:/здесь.*разрешено|чего.*не делать|местные правила/,safety:/здесь безопасно|чего.*опасаться/,surroundings:/что.*поблизости|куда отсюда|рядом.*(?:места|находит)/,notables:/кто тут главн|кого все зна/,changes:/что изменил|раньше здесь/,rumors:/что нового слыш|о чем здесь говор|какие.*слух/,landmark:/чем славится|что.*здесь необыч/,
+    work:/чем.*зарабатыва|какая.*работа|чем.*на жизнь/,'work.satisfaction':/нравится.*работ|не надоедает|довол.*работ/,skills:/что.*умеешь|чему.*обучен|лучше всего.*получается/,tools:/чем.*работа|для чего.*вещь|какие.*инструмент/,schedule:/рабочий день|когда.*заканчива/,
+    training:/кто.*научил|где.*этому.*учил/,clients:/кто.*обращается|много.*посетител|свои клиент/,'work.difficulty':/сложное в работе|что.*работ.*меша/,achievements:/чем.*горди|получилось лучше/,career:/сменить дело|чего.*хочешь добиться|профессиональн.*план/,
+    day:/как.*проходит.*день|чем обычно.*занима/,food:/любишь есть|любимая еда|здесь.*готовят/,drink:/пьешь.*утрам|чай или кофе|любимый напиток/,rest:/как.*отдыха|свободное время/,home:/где.*живешь|далеко.*дом/,habits:/особые привыч|без чего.*день/,busy:/сегодня занят|когда.*будет время/,sleep:/хорошо.*спишь|работаешь ночами/,money:/дорого.*жить|хватает.*заработ|денег хватает/,supplies:/где.*припас|обычно.*покупа/,
+    hobbies:/чем.*увлека|есть.*хобби/,books:/любишь читать|интересную историю|любимая книг/,music:/какая.*музыка|любишь петь/,art:/нравятся картины|считаешь красив/,games:/во что.*играешь|любишь соревнован/,animals:/любишь животн|есть.*питом/,holidays:/отмечаешь праздник|любимый праздник/,travel:/где.*быва|куда.*хотел.*отправ|путешеств/,collections:/что нибудь собира|хранишь эти вещи/,curiosity:/что.*удивляет|хочется узнать/,
+    friends:/есть.*друзья|с кем.*проводишь время/,family:/о семье|есть ли.*родные|своя семья/,important_person:/важнее всех|о ком.*беспокои/,acquaintances:/знаешь.*(?:иль|ник|ле[юя]|мир)|как относишься к/,community:/здешние люди|с ними ужива/,trust:/кому.*доверя|доверяешь.*(?:незнаком|мне)|ты мне довер|можно мне доверять/,conflicts:/с кем то.*поссор|между нами.*произош|наша ссора/,forgiveness:/умеешь прощ|исправить ошиб|как.*примир/,loneliness:/бывает одинок|нравится быть одн/,sociability:/любишь гост|нравится.*разговар/,
+    childhood:/свое детство|где.*вырос|каким было.*детство/,old_home:/первый дом|скучаешь по родине/,previous_work:/занима.*раньше|всегда.*жил|кем.*был.*раньше/,education:/где.*учил|кто.*воспитывал/,mentor:/повлиял на.*жизнь|был ли.*учител/,relocation:/почему.*уеха|сменить место/,meeting:/кого.*запомнил навсегда|кто изменил.*жизнь/,memory:/какое воспоминание.*дорого|раньше горди/,regret:/о чем.*жале|сделал.*иначе/,loss:/кого.*не хватает|что.*потерял/,
+    good:/считаешь добром|поступки.*оправда|добро и зло/,justice:/для.*справедливость|виновных.*наказыва/,law:/соблюдать.*законы|уважаешь.*порядк/,freedom:/для.*свобода|ради чего.*рискова/,duty:/чувствуешь обязатель|важнее.*выгод/,honesty:/говорить правду|солгать ради|допустима.*ложь/,risk:/осторожный человек|часто.*на риск/,power:/доверяешь правител|относишься к началь/,property:/о воровстве|брать чужое/,meaning:/во что.*веришь|придает.*смысл/,
+    mood:/как настроение|все в порядке/,joy:/что.*радует|последний раз.*счастлив/,irritation:/что.*злит|терпеть не мож/,worry:/что то тревож|о чем.*(?:сейчас )?дума/,fear:/чего.*боишься|что.*пугает/,shame:/за что то стыд|предпочел.*забыть/,envy:/кому.*завиду|на чужом месте/,hope:/на что.*наде|что все наладится/,comfort:/помогает.*успоко|кто.*поддерживает/,boundaries:/не любишь говорить|что.*обижает/,
+    plans:/собираешься делать|планы на завтра/,change:/изменить.*жизнь|что бы.*поменя/,goal:/больше всего хочешь|к чему.*стреми|чего.*хочешь|своя цель/,obstacles:/что.*мешает|почему.*не получил/,help:/чем я.*помо|тебе что нибудь нужно/,secret:/что.*скрыва|есть.*никто не зна|расскаж.*секрет|своя тайна|твой секрет/,dangers:/кому не довер|кто.*помешать/,unfinished:/невыполненное обещан|предстоит законч/,decision:/перед каким выбор|не дает решиться/,expectations:/чего.*ждешь от меня|зачем.*мое участ/,
+  };
+  // Polite and familiar verb forms share a matching representation.
+  function familiar(text){return normalized(text).replace(/етесь/g,'ешься').replace(/итесь/g,'ишься').replace(/аете/g,'аешь').replace(/яете/g,'яешь').replace(/ите(?= |$)/g,'ишь').replace(/ете(?= |$)/g,'ешь').replace(/считаете/g,'считаешь');}
+  const forms=topics.map(topic=>({topic,forms:topic.questions.map(familiar)}));
+  function resolve(input,context={}){
+    let text=String(input||'').trim();
+    for(const person of context.people||[]){const escaped=person.name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');text=text.replace(new RegExp('^'+escaped+'\\s*[:,]\\s*','iu'),'');}
+    text=text.replace(/^(?:я\s+)?(?:спрашиваю|спросить)\s+(?:[^«:"?]+?:\s*|[^«"?]+?\s+о\s+)?[«"]?/iu,'').replace(/[»"]$/u,'');
+    const q=familiar(text),base=normalized(text),last=context.activeTopic;
+    if(/^(?:а )?(?:почему|зачем|расскаж(?:и|ите) подробнее|подробнее|что.*имеешь в виду|что.*имеете в виду|а раньше|раньше|и что случилось потом|что было потом|(?:вы|ты) уверен(?:а|ы)?|а у.*самой|а у.*самого|а если я не соглашусь)$/u.test(base)){
+      let followUp=/раньше/.test(base)?'past':/почему|зачем/.test(base)?'reason':/уверен/.test(base)?'certainty':/не соглаш/.test(base)?'disagree':/самой|самого/.test(base)?'personal_experience':/потом/.test(base)?'next':'elaborate';
+      const parent=byId[last?.split('.')[0]]||byId[last]||null;
+      return {topicId:last||null,parentId:parent?.id||null,followUp,confidence:1,raw:input,contextRequired:!last};
+    }
+    if(/(?:почему|зачем).*выбра.*(?:работ|дело|профес)|почему.*(?:торгу|ремонт|лечишь)/u.test(q))return {topicId:'occupation.motivation',parentId:'occupation',facet:'motivation',confidence:1,raw:input};
+    if(/(?:давно|сколько лет).*(?:жив|откры|работа)/u.test(q))return {topicId:'tenure',parentId:/жив/.test(q)?'home':'place.history',confidence:1,raw:input};
+    if(/(?:кто|кто нибудь).*(?:тебе|ты|вам).*(?:помог|помога)|(?:ты|тебе|вам).*сам.*помог/u.test(base))return {topicId:'occupation.personal_experience',parentId:'occupation',facet:'personal_experience',confidence:1,raw:input};
+    if(/как меня зовут|мое имя|меня зовут|что я говорил|что я обещал|помнишь/.test(base))return null;
+    const exact=forms.filter(entry=>entry.forms.includes(q));
+    if(exact.length)return {topicId:exact[0].topic.id,confidence:1,raw:input};
+    const scores=[];
+    for(const [id,pattern]of Object.entries(patterns)){const match=q.match(pattern);if(match)scores.push({id,score:match[0].length+(id.includes('.')?8:0)});}
+    scores.sort((a,b)=>b.score-a.score);
+    if(!scores.length)return null;
+    return {topicId:scores[0].id,confidence:.85,raw:input};
+  }
+  function topic(id){return byId[id]||{id,label:id==='tenure'?'Срок жизни и работы здесь':byId[id?.split('.')[0]]?.label||'Продолжение разговора',depth:id==='tenure'?1:2};}
+  root.ConversationTopics={all:topics,byId,topic,resolve,normalize:familiar};
+})(globalThis);
+</script>
+<script>/* Stable traits shape disclosure and wording; relationship scores remain in social.js. */
+(function(root){
+  'use strict';
+  const axes=['sociability','warmth','assertiveness','openness','curiosity','patience','impulsivity','directness','irony','caution'];
+  const aliases={общительность:'sociability',теплота:'warmth',доминантность:'assertiveness',откровенность:'openness',любопытство:'curiosity',терпение:'patience',импульсивность:'impulsivity',прямолинейность:'directness',ироничность:'irony',осторожность:'caution'};
+  const presets={merchant:{assertiveness:.65,caution:.65},memory_merchant:{openness:.3,curiosity:.7,caution:.75},craftsman:{directness:.85,patience:.7},guard:{assertiveness:.85,caution:.8,directness:.8},scholar:{curiosity:.85,patience:.8,caution:.7},aristocrat:{assertiveness:.8,openness:.25},rogue:{irony:.7,caution:.85,openness:.25},healer:{warmth:.8,patience:.85},traveler:{sociability:.75,openness:.7},hermit:{sociability:.15,openness:.2,warmth:.3},artist:{sociability:.8,impulsivity:.7},official:{directness:.75,caution:.75},inventor:{curiosity:.85,patience:.6},courier:{sociability:.65,caution:.55},resident:{}};
+  const norm=value=>String(value||'').toLowerCase().replace(/ё/g,'е');
+  const hash=text=>[...text].reduce((n,char)=>(n*31+char.charCodeAt(0))>>>0,19);
+  function create(n,role,overrides={}){
+    const p=Object.fromEntries(axes.map((axis,index)=>[axis,.38+(hash(n.id+':'+axis+':'+index)%19)/100]));Object.assign(p,presets[role]||{});
+    const text=norm(n.description);
+    for(const [pattern,values]of [[/добр|дружелюб|забот|ласков/,{warmth:.85}],[/мягк|терпелив/,{patience:.85}],[/сдержан/,{sociability:.3,openness:.25}],[/молчалив|немногослов/,{sociability:.15,openness:.2}],[/холод|суров/,{warmth:.2}],[/ирон|сарказм|язв|юмор/,{irony:.8}],[/любопыт/,{curiosity:.85}],[/откровен|общител|словоохот/,{sociability:.85,openness:.8}],[/горд|властн/,{assertiveness:.9}],[/робк|трус|пуглив/,{assertiveness:.2,caution:.85}],[/вспыльчив|импульсив/,{impulsivity:.85,patience:.2}],[/прямолин/,{directness:.9}],[/подозрител|наблюдател|осторожн/,{caution:.85}]])if(pattern.test(text))Object.assign(p,values);
+    for(const [key,value]of Object.entries(overrides)){const axis=aliases[norm(key)]||key;if(axes.includes(axis)&&Number.isFinite(Number(value)))p[axis]=Math.max(0,Math.min(1,Number(value)));}
+    return {...p,version:1};
+  }
+  function frame(n){
+    const r=n.social.relationship,p=n.personality;
+    if(r.fear>=3&&r.hostility<4)return 'afraid';
+    if(r.hostility>=3)return 'hostile';
+    if(n.grievances.some(g=>!g.resolved))return 'conflict';
+    if(r.suspicion>=2)return 'suspicious';
+    if(n.social.cautious)return 'reconciled';
+    if(n.trust>=3)return 'trusted';
+    if(r.respect>=3&&n.trust<1)return 'respected';
+    if(r.affection>=2||p.warmth>.7&&n.trust>0)return 'friendly';
+    return 'neutral';
+  }
+  function compose({npc:n,parts,topic,repeat=0,mode='truthful',relationship=frame(n)}){
+    const p=n.personality;let text=parts.filter(Boolean).join(' ');
+    if(mode==='truthful'&&repeat>0){
+      const reference=topic==='name'?(repeat>2&&p.irony>.6?'Имя никуда не делось. ':'Мы уже представлялись. '):repeat>2&&p.patience<.4?'Я отвечал на этот вопрос. ':'Как уже говорилось: ';
+      text=reference+(text||'Ответ прежний.');
+    }
+    if(relationship==='afraid'&&!/не трогайте|не приближайтесь/.test(text))text+=' Пожалуйста, не трогайте мои вещи.';
+    else if(relationship==='respected'&&topic==='trust')text+=' Ваше умение я уважаю, но личное доверие — отдельный вопрос.';
+    if(/[ая]$/iu.test(n.name)&&!/^(?:Никита|Илья|Кузьма|Савва|Лука)$/iu.test(n.name)){const forms={выбрал:'выбрала',отвечал:'отвечала',мог:'могла',готов:'готова',знал:'знала',говорил:'говорила',наблюдал:'наблюдала',запомнил:'запомнила',увидел:'увидела',начал:'начала',спокоен:'спокойна',занят:'занята',расположен:'расположена',уверен:'уверена'};text=text.replace(/[А-Яа-яЁё]+/gu,word=>forms[norm(word)]||word);}
+    return {text,manner:relationship==='afraid'?'Голос заметно тише.':p.warmth>.75&&relationship==='friendly'?'В голосе слышно участие.':p.directness>.8&&repeat===0?'Ответ короткий и деловой.':''};
+  }
+  root.NpcPersonality={axes,presets,aliases,create,frame,compose};
+})(globalThis);
+</script>
+<script>/* Per-NPC semantic history, separate from contact status and world truth. */
+(function(root){
+  'use strict';
+  function init(n){
+    n.conversation||={version:1,activeTopic:null,focusEntityId:n.id,lastClaimId:null,lastClaim:null,lastQuestion:null,pendingFollowUp:null,conversationDepth:0,disclosedFacts:[],discussedTopics:{},unresolvedQuestions:[],history:[],pendingNpcQuestion:null,askedQuestions:{},declinedQuestions:[],relationshipCredits:[],lastInitiativeTurn:-20};
+    return n.conversation;
+  }
+  function remember(n,request,response,turn){
+    const m=init(n),id=request.topicId||'unresolved';
+    const same=m.activeTopic===id;m.activeTopic=request.topicId||m.activeTopic;m.focusEntityId=n.id;m.lastQuestion=request.raw;
+    m.conversationDepth=same?m.conversationDepth+1:1;
+    m.pendingFollowUp=request.followUp||null;
+    const discussed=m.discussedTopics[id]||={count:0,firstTurn:turn,facts:[],modes:[]};discussed.count++;if(response.mode==='truthful')discussed.truthfulCount=(discussed.truthfulCount||0)+1;discussed.lastTurn=turn;discussed.lastFacet=request.facet||request.followUp||null;
+    for(const fact of response.facts||[]){
+      if(!discussed.facts.includes(fact.id))discussed.facts.push(fact.id);
+      if(response.mode==='truthful'&&!m.disclosedFacts.includes(fact.id))m.disclosedFacts.push(fact.id);
+    }
+    if(!discussed.modes.includes(response.mode))discussed.modes.push(response.mode);
+    m.lastClaim=response.claim||null;m.lastClaimId=response.claim?.id||null;
+    if(response.mode==='unknown'){
+      if(!m.unresolvedQuestions.some(q=>q.topicId===id&&q.facet===(request.followUp||request.facet||null)))m.unresolvedQuestions.push({topicId:id,facet:request.followUp||request.facet||null,text:request.raw,turn});
+      m.unresolvedQuestions=m.unresolvedQuestions.slice(-20);
+    }else if(response.mode==='truthful')m.unresolvedQuestions=m.unresolvedQuestions.filter(q=>q.topicId!==id);
+    m.history.push({turn,kind:'question',topicId:id,facet:request.followUp||request.facet||null,question:request.raw,responseMode:response.mode,factIds:(response.facts||[]).map(f=>f.id),claim:response.claim?.text||null});m.history=m.history.slice(-80);
+  }
+  function ask(n,type,text,turn){const m=init(n);m.pendingNpcQuestion={id:n.id+':'+turn+':'+type,type,text,askedTurn:turn};m.askedQuestions[type]=(m.askedQuestions[type]||0)+1;m.lastInitiativeTurn=turn;return text;}
+  function answer(n,type,text,turn,declined=false){const m=init(n);if(declined&&!m.declinedQuestions.includes(type))m.declinedQuestions.push(type);m.history.push({turn,kind:declined?'declined':'player_answer',topicId:type,text});m.history=m.history.slice(-80);m.pendingNpcQuestion=null;}
+  root.ConversationMemory={init,remember,ask,answer};
+})(globalThis);
+</script>
+<script>/* Cards are created once. Unknown past/family facts stay unknown; new tastes are saved. */
+(function(root){
+  'use strict';
+  const norm=value=>String(value||'').toLowerCase().replace(/ё/g,'е');
+  const hash=text=>[...text].reduce((n,char)=>(n*31+char.charCodeAt(0))>>>0,23);
+  const roles={
+    memory_merchant:{label:'торговля воспоминаниями',occupation:'Я торгую воспоминаниями и веду эту лавку.',skills:'Умею различать и бережно хранить воспоминания.',motivation:'Я выбрал это дело, чтобы помогать людям возвращать то, что они потеряли.',satisfaction:'В этом деле мне важно, что найденное воспоминание может что-то изменить для человека.',difficulty:'Труднее всего решить, какое воспоминание стоит возвращать.',clients:'Ко мне обращаются те, кто ищет утраченное или готов с чем-то расстаться.'},
+    merchant:{label:'торговля',occupation:'Я занимаюсь торговлей.',skills:'Умею оценивать товары и договариваться об обмене.',motivation:'Мне важно вести дело, на которое можно рассчитывать.',satisfaction:'Мне нравится, когда сделка устраивает обе стороны.',difficulty:'Непросто отличить хорошее предложение от красивого обещания.',clients:'Мои клиенты приходят за товарами и обменом.'},
+    craftsman:{label:'ремесло',occupation:'Я ремонтирую вещи и работаю в мастерской.',skills:'Умею находить поломки и подгонять детали.',motivation:'Мне нравится возвращать вещам рабочее состояние.',satisfaction:'Приятно видеть, как вещь снова работает.',difficulty:'Главная трудность — понять причину поломки, а не спрятать её признаки.',clients:'Ко мне приходят с вещами, которым нужен ремонт.'},
+    guard:{label:'охрана',occupation:'Я слежу за порядком и безопасностью.',skills:'Умею замечать опасность и охранять проходы.',motivation:'Мне важно, чтобы рядом можно было жить без страха.',satisfaction:'Спокойный день для меня — хороший результат.',difficulty:'Важно не принять подозрение за доказанную вину.',clients:'Ко мне обращаются за защитой и по вопросам порядка.'},
+    scholar:{label:'исследования',occupation:'Я занимаюсь исследованиями.',skills:'Умею сопоставлять наблюдения и проверять гипотезы.',motivation:'Мне хочется понять, как устроены вещи, а не довольствоваться удобным объяснением.',satisfaction:'Мне интересно находить ответы, которые выдерживают проверку.',difficulty:'Сложнее всего заметить собственную ошибку.',clients:'Обычно ко мне приходят с вопросами и наблюдениями.'},
+    aristocrat:{label:'представительство',occupation:'Я занимаюсь делами своего круга и представительством.',skills:'Умею вести переговоры и разбираться в этикете.',motivation:'Мне важно сохранять достоинство и отвечать за принятые решения.',satisfaction:'Я ценю возможность влиять на ход дел.',difficulty:'Влияние требует ответственности за последствия.',clients:'Ко мне обращаются за содействием в общих делах.'},
+    rogue:{label:'неформальные сделки',occupation:'Я нахожу возможности, которые другие не замечают.',skills:'Умею замечать лазейки и вести осторожные переговоры.',motivation:'Мне дорого право самому выбирать свой путь.',satisfaction:'Люблю находить выход там, где все видят тупик.',difficulty:'Самое трудное — решить, кому показать найденный выход.',clients:'Ко мне приходят с необычными предложениями.'},
+    healer:{label:'лечение',occupation:'Я помогаю больным и пострадавшим.',skills:'Умею оказывать помощь и замечать тревожные признаки.',motivation:'Мне важно облегчать чужую боль.',satisfaction:'Радуюсь, когда человеку становится лучше.',difficulty:'Трудно помогать там, где не хватает сведений и средств.',clients:'Ко мне приходят те, кому нужна помощь.'},
+    traveler:{label:'путешествия',occupation:'Я путешествую и изучаю дороги.',skills:'Умею наблюдать за местностью и готовиться к пути.',motivation:'Мне интересно увидеть, что находится за знакомым горизонтом.',satisfaction:'Люблю узнавать новые места.',difficulty:'В пути важно понимать, когда пора остановиться.',clients:'Обычно у меня спрашивают о дорогах.'},
+    hermit:{label:'уединённая жизнь',occupation:'Я живу спокойно и стараюсь обходиться своими силами.',skills:'Умею обходиться малым и внимательно наблюдать.',motivation:'Мне нужна тишина, чтобы слышать собственные мысли.',satisfaction:'Меня устраивает спокойная жизнь.',difficulty:'Уединение не освобождает от необходимости заботиться о себе.',clients:'Я редко ищу чужого внимания.'},
+    artist:{label:'искусство',occupation:'Я занимаюсь искусством и выступлениями.',skills:'Умею передавать чувства через образы и выступления.',motivation:'Мне важно находить форму для того, что трудно сказать прямо.',satisfaction:'Радуюсь, когда моя работа отзывается в другом человеке.',difficulty:'Трудно сохранить собственный голос, стараясь понравиться всем.',clients:'Обычно ко мне приходят за впечатлением или историей.'},
+    official:{label:'ведение дел',occupation:'Я занимаюсь общими делами и установленными процедурами.',skills:'Умею разбираться в обращениях и порядке действий.',motivation:'Мне важно, чтобы договорённости имели понятный порядок.',satisfaction:'Ценю дела, доведённые до результата.',difficulty:'Трудно соблюсти порядок, не забыв о человеке.',clients:'Ко мне приходят с обращениями и вопросами о порядке.'},
+    inventor:{label:'изобретательство',occupation:'Я проектирую и собираю устройства.',skills:'Умею исследовать механизмы и искать новые способы решения.',motivation:'Мне интересно сделать то, чего ещё не хватало.',satisfaction:'Люблю момент, когда замысел начинает работать.',difficulty:'Сложно отличить полезную идею от просто необычной.',clients:'Ко мне обращаются с техническими задачами.'},
+    courier:{label:'доставка',occupation:'Я доставляю письма и посылки.',skills:'Умею беречь отправления и выбирать путь доставки.',motivation:'Мне важно, чтобы послание дошло до адресата.',satisfaction:'Нравится доводить поручение до получателя.',difficulty:'Сложно уложиться в срок, не рискуя чужим отправлением.',clients:'Ко мне обращаются те, кому нужно что-то передать.'},
+    resident:{label:'местный житель',occupation:null,skills:null,motivation:null,satisfaction:null,difficulty:null,clients:null}
+  };
+  function role(n,s){
+    const text=norm(n.description+' '+n.motive),place=norm(s.world.locations.find(l=>l.id===n.location)?.name),world=norm(s.world.authorCanon.world);
+    if(/торгов|лавк|купец|продав/.test(text)&&/воспомин/.test(text+' '+world)&&!/(?:нет|без) воспомин/.test(world))return 'memory_merchant';
+    for(const [id,re]of [['guard',/страж|охран|часов/],['scholar',/ученый|ученая|исследовател/],['aristocrat',/аристократ|дворян|барон|герцог/],['rogue',/вор|плут|контрабанд|разбой/],['healer',/лекарь|лекарка|целител|врач/],['hermit',/отшель|затвор/],['artist',/артист|бард|певец|певица|художник/],['official',/чиновник|писарь|секретарь/],['inventor',/изобретател|инженер/],['traveler',/путешествен|странник/],['merchant',/торгов|купец|продав|хозяйк.*лавк/],['courier',/достав.*письм|курьер|почтальон/],['craftsman',/ремеслен|кузнец|мастер|починить инструмент/]])if(re.test(text))return id;
+    return /мастерск/.test(place)?'craftsman':/рынок/.test(place)?'merchant':'resident';
+  }
+  const factAliases={имя:'name',занятие:'occupation',профессия:'occupation',возраст:'age',происхождение:'origin',родина:'origin',дом:'home',семья:'family',друзья:'friends',детство:'childhood',прошлое:'previous_work',увлечения:'hobbies',секрет:'secret',цель:'goal',причина_работы:'occupation.motivation',срок:'tenure'};
+  function rules(text){
+    const p={};for(const part of String(text||'').split(';')){const [raw,...tail]=part.split('=');const key=norm(raw).trim(),value=tail.join('=').trim();
+      if(!value)continue;
+      if(['доверие','симпатия','уважение','страх'].includes(key)){if(Number.isFinite(Number(value)))p[({доверие:'trust',симпатия:'affection',уважение:'respect',страх:'fear'})[key]]=Number(value);else p.invalid=true;}
+      else if(key==='улика')p.evidence=value;else if(key==='защищает')p.protects=value;else if(key==='долг')p.debt=value;else if(key==='сделка')p.deal=value;else if(key==='решение')p.decision=value;else if(key==='ложь')p.cover=value;else if(key==='глубина'){if(Number.isInteger(Number(value))&&Number(value)>=0&&Number(value)<=5)p.depth=Number(value);else p.invalid=true;}else if(key==='уклонение')p.evasion=value;
+    }return p;
+  }
+  function fact(n,topic,text,options={}){return {id:n.id+':bio:'+topic+':'+hash(text),topic,text:String(text),depth:root.ConversationTopics.topic(topic).depth,source:'generated-once',...options};}
+  function init(s,config){
+    const lines=String(config.canon||'').split('\n').map(line=>{const at=line.indexOf(':');return at<0?null:{key:norm(line.slice(0,at)).trim(),args:line.slice(at+1).split('|').map(v=>v.trim())};}).filter(Boolean);
+    for(const n of Object.values(s.world.npcs)){
+      if(n.biography?.version===1){root.ConversationMemory.init(n);continue;}
+      const type=/искусственный интеллект|андроид|(?:^|[^а-яa-z])(?:робот|ии|ai)(?:[^а-яa-z]|$)|автомат|компьютерн.*разум/.test(norm(n.description))?'machine':/древний дух|призрак|(?:^|[^а-я])дух(?:[^а-я]|$)|божество/.test(norm(n.description))?'spirit':'human';
+      const configured=lines.find(entry=>entry.key==='роль npc'&&norm(entry.args[0])===norm(n.name))?.args[1];
+      const r=roles[configured]?configured:role(n,s),spec=roles[r],overrides={};
+      for(const entry of lines)if(entry.key==='манера npc'&&norm(entry.args[0])===norm(n.name))for(const part of (entry.args[1]||'').split(';')){const [key,value]=part.split('=');overrides[key?.trim()]=value?.trim();}
+      n.personality=root.NpcPersonality.create(n,r,overrides);n.identity={name:n.name,role:r,kind:type,originLocationId:n.location};
+      const facts={};const put=(id,text,options={})=>{if(text)facts[id]=[fact(n,id,text,options)];};
+      put('name',n.name,{depth:0,source:'identity'});put('occupation',spec.occupation,{depth:0});
+      put('occupation.motivation',spec.motivation,{depth:1});put('work',spec.occupation,{depth:0});put('work.satisfaction',spec.satisfaction);put('skills',spec.skills);put('work.difficulty',spec.difficulty);put('clients',spec.clients);
+      put('goal','Мне важно '+n.motive+'.',{depth:1,source:'author-motive'});put('plans','Сейчас я хочу '+n.motive+'.',{source:'author-motive'});put('presence',r==='memory_merchant'?'Я присматриваю за лавкой и принимаю посетителей.':spec.occupation?'Я здесь занимаюсь своим делом. '+spec.occupation:'Сейчас я нахожусь здесь.',{depth:0,source:'role-presence'});
+      if(r!=='resident')put('hobbies',r==='craftsman'||r==='inventor'?'Мне нравится разбираться в устройстве сложных вещей.':r==='scholar'?'Люблю сопоставлять разные объяснения одного явления.':r==='artist'?'Люблю искать истории и неожиданные образы.':hash(n.id)%2?'В свободное время люблю спокойные беседы.':'Мне нравятся неторопливые прогулки.');
+      put('music',hash(n.id)%2?'Мне нравятся спокойные мелодии.':'Люблю музыку с ясным ритмом.');
+      put('curiosity',n.personality.curiosity>.6?'Мне интересно, почему люди выбирают разные пути к одной цели.':'Мне интереснее хорошо понять знакомое дело, чем менять его ради новизны.');
+      if(type==='human'){put('food','Предпочитаю простую сытную еду.');put('drink','Предпочитаю воду; вкусы в напитках не самая важная часть моей жизни.');}
+      put('sociability',n.personality.sociability>.6?'Люблю беседу, если мы слушаем друг друга.':'Я не очень разговорчив; мне легче говорить о конкретном.');
+      put('boundaries',n.personality.openness<.4?'Не люблю, когда меня торопят с личными признаниями.':'Можно спрашивать, но я оставляю за собой право не отвечать.');
+      put('risk',n.personality.caution>.6?'Предпочитаю сначала понять риск и подготовить путь назад.':'Иногда стоит попробовать, даже если не всё известно.');
+      put('property',n.social.profile.propertyRespect>=.5?'Чужие вещи следует брать с разрешения владельца.':'Обстоятельства бывают разными, но даже ловкий поступок имеет последствия.');
+      put('law',n.social.profile.lawfulness>=.5?'Порядок помогает жить вместе, хотя подозрение само по себе не делает человека виновным.':'Не каждый запрет я считаю справедливым. Но о последствиях забывать нельзя.');
+      put('honesty',n.personality.caution>.6?'Слова я сравниваю с поступками. Иногда молчание честнее удобной выдумки.':'Предпочитаю прямой разговор, но у человека могут быть причины беречь чужую тайну.');
+      put('forgiveness',n.social.profile.forgiveness>.6?'Прощать можно, если человек признаёт причину и исправляет последствия.':'Одного извинения мне мало. Сначала нужно исправить причинённое.');
+      put('rest',n.personality.sociability>.6?'Мне помогает спокойная беседа без спешки.':'Лучше всего отдыхаю в тишине.');
+      if(n.secret)put('secret',n.secret,{depth:5,source:'author-secret',policy:{guarded:true,trust:3}});
+      n.biography={version:1,createdTurn:s.turn,facts,kind:type,role:r};
+      const charFields=Object.fromEntries(String(n.description).split(/[\n;]/).map(line=>{const at=line.indexOf(':');return at<0?[]:[norm(line.slice(0,at)).trim(),line.slice(at+1).trim()];}).filter(row=>row.length));
+      for(const [key,value]of Object.entries(charFields)){const topic=factAliases[key];if(topic&&topic!=='name')put(topic,value,{source:'author-character'});}
+      for(const entry of lines){const [name,rawTopic,text,rawRules]=entry.args;if(norm(name)!==norm(n.name))continue;
+        if(['биография npc','факт npc'].includes(entry.key)&&rawTopic&&text){const topic=factAliases[norm(rawTopic)]||rawTopic,policy=rules(rawRules);if(topic==='name')continue;put(topic,text,{source:'author-biography',...(policy.depth!==undefined?{depth:policy.depth}:{}),...(Object.keys(policy).length?{policy}:{})});}
+        if(entry.key==='секрет npc'&&rawTopic){const policy={guarded:true,trust:3,...rules(text)};put('secret',rawTopic,{depth:5,source:'author-secret',policy});}
+        if(entry.key==='раскрытие npc'&&rawTopic){const topic=factAliases[norm(rawTopic)]||rawTopic,policy=rules(text);for(const value of facts[topic]||[])value.policy={...policy,...(topic==='secret'&&!Object.keys(policy).length?{guarded:true}:{})};}
+      }
+      root.ConversationMemory.init(n);
+    }
+  }
+  function applicable(n,id){return !(n.identity.kind!=='human'&&['age','childhood','old_home','food','drink','sleep','family'].includes(id));}
+  root.NpcBiography={roles,init,fact,applicable,aliases:factAliases};
+})(globalThis);
+</script>
+<script>/* Select knowledge, evaluate disclosure, compose a voice, then remember the actual exchange. */
+(function(root){
+  'use strict';
+  function create(H){
+    const {norm,clone,emit,log,dialogue,npc,here,openGrievances,social}=H;
+    const Topics=root.ConversationTopics,Memory=root.ConversationMemory,Bio=root.NpcBiography,Personality=root.NpcPersonality;
+    const current=(s,n)=>s.world.locations.find(place=>place.id===n.location);
+    function init(s,config){Bio.init(s,config);for(const n of Object.values(s.world.npcs)){const m=Memory.init(n);if(n.secretRevealed)for(const fact of n.biography.facts.secret||[])if(!m.disclosedFacts.includes(fact.id))m.disclosedFacts.push(fact.id);}}
+    function activePerson(s,a){return s.world.npcs[a.recipientId]||npc(s);}
+    function playerAnswer(s,n,c){
+      const m=n?.conversation,pending=m?.pendingNpcQuestion,text=String(c.originalText||c.text).trim();
+      if(!pending||!dialogue.active(s,n)||s.turn-pending.askedTurn>12)return null;
+      if(/^(?:не хочу (?:отвечать|говорить)|не скажу|это личное|не буду отвечать|пока не хочу|нет)[.! ]*$/iu.test(text))return {type:pending.type,declined:true,text};
+      if(pending.type==='player_name'&&['custom','name'].includes(c.intent)&&(!c.semantic?.recognized||c.semantic.intent==='TALK')){
+        const name=text.match(/^(?:меня зовут|мо[её] имя|зови меня|можете звать меня)\s+([А-ЯЁA-Z][а-яёa-z-]{1,35})(?:[.! ]|$)/u)?.[1]||text.match(/^([А-ЯЁA-Z][а-яёa-z-]{1,35})[.! ]*$/u)?.[1];
+        if(name&&!['Привет','Спасибо','Извини','Хорошо','Ладно','Жду','Почему','Осматриваюсь','Нет','Да'].includes(name))return {type:pending.type,value:name,text};
+      }
+      if(pending.type==='player_goal'&&(/^(?:я\s+)?(?:ищу|хочу найти|хочу вернуть|мне нужно|моя цель|пришел за|пришла за)/iu.test(text)||c.intent==='custom'&&!/[?]/u.test(text)&&text.split(/\s+/).length<12&&!c.semantic?.unsupportedVerb))return {type:pending.type,value:text.replace(/^(?:я )?(?:ищу|хочу найти|моя цель\s*[:—]?|мне нужно)\s*/iu,'').replace(/[.!]+$/u,''),text};
+      if(['motivation','intentions'].includes(pending.type)&&['custom','talk','goal'].includes(c.intent)&&!/[?]/u.test(text)&&!c.semantic?.unsupportedVerb)return {type:pending.type,value:text,text};
+      return null;
+    }
+    function prepare(s,c,a){
+      const mode=c.semantic?.mode,text=c.originalText||c.text,n=activePerson(s,a);
+      if(a.recipientId==='player'||mode==='report'||['request_npc','request_plan','request_permission','claim','plant_evidence','show','give','borrow','rent','return_property','compensate','confess','promise','find_job','deliver_job','collect_pay','end_dialogue'].includes(a.intent))return;
+      if(n?.conversation.pendingNpcQuestion&&(!dialogue.active(s,n)||s.turn-n.conversation.pendingNpcQuestion.askedTurn>4))n.conversation.pendingNpcQuestion=null;
+      const answer=playerAnswer(s,n,c);
+      if(answer){a.conversation={kind:'player_answer',...answer};a.intent='conversation_answer';c.intent='talk';c.speech=true;c.hypothetical=false;c.negated=false;a.negated=false;c.conversation=a.conversation;return;}
+      if(mode==='negated'||c.negated)return;
+      if(c.intent==='greet'&&a.recipientId!=='player'&&['execute','attempt'].includes(mode||'execute')){a.conversation={kind:'greeting',topicId:'name',raw:text};c.conversation=a.conversation;return;}
+      let query=text;if(c.speech){const quoted=text.match(/[«"]([^»"]+)[»"]/u);if(quoted)query=quoted[1];}
+      const context=n?.conversation||{};const request=Topics.resolve(query,{...context,activeTopic:dialogue.active(s,n)?context.activeTopic:null,people:Object.values(s.world.npcs)});
+      if(!request)return;
+      if(c.hypothetical&&!(request.confidence===1&&mode==='question')&&request.followUp!=='disagree'||['intention','hypothetical'].includes(mode)&&request.followUp!=='disagree')return;
+      if(c.semantic?.recognized&&!['TALK'].includes(c.semantic.intent)&&!(request.confidence===1&&mode==='question')&&!(request.topicId==='address'&&/на ты|обращаться/iu.test(text)))return;
+      if(['attack','threat','insult','destroy','burn','use','move','return','take','drop','repair','work','approach','inspect','canon'].includes(a.intent)&&!c.question&&!c.speech)return;
+      if(n?.conversation)n.conversation.pendingNpcQuestion=null;
+      a.conversation={kind:'question',...request,raw:text};c.conversation=a.conversation;a.intent='question';a.topicId=request.topicId;c.intent='question';c.question=true;c.speech=true;c.hypothetical=false;
+      // An explicitly named interlocutor is selected from actual NPCs, never invented.
+      const addressed=String(text).match(/^([^,:«»]{1,35})\s*[:,]\s*(.+)$/u);
+      if(addressed){const person=Object.values(s.world.npcs).find(person=>root.StorySpatial.same(person.name,addressed[1]));if(person)a.recipientId=person.id;}
+    }
+    function dynamicFact(n,id,text,depth=0){return Bio.fact(n,id,text,{depth,source:'current-life'});}
+    function known(n,id){return n.biography.facts[id]||[];}
+    function knownItem(s,n,e){return Boolean(e&&!e.destroyed&&(e.location===n.id||e.ownerId===n.id&&e.location===current(s,n)?.name||e.known&&!e.hidden&&e.location===current(s,n)?.name||n.beliefs['entity:'+e.id+':location']));}
+    function conflictText(s,n){
+      const g=openGrievances(n)[0];if(!g)return 'Я не готов продолжать эту беседу.';
+      const item=s.entities.find(e=>e.id===g.requiredItemId)?.label||g.requiredItem;
+      if(g.kind==='theft')return g.reparation?'Вещь возвращена. Нужно ещё признать причину нашей ссоры.':'Сначала верните '+(item?'«'+item+'»':'взятую вещь')+'. Я помню, что произошло.';
+      if(g.compensation)return 'Сначала нужно возместить ущерб: '+g.compensation+' монеты.';
+      if(g.kind==='broken_promise')return 'Вы не выполнили обещание. Мне нужно увидеть, что на ваши слова снова можно положиться.';
+      return 'Я помню причину нашей ссоры: '+g.reason+'. Признать её и исправить последствия важнее новых разговоров.';
+    }
+    function getNpcKnowledge(s,n,request){
+      const id=request.topicId,place=current(s,n),m=n.conversation;
+      let field=id;
+      if(request.followUp){
+        const parent=id?.split('.')[0];
+        if(request.followUp==='reason')field=parent==='occupation'||parent==='work'?'occupation.motivation':parent+'.reason';
+        else if(request.followUp==='past')field=known(n,parent+'.past').length?parent+'.past':['occupation','work','career'].includes(parent)?'previous_work':parent==='home'?'old_home':parent+'.past';
+        else if(request.followUp==='personal_experience')field=parent+'.personal_experience';
+        else if(request.followUp==='next')field=parent+'.next';
+        else if(request.followUp==='elaborate'){
+          const options=Object.entries(n.biography.facts).filter(([key])=>key.startsWith(parent+'.')&&key!==id&&!/secret|private/.test(key)).flatMap(([,facts])=>facts);
+          const extra=options.filter(f=>!m.disclosedFacts.includes(f.id));
+          return {status:extra.length?'known':m.lastClaim?'known':'unknown',facts:extra.length?extra:m.lastClaim?[m.lastClaim]:[],elaboration:!extra.length,field:parent};
+        }else if(request.followUp==='certainty')return {status:m.lastClaim?'known':'unknown',facts:m.lastClaim?[m.lastClaim]:[],certainty:true,field:id};
+        else if(request.followUp==='disagree')return {status:'known',facts:[dynamicFact(n,id,'Вы можете не соглашаться. Я не принимаю решения за вас; договорённость возникает только с вашего согласия.')],field:id};
+      }
+      if(known(n,field).length)return {status:'known',facts:known(n,field),field};
+      if(!Bio.applicable(n,field))return {status:'not_applicable',facts:[],field};
+      if(request.followUp)return {status:'unknown',facts:[],field};
+      let text=null;
+      if(id==='identity')text='Я — '+n.name+'. '+(known(n,'occupation')[0]?.text||'Сейчас я нахожусь здесь: '+place.name+'.');
+      else if(id==='address')text='Можно обращаться ко мне по имени: '+n.name+'. '+(n.personality.assertiveness>.7&&n.trust<1?'Пока предпочитаю обращаться друг к другу на «вы».':'На «ты» можно, если вам так удобнее.');
+      else if(id==='place'){
+        if(n.identity.role==='memory_merchant'&&place.id===n.identity.originLocationId)text='Это лавка воспоминаний. Здесь торгуют воспоминаниями'+(/флакон/.test(norm(s.world.authorCanon.world))?', заключёнными во флаконы.':'.');
+        else if(/мастерск/.test(norm(place.name)))text='Это мастерская. Здесь чинят вещи и делают детали для механизмов.';
+        else if(/рынок/.test(norm(place.name)))text='Это рынок: здесь обмениваются товарами и договариваются о доставке.';
+        else if(/площад/.test(norm(place.name)))text='Это площадь, где сходятся пути и встречаются местные жители.';
+        else if(/лавк/.test(norm(place.name)))text='Это лавка. Сюда приходят за покупками и обменом.';
+        else text=root.StoryNarrator.locationDescription(place.scene?.description||'',place.name);
+      }else if(id==='surroundings'){
+        const routes=s.world.edges.filter(edge=>edge.from===n.location&&!edge.sourceId).map(edge=>s.world.locations.find(place=>place.id===edge.to)?.name).filter(Boolean);text=routes.length?'Отсюда есть дороги: '+routes.join(', ')+'.':'Известного пути отсюда я не назову.';
+      }else if(id==='people'||id==='notables'||id==='acquaintances'){
+        const people=Object.values(s.world.npcs).filter(other=>other.id!==n.id&&(other.location===n.location||Object.hasOwn(n.social.profile.loyalties,other.id)||Object.values(n.social.knowledge).some(k=>k.reporterId===other.id)));
+        const mentioned=Object.values(s.world.npcs).find(other=>other.id!==n.id&&root.StorySpatial.same((request.raw.match(/(?:знаете|знаешь|относитесь к|относишься к)\s+([^?!.]+)/iu)||[])[1]||'',other.name));
+        const who=mentioned?people.filter(other=>other.id===mentioned.id):people;
+        text=who.length?'Мне знакомы: '+who.map(other=>other.name+(n.social.profile.loyalties[other.id]===-1?' — мы не ладим':n.social.profile.loyalties[other.id]===1?' — мы союзники':'')).join(', ')+'.':null;
+      }else if(id==='rules')text=n.social.profile.propertyRespect>=.5?'Здесь стоит спрашивать разрешение на чужие вещи и уважать личные границы.':'Сперва выясните, кто за что отвечает, и не считайте чужое согласие само собой разумеющимся.';
+      else if(id==='availability'||id==='busy')text=n.social.attention==='busy'?'Сейчас я занят своим делом. На короткий вопрос время найдётся.':'Сейчас я могу немного поговорить.';
+      else if(id==='trust'){
+        const frame=Personality.frame(n);
+        text=frame==='afraid'?'Я боюсь вас. Это не означает, что я вам доверяю.':frame==='hostile'||frame==='conflict'?conflictText(s,n):frame==='suspicious'?'У меня есть подозрения. Пока мне нужны подтверждённые поступки, а не заверения.':frame==='reconciled'?'Мы уладили причину ссоры, но я всё ещё осторожен. Доверие восстанавливается поступками.':n.trust>=3?'Я вам доверяю: для этого уже есть основания.':n.trust>0?'Я к вам расположен, но пока не готов доверить всё.':'Мы ещё мало знакомы. Пока я не могу говорить о личном доверии.';
+      }else if(id==='impression')text=n.social.relationship.respect>=3&&n.trust<1?'Вы производите впечатление умелого человека. Но уважение к умению ещё не означает доверия.':n.social.relationship.affection>=2?'Мне приятно с вами говорить, хотя личные границы остаются.':n.social.relationship.suspicion>=2?'Ваши намерения пока вызывают вопросы.':'Мы только знакомимся. Я не спешу судить о вас.';
+      else if(id==='conflicts')text=openGrievances(n).length?conflictText(s,n):n.grievances.length?'У нас были разногласия. Причина улажена, но я помню её.':'Между нами нет незавершённой ссоры.';
+      else if(id==='mood')text=n.social.relationship.fear>=3?'Мне тревожно рядом с вами.':n.tension>=3?'Я сейчас напряжён.':openGrievances(n).length?'Мне трудно говорить спокойно после нашей ссоры.':'Сейчас я спокоен и могу поговорить.';
+      else if(id==='worry')text=openGrievances(n).length?conflictText(s,n):'Сейчас я думаю о том, как '+n.motive+'.';
+      else if(id==='help')text=n.identity.role==='craftsman'?'Если хотите помочь с мастерской, можно обсудить работу. Решение и договор нужно принять отдельно.':'Можете помочь мне с тем, что для меня важно: '+n.motive+'. Сначала договоримся о конкретном шаге.';
+      else if(id==='expectations')text=n.social.relationship.reliability<0?'От вас я жду прежде всего выполнения уже данных обещаний.':'Мне важно, чтобы слова совпадали с делом. Если захотите помочь, обсудим конкретный шаг.';
+      else if(id==='unfinished'){
+        const promises=s.world.social.promises.filter(p=>p.recipientId===n.id&&p.status!=='fulfilled');text=promises.length?'Между нами остались обещания: '+promises.map(p=>p.text).join('; ')+'.':null;
+      }else if(id==='rumors'){
+        const entries=Object.values(n.social.knowledge).filter(k=>k.source==='report'||k.source==='witness').slice(-2);
+        text=entries.length?entries.map(k=>{const event=s.world.social.events.find(e=>e.id===k.eventId),item=s.entities.find(e=>e.id===k.targetId)?.label||'вещи';return (k.source==='report'?'Мне рассказали':'Я заметил')+': '+(event?.type==='theft'?'пропала «'+item+'»':event?.type==='damage'?'повреждена «'+item+'»':'было неприятное происшествие')+'.';}).join(' '):null;
+      }else if(id==='changes'){
+        const observed=Object.values(n.beliefs).filter(b=>b.key.startsWith('entity:')&&b.key.endsWith(':condition')&&b.value==='repaired');text=observed.length?'Из того, что я видел: неисправная вещь снова работает.':null;
+      }else if(id==='tools'){
+        const e=s.entities.find(e=>e.id===request.targetId)||s.entities.find(e=>e.ownerId===n.id&&e.kind==='tool'&&knownItem(s,n,e));text=e&&knownItem(s,n,e)?'В моём деле используется «'+e.label+'». '+(e.description||'О назначении именно этой вещи больше сведений у меня нет.'):null;
+      }else if(id==='obstacles'){
+        const item=s.entities.find(e=>e.ownerId===n.id&&e.localKey==='mechanism'&&e.location===place.name&&!e.destroyed);text=item&&item.condition!=='repaired'?'Работе мешает неисправный механизм. Причину можно изучить на месте.':null;
+      }
+      return {status:text?'known':'unknown',facts:text?[dynamicFact(n,id,text,['trust','conflicts','impression','mood','availability','busy'].includes(id)?0:Topics.topic(id).depth)]:[],field};
+    }
+    function evidenceKnown(s,n,label){
+      const e=s.entities.find(e=>root.StorySpatial.same(e.label,label));if(!e)return false;
+      if(Object.values(n.researchKnowledge||{}).some(f=>f.sourceId===e.id))return true;
+      return Object.values(n.beliefs).some(b=>Object.entries(b.sources||{}).some(([source,weight])=>(source==='genuine:'+e.id||source==='evidence:'+e.id)&&weight>0));
+    }
+    function evaluateDisclosure(s,n,topic,knowledge){
+      const frame=Personality.frame(n),p=n.personality,r=n.social.relationship;
+      if(frame==='hostile')return {mode:'refusal',frame,close:p.assertiveness>.6||p.patience<.4};
+      if(knowledge.status==='not_applicable')return {mode:'not_applicable',frame};
+      if(knowledge.status!=='known')return {mode:'unknown',frame};
+      const accepted=[],withheld=[];
+      for(const fact of knowledge.facts){
+        if(n.conversation.disclosedFacts.includes(fact.id)){accepted.push(fact);continue;}
+        const policy=fact.policy||{},depth=fact.depth??topic.depth;
+        if(policy.invalid){withheld.push(fact);continue;}
+        let allowed=true;
+        const score=n.trust+.35*r.affection+.25*r.respect-.7*r.suspicion-.65*r.hostility;
+        const threshold=depth<=1?-2:depth*.85+(1-p.openness)*1.6-.5*p.warmth;
+        const explicitConditions=!policy.guarded&&['trust','affection','respect','evidence','decision','debt','deal','fear'].some(key=>policy[key]!==undefined);
+        if(depth>=2&&!explicitConditions&&score<threshold)allowed=false;
+        if(frame==='afraid'&&depth>=2)allowed=false;
+        if(frame==='conflict'&&depth>=2)allowed=false;
+        for(const [key,value]of Object.entries(policy))if(['trust','respect','affection'].includes(key)&&(key==='trust'?n.trust:r[key])<value)allowed=false;
+        if(policy.evidence&&!evidenceKnown(s,n,policy.evidence))allowed=false;
+        if(policy.decision&&s.facts.decision!==policy.decision)allowed=false;
+        if(policy.debt&&!n.memory.debt)allowed=false;
+        if(policy.deal&&!s.world.plans.some(plan=>plan.status==='completed'&&plan.actor===n.id&&String(plan.text||'').includes(policy.deal)))allowed=false;
+        if(policy.guarded){
+          const primary=s.entities.find(e=>e.source==='scene'&&e.kind==='clue');
+          const proof=primary&&evidenceKnown(s,n,primary.label);
+          const deed=n.conversation.relationshipCredits.some(id=>id.startsWith('work:'));
+          if(!proof&&!deed&&!n.memory.debt)allowed=false;
+        }
+        if(policy.protects&&!policy.decision)allowed=false;
+        if(policy.fear!==undefined&&r.fear>=policy.fear&&!policy.protects)allowed=true;
+        (allowed?accepted:withheld).push(fact);
+      }
+      if(accepted.length)return {mode:'truthful',frame,facts:accepted};
+      const cover=withheld.find(f=>f.policy?.cover),evasion=withheld.find(f=>f.policy?.evasion);
+      return {mode:cover?'lie':evasion||p.directness<.3?'evasion':'withheld',frame,cover:cover?.policy.cover,evasion:evasion?.policy.evasion||(p.directness<.3?'Не ко всякой теме я сейчас готов подступиться. Давайте пока оставим её.':null)};
+    }
+    function canAsk(n,type){const m=n.conversation;return n.personality.curiosity>=.6&&n.personality.sociability>.25&&!m.askedQuestions[type]&&!m.declinedQuestions.includes(type)&&!['hostile','conflict','afraid'].includes(Personality.frame(n));}
+    function continuation(s,n,request){
+      const m=n.conversation;
+      if(request.kind!=='greeting'&&['name','identity'].includes(request.topicId)&&n.personality.sociability<.6&&Personality.frame(n)==='neutral')return '';
+      if(m.pendingNpcQuestion||s.turn-m.lastInitiativeTurn<(n.personality.impulsivity>.75?2:3))return '';
+      if(!n.memory.playerName&&canAsk(n,'player_name')&&['name','identity','acquaintance'].includes(request.topicId))return Memory.ask(n,'player_name','А как зовут вас?',s.turn);
+      if(!n.memory.playerGoal&&canAsk(n,'player_goal')&&['presence','place','goal','occupation'].includes(request.topicId))return Memory.ask(n,'player_goal','А что ищете вы?',s.turn);
+      if(n.memory.playerGoal&&canAsk(n,'motivation')&&['goal','plans','help'].includes(request.topicId))return Memory.ask(n,'motivation','Вы говорили, что хотите '+n.memory.playerGoal+'. Почему это для вас важно?',s.turn);
+      return '';
+    }
+    function availableActions(n){
+      const frame=Personality.frame(n),r=n.social.relationship;
+      if(frame==='hostile')return ['end_conversation','discuss_reparation'];
+      if(frame==='conflict')return ['ask_public','discuss_reparation','apologize'];
+      if(frame==='afraid')return ['ask_public','deescalate'];
+      return ['ask_public',...(n.trust>=1&&r.suspicion<2?['ask_personal','request_advice']:[]),...(n.trust>=3&&r.reliability>=0?['ask_confidential','propose_joint_work']:[]),'end_conversation'];
+    }
+    function replyResult(s,n,request,parts,mode,facts=[],extra={}){
+      const m=n.conversation,repeat=m.discussedTopics[request.topicId]?.truthfulCount||0,novel=facts.some(f=>!m.disclosedFacts.includes(f.id));
+      const speech=Personality.compose({npc:n,parts,topic:request.topicId,repeat,mode,relationship:Personality.frame(n)});
+      const follow=mode==='truthful'&&repeat===0?continuation(s,n,request):'';if(follow)speech.text+=' '+follow;
+      const response={mode,facts,claim:mode==='truthful'?facts[0]||null:null};Memory.remember(n,request,response,s.turn);
+      emit(s,'conversation_response',n.id,null,{topicId:request.topicId,facet:request.followUp||request.facet||null,responseMode:mode,factIds:facts.map(f=>f.id),availableActions:availableActions(n)});
+      const token=dialogue.say(s,n,speech.text,'conversation',{manner:speech.manner});
+      if(extra.close)dialogue.close(s,'hostile');
+      if(request.topicId==='secret'&&mode==='truthful'){n.secretRevealed=true;s.secretRevealed=true;s.facts.secret=facts[0]?.text;n.memory.secret=facts[0]?.text;}
+      return {status:mode==='refusal'?'refused':'success',code:'conversation_'+mode,text:token,conversation:{topicId:request.topicId,mode,followUp:request.followUp||null,availableActions:availableActions(n)},performed:true,completed:true,information:{novel:mode==='truthful'&&novel,discoveries:[],opportunities:availableActions(n)},effects:[]};
+    }
+    function handle(s,p,c,a){
+      const request=a.conversation;if(!request)return null;
+      const n=npc(s);if(!n||!here(s,n))return {status:'refused',code:'npc_absent',text:'Рядом нет собеседника, которому можно задать этот вопрос.',effects:[]};
+      if(!dialogue.active(s,n))dialogue.start(s,n,'player_addressed');
+      if(request.kind==='player_answer'){
+        const type=request.type;Memory.answer(n,type,request.text,s.turn,request.declined);
+        let text='Хорошо, не буду настаивать.';
+        if(!request.declined){
+          if(type==='player_name'){n.memory.playerName=request.value;s.facts.name=request.value;log(s,'fact','Имя героя: '+request.value);text='Запомню: '+request.value+'.';}
+          if(type==='player_goal'){n.memory.playerGoal=request.value;s.facts.goal=request.value;text='Вы ищете '+request.value+'. Я услышал, что для вас важно.';}
+          if(type==='intentions'){n.memory.playerIntentions=request.value;text='Ваше объяснение я услышал. Доверие будут определять поступки.';}
+          if(type==='motivation'){n.memory.playerMotivation=request.value;text='Я запомню, почему для вас это важно.';}
+          n.memory.heardNotes||=[];if(!n.memory.heardNotes.includes(request.text))n.memory.heardNotes.push(request.text);n.memory.heardNotes=n.memory.heardNotes.slice(-50);
+        }
+        emit(s,'conversation_player_answer',n.id,null,{type,value:request.declined?null:request.value,declined:Boolean(request.declined)});
+        return {status:'success',code:request.declined?'conversation_answer_declined':'conversation_answer_remembered',text:dialogue.say(s,n,text,'conversation'),conversation:{mode:'player_answer',topicId:type},effects:[]};
+      }
+      if(request.kind==='greeting'){
+        const count=s.seen.greet||0;s.seen.greet=count+1;if(count===0&&!openGrievances(n).length)social.change(s,n,{trust:1});
+        if(['hostile','conflict'].includes(Personality.frame(n)))return replyResult(s,n,request,[n.name+'.',conflictText(s,n)],Personality.frame(n)==='hostile'?'refusal':'withheld',[],{close:Personality.frame(n)==='hostile'&&n.personality.assertiveness>.6});
+        const fact=known(n,'name')[0],occupation=known(n,'occupation')[0];
+        return replyResult(s,n,request,[(count?'Снова здравствуйте.':'Здравствуйте.')+' Я — '+n.name+'.',...(!count&&occupation?[occupation.text]:[])],'truthful',[fact]);
+      }
+      if(request.contextRequired)return replyResult(s,n,{...request,topicId:'unresolved'},['Уточните, к какой нашей теме относится этот вопрос.'],'unknown');
+      const topic=Topics.topic(request.topicId),knowledge=getNpcKnowledge(s,n,{...request,targetId:a.targetId});
+      const disclosure=evaluateDisclosure(s,n,topic,knowledge),frame=disclosure.frame;
+      if(disclosure.mode==='refusal')return replyResult(s,n,request,[conflictText(s,n)],'refusal',[],{close:disclosure.close});
+      if(disclosure.mode==='not_applicable')return replyResult(s,n,request,[n.identity.kind==='machine'?'Ко мне это не относится: у искусственного разума нет человеческой биографии.':'У меня иное устройство жизни. Этот человеческий опыт ко мне не относится.'],'not_applicable');
+      if(disclosure.mode==='lie')return replyResult(s,n,request,[disclosure.cover],'lie');
+      if(disclosure.mode==='evasion')return replyResult(s,n,request,[disclosure.evasion],'evasion');
+      if(disclosure.mode==='withheld')return replyResult(s,n,request,[frame==='conflict'?conflictText(s,n):request.topicId==='secret'?'Я не готов раскрыть эту тайну. Одного расположения недостаточно; важны обстоятельства и обязательства перед другими.':'Об этом я знаю, но сейчас не готов говорить с вами так откровенно.'],'withheld');
+      if(disclosure.mode==='unknown'){
+        const special={age:'Точного возраста не назову — у меня нет достоверной даты.',tenure:'Точного срока или даты открытия я не знаю.',origin:'О своей родине мне сейчас нечего рассказать.',family:'О семье мне пока нечего рассказать.',friends:'Я пока не могу назвать близких друзей.',rumors:'Нового, что мне действительно известно, пока нет.',secret:'У меня нет тайны, о которой я мог бы рассказать.'};
+        const text=request.followUp?'К теме «'+Topics.topic(request.topicId).label.toLowerCase()+'» это относится, но таких подробностей я не знаю.':special[request.topicId]||'О теме «'+topic.label.toLowerCase()+'» у меня нет сведений, которые я мог бы сообщить.';
+        return replyResult(s,n,request,[text],'unknown');
+      }
+      let facts=(disclosure.facts||knowledge.facts).slice(0,n.personality.openness>.65?2:1),parts=facts.map(f=>f.text);
+      if(request.topicId==='name'){
+        parts=['Меня зовут '+n.name+'.'];
+        if(frame==='trusted'){
+          const extra=known(n,'name.private').filter(f=>evaluateDisclosure(s,n,topic,{status:'known',facts:[f]}).mode==='truthful');if(extra.length){facts=[...facts,...extra];parts.push(extra[0].text);}
+        }
+        if(frame==='suspicious'&&n.personality.caution>.5)parts.push(Memory.ask(n,'intentions','Зачем вам моё имя?',s.turn));
+        if(frame==='friendly')parts.push('Мне приятно с вами говорить.');
+        if(frame==='conflict')parts.push(conflictText(s,n));
+      }
+      if(knowledge.certainty&&facts[0])parts=['Это '+(facts[0].source==='current-life'?'то, что мне сейчас известно.':'то, что я знаю о себе или уже наблюдал.')+' '+facts[0].text];
+      if(knowledge.elaboration)parts.push('Других подробностей к этому ответу у меня пока нет.');
+      if(n.social.cautious&&request.topicId==='name')parts.push('Нашу прежнюю ссору я помню, хотя её причина улажена.');
+      return replyResult(s,n,request,parts,'truthful',facts);
+    }
+    function observe(s,before,c,a,r){
+      const work=s.world.loops.work,n=s.world.npcs[work.employer];
+      if(!n||!here(s,n)||!['completed','paid'].includes(work.status)||!work.id)return;
+      const credit='work:'+work.id,m=n.conversation;
+      if(m.relationshipCredits.includes(credit)||before.work?.status===work.status||openGrievances(n).length)return;
+      m.relationshipCredits.push(credit);social.change(s,n,{trust:1,respect:1,reliability:1});emit(s,'conversation_shared_experience',n.id,null,{kind:'completed_work',workId:work.id});
+    }
+    function unknown(s,p,c,a){
+      const n=npc(s);if(!n||!here(s,n))return {status:'refused',code:'npc_absent',text:'Рядом нет собеседника.',effects:[]};
+      const request={kind:'question',topicId:'unresolved',raw:c.originalText||c.text};
+      return replyResult(s,n,request,['Не уверен, о чём именно вы спрашиваете. Уточните тему или свяжите вопрос с тем, что мы уже обсуждали.'],'unknown');
+    }
+    return {init,prepare,handle,observe,unknown,getNpcKnowledge,evaluateDisclosure,availableActions};
+  }
+  root.StoryConversation={create};
+})(globalThis);
+</script>
 <script>/* Offline Russian action grammar. It describes a plan; it never changes the world. */
 (function (root) {
   'use strict';
@@ -724,6 +1278,8 @@
     if (/^(?:я\s+)?(?:говорю|сказал|скажу|шепчу|кричу|рассказываю)\s*[:«“"]/.test(norm(text))) return 'speech';
     const addressed=q.match(/^([а-я-]+)\s*[:,]\s*(?:открой|выйди|возьми|осмотри)/);
     if (/^(?:я\s+)?(?:попрошу|прошу|попросить|попроси|попросил|попросила)\s/.test(q) || addressed&&!modifiers.has(addressed[1])) return 'request';
+    const conversation=root.ConversationTopics?.resolve(text);
+    if(conversation?.confidence===1)return 'question';
     if (/(?:^|\s)не\s+(?:(?:буду|стану|хочу|собираюсь|могу|планирую)\s+)?[а-я]+/.test(q) && !/(?:беру|взять|забираю)\s+не\s/.test(q)) return 'negated';
     if (/\?|^(?:а\s+)?(?:можно|могу\s+ли|как\s|почему\s|зачем\s|когда\s|где\s|что\s+(?:будет|случится))/.test(q)) return 'question';
     if (/(?:^|\s)(?:если|бы)(?:\s|$)|^(?:я\s+)?(?:думаю|представь|допустим|предположим)/.test(q)) return 'hypothetical';
@@ -874,7 +1430,7 @@
   }
   function starts(text,context) {
     const q = tidy(text).replace(/^(?:затем|потом|после этого|сначала)\s+/iu,'');
-    return Boolean(head(q,context)) || /^(?:я\s+)?(?:прошу|попрошу|попросить|не\s|хочу\s|меня зовут|говорю|шепчу|привет|танцую|ломаю|беру|изготавливаю|устанавливаю|превращаю)/u.test(norm(q)) || Boolean(context.legacyStarts?.(q));
+    return Boolean(head(q,context)) || (/^(?:а )?(?:кто|что|как|почему|зачем|когда|где|чем|вы|ты)(?:\s|$)/iu.test(norm(q))&&Boolean(root.ConversationTopics?.resolve(q))) || /^(?:я\s+)?(?:прошу|попрошу|попросить|не\s|хочу\s|меня зовут|говорю|шепчу|привет|танцую|ломаю|беру|изготавливаю|устанавливаю|превращаю)/u.test(norm(q)) || Boolean(context.legacyStarts?.(q));
   }
   function split(text,context) {
     const chunks=[];let part='',quote=null,dependent=false;
@@ -882,6 +1438,7 @@
     const source=String(text || '').trim().slice(0,6000).replace(/(беру|взять|забираю|отдаю|бросаю)\s+не\s+[^,]+,\s*а\s+([^.!?]+)/giu,'$1 $2');
     // A request to carry/hide/open is one negotiated NPC plan in the existing simulation.
     if ((/^(?:я\s+)?(?:прошу|договариваюсь|предлагаю|попрошу|попросить)/u.test(norm(source))||/^[а-я-]+[:,]\s*(?:вынеси|перенеси|унеси|спрячь)/u.test(norm(source))) && /вынест|перенест|унест|спрят|вынеси|перенеси|унеси|спрячь/.test(norm(source))) return [{raw:source,dependsOnPrevious:false}];
+    if(root.ConversationTopics?.resolve(source,context)?.confidence===1)return [{raw:source,dependsOnPrevious:false}];
     for(let i=0;i<source.length;i++){
       const char=source[i];
       if(!quote&&['«','“','"'].includes(char))quote=char==='«'?'»':char==='“'?'”':'"';else if(quote===char)quote=null;
@@ -891,7 +1448,7 @@
         const comma=char===','&&!introductory&&starts(source.slice(i+1),context);
         const embeddedQuestion=comma&&head(part,context)?.intent==='TALK'&&/^(?:можно|могу|как|что|где|когда|почему|кто|зачем)/u.test(norm(source.slice(i+1)));
         const coordinatedQuestion=connector&&/^\s*(?:,\s*)?и\s+$/u.test(connector[0])&&head(part,context)?.intent==='TALK'&&/,\s*(?:можно|могу|как|что|где|когда|почему|кто|зачем)/u.test(norm(part));
-        const vocative=comma&&(context.people||[]).some(person=>sameName(part,person.name))&&head(source.slice(i+1),context);
+        const vocative=comma&&(context.people||[]).some(person=>sameName(part,person.name))&&(head(source.slice(i+1),context)||root.ConversationTopics?.resolve(source.slice(i+1)));
         if((connector&&!coordinatedQuestion&&starts(source.slice(i+connector[0].length),context))||comma&&!embeddedQuestion&&!vocative){
           flush();dependent=connector?!/(?:^|\s)(?:а|но)\s*$/.test(connector[0]):true;
           i+=connector?connector[0].length-1:0;continue;
@@ -1491,7 +2048,7 @@
     }
     function init(s,p,config) {
       const reusable=s.world?.schema===4&&Array.isArray(s.world.locations)&&Array.isArray(s.world.edges)&&s.world.player&&s.world.npcs&&Array.isArray(s.world.events)&&Array.isArray(s.world.deferred)&&s.world.locations.some(l=>l.id===s.world.player.location);
-      if(reusable && JSON.stringify(s.world.authorCanon)===JSON.stringify(config)) { dialogue.init(s);bind(s,s.world.boundNpcId);s.place=byLoc(s,s.world.player.location).name;presence(s);scenes.init(s,p,config);social.init(s,config);developer.init(s,config);for(const e of s.entities){annotate(s,e,p);syncEntityTruth(s,e,'canon');}return; }
+      if(reusable && JSON.stringify(s.world.authorCanon)===JSON.stringify(config)) { dialogue.init(s);bind(s,s.world.boundNpcId);s.place=byLoc(s,s.world.player.location).name;presence(s);scenes.init(s,p,config);social.init(s,config);developer.init(s,config);conversation.init(s,config);for(const e of s.entities){annotate(s,e,p);syncEntityTruth(s,e,'canon');}return; }
       const old=s.world;const previousPlace=s.place;
       const w={schema:4,authorCanon:clone(config),locations:[],edges:[],npcs:{},activeNpcId:null,player:{location:null,previousLocation:null,counters:{},variants:{},money:0},facts:{},events:[],nextEvent:1,plans:[],deferred:[],loops:{work:{status:'idle',serial:0},exploration:{visited:[],discoveries:[]},social:{contacts:[]}},storyUsed:{}};
       s.world=w;
@@ -1560,7 +2117,7 @@
         addEntity(s,label,{id:'stock:'+hash(label),location:merchant.id,source:'stock',kind:'tool',portable:true,price,stockOwner:merchant.id});
       }
       for(const e of s.entities){annotate(s,e,p);syncEntityTruth(s,e,'canon');}
-      dialogue.init(s);w.loops.exploration.visited.push(current.id);bind(s,main.id);presence(s);scenes.init(s,p,config);social.init(s,config);developer.init(s,config);for(const e of s.entities){annotate(s,e,p);syncEntityTruth(s,e,'canon');}
+      dialogue.init(s);w.loops.exploration.visited.push(current.id);bind(s,main.id);presence(s);scenes.init(s,p,config);social.init(s,config);developer.init(s,config);conversation.init(s,config);for(const e of s.entities){annotate(s,e,p);syncEntityTruth(s,e,'canon');}
     }
     function annotate(s,e,p) {
       if(e.portable===undefined)e.portable=!['fixed','barrier'].includes(e.kind)||/ларец|сундук|ящик|шкатулк/.test(norm(e.label));
@@ -1614,7 +2171,7 @@
     function syncEntityTruth(s,e,source='event') {
       for(const key of ['location','opened','locked','destroyed','hidden','condition','pinInstalled','moved','containerId','supportId','openingDegree'])truth(s,'entity:'+e.id+':'+key,e[key]??false,source);
     }
-    function snapshot(s){return clone({entities:s.entities,inventory:s.inventory,clocks:s.clocks,stage:s.stage,player:s.world.player,relationships:Object.values(s.world.npcs).map(n=>({id:n.id,trust:n.trust,tension:n.tension,location:n.location,health:n.health,status:n.status,relationship:n.social?.relationship})),npcBeliefs:Object.fromEntries(Object.values(s.world.npcs).map(n=>[n.id,n.beliefs])),facts:s.world.facts});}
+    function snapshot(s){return clone({entities:s.entities,inventory:s.inventory,clocks:s.clocks,stage:s.stage,player:s.world.player,work:s.world.loops.work,relationships:Object.values(s.world.npcs).map(n=>({id:n.id,trust:n.trust,tension:n.tension,location:n.location,health:n.health,status:n.status,relationship:n.social?.relationship})),npcBeliefs:Object.fromEntries(Object.values(s.world.npcs).map(n=>[n.id,n.beliefs])),facts:s.world.facts});}
     function observeProperty(s,e,key,value,action) {
       for(const n of Object.values(s.world.npcs)) {
         if(!social.permitsObservation(s,n,e,action))continue;
@@ -1830,12 +2387,13 @@
       if(c.hypothetical||c.negated)return null;
       if(a.unresolvedActor)return ask('Кого из существующих персонажей вы просите выполнить действие?','unknown_actor');
       if(a.unresolvedRecipient)return ask('К какому из существующих персонажей вы обращаетесь?','unknown_recipient');
-      const conversation=a.intent==='request_npc'?a.actor:a.recipientId;
-      if(conversation&&conversation!=='player'&&conversation!==s.world.boundNpcId) {
-        const receiver=s.world.npcs[conversation];
+      const interlocutorId=a.intent==='request_npc'?a.actor:a.recipientId;
+      if(interlocutorId&&interlocutorId!=='player'&&interlocutorId!==s.world.boundNpcId) {
+        const receiver=s.world.npcs[interlocutorId];
         if(!here(s,receiver))return no('Персонаж '+receiver.name+' находится в другом месте. Разговор и передача отсюда невозможны.','npc_absent');
         flush(s);bind(s,receiver.id);n=receiver;p=npcProfile(s,config,p);
       }
+      if(a.conversation)return conversation.handle(s,p,c,a);
       if(a.intent==='request_npc'){
         if(!a.semantic?.actorId||!n||!here(s,n))return ask('Кого из находящихся рядом персонажей вы просите выполнить действие?','unknown_actor');
         if(a.semantic.intent==='GREET'){
@@ -2085,9 +2643,10 @@
     const dialogue=root.StoryDialogue.create({emit});
     const developer=root.DeveloperIntervention.create({...H,emit});
     const social=root.StorySocial.create({...H,emit,truth,findNpc,findLocation,here,npc,flush,bind,moveActor,conflict,openGrievances,reconcile,dialogue});
+    const conversation=root.StoryConversation.create({...H,emit,dialogue,npc,here,openGrievances,social});
     const spatial=root.StorySpatial.create({...H,emit,containerAccess});
     const scenes=root.StoryScenes.create({...H,npc,here,findLocation,openGrievances,emit,truth,containerAccess,spatial,dialogue,sayNpc:(s,n,text,trigger)=>dialogue.say(s,n,text,trigger)});
-    return {dialogue,developer,social,containerAccess,inspectScene:scenes.inspect,openedText:scenes.openedText,init,analyze,handle,after,flush,bind,presence,npc,npcProfile,openGrievances,snapshot,effects,runDue,map,assessGoal,proposition,emit,truth,annotate,statuses,result};
+    return {dialogue,developer,social,conversation,containerAccess,inspectScene:scenes.inspect,openedText:scenes.openedText,init,analyze,handle,after,flush,bind,presence,npc,npcProfile,openGrievances,snapshot,effects,runDue,map,assessGoal,proposition,emit,truth,annotate,statuses,result};
   }};
 })(globalThis);
 </script>
@@ -2371,7 +2930,7 @@
   }
   function parse(text) {
     const lower = normalizedInput(text);
-    const hypothetical = /(?:что (?:будет|случится)|а что если|если (?:я|мы)|представь|допустим|могу ли|можно ли|можно было бы|я думаю,? что|если бы)/.test(lower);
+    const hypothetical = /(?:что (?:будет|случится)|а что если|если (?:я|мы)|представь(?: |,)|допустим|могу ли|можно ли|можно было бы|я думаю,? что|если бы)/.test(lower);
     const question = /\?/.test(lower) || /^(?:а )?(?:почему|зачем|где|куда|как |когда|кто |что |расскажи|скажи|ты знаешь|можно)/.test(lower);
     const speech = /^(?:я )?(?:говорю|сказал|скажу|шепчу|спрашиваю|кричу|рассказываю)/.test(lower);
     const actionText = lower.replace(/[«“"][\s\S]*?[»”"]/g, '');
@@ -2480,10 +3039,6 @@
       return voice(s,p,`Мы сейчас здесь: ${s.place}. ${knownPlayer(s,'goal') ? 'Вы искали: ' + knownPlayer(s,'goal') + '.' : 'Направление ещё можно выбрать.'}`);
     }
     if (/хочешь|твоя цель|тебе нужно|добиваешь|мотив/.test(c.lower)) return voice(s,p,`Я хочу ${p.motive}. Если наши цели совпадут, мы сможем помочь друг другу.`);
-    if (/довер|секрет|скрыва|лжешь|врешь/.test(c.lower)) {
-      if (s.trust >= 2 && !simulation.openGrievances(simulation.npc(s)).length) { s.secretRevealed = true; s.facts.secret = p.secret; log(s,'secret',p.secret); return voice(s,p,`Хорошо. Вот что я скрывал от этого разговора: ${p.secret}. Теперь это касается и вас.`); }
-      return voice(s,p,`Сначала скажите, зачем вам это знать. Я хочу ${p.motive}; мне нужен повод рискнуть.`);
-    }
     if (item) {
       s.focus = item.id;
       if (/откроешь|открой|поможешь|помоги/.test(c.lower) && item.kind==='barrier' && !item.opened && s.trust>=1) {
@@ -2497,14 +3052,9 @@
       return voice(s,p,`«${item.label}» ${item.opened ? 'уже открыт' : item.location === 'inventory' ? 'у вас' : 'пока здесь'}. ${p.pragmatic ? 'Скажите, какую пользу вы хотите из этого извлечь.' : 'Важнее то, что вы собираетесь с этим сделать.'}`);
     }
     if (/^(?:а )?(?:почему|зачем|как)[?! ]*$/.test(c.lower) && ['attack','threat','insult'].includes(s.lastIntent))return voice(s,p,'Потому что после угроз и оскорблений мне нужно защищать свои границы. Извинение или спокойный разговор могут изменить ситуацию.');
-    const topic = (/^(?:а )?(?:почему|зачем|как)[?! ]*$/.test(c.lower) && s.facts.topic) || c.text.replace(/^(?:а\s+)?(?:расскажи(?: мне)?|что (?:ты )?думаешь|ты знаешь|скажи(?: мне)?|почему|зачем|как|кто|что)\s*/iu,'').replace(/[?!.]+$/,'').slice(0,140);
-    s.facts.topic = topic;
-    const origin = knownPlayer(s,'goal') ? `Для вашей цели «${knownPlayer(s,'goal')}»` : `В ситуации «${s.place}»`;
-    return voice(s,p,choose(s,'question',[
-      `Вы спрашиваете о «${topic || 'происходящем'}». Я могу судить по тому, что видел здесь. ${origin} важнее проверить свидетельства, чем принять первое объяснение. Что вы уже знаете об этом?`,
-      `У меня нет подтверждённого ответа о «${topic || 'происходящем'}». Но это может стать зацепкой. Вы хотите спросить кого-то, поискать следы или предложить свою версию?`,
-      `Давайте отделим известное от догадок. Пока у нас есть только этот разговор и доступные мне источники. Как «${topic || 'этот вопрос'}» связано с тем, зачем вы пришли?`
-    ]));
+    const answer=simulation.conversation.unknown(s,p,c,{intent:'question'});
+    if(s.currentResolution)s.currentResolution.conversation=answer.conversation;
+    return verdict(s,answer.status,answer.code,answer.text);
   }
   function execute(s, p, c, config) {
     const primary=['take','drop','give','use','combine'].includes(c.intent) ? c.text.split(/\s+(?:в|на|под|за|через|чтобы)\s+/iu)[0] : c.text;
@@ -2700,15 +3250,13 @@
     // Storylets have eligibility conditions and fire once, rather than hijacking every turn.
     const events=[
       {id:'pressure',when:s.clocks.danger>=4 && !s.facts.hidden, text:p.pressure,kind:'danger'},
-      {id:'connection',when:s.trust>=3 && !simulation.openGrievances(simulation.npc(s)).length && simulation.dialogue.active(s,simulation.npc(s)) && !s.secretRevealed && !intents.includes('question'), text:`${p.name} решается сказать больше: «${p.secret}».`,kind:'secret'},
       {id:'discovery',when:s.clocks.discovery>=4 && s.stage<3, text:'Зацепки начинают сходиться. Есть основания попробовать другой способ, а не повторять прежний.',kind:'clue'}
     ];
-    const eventKey=e=>'event:'+e.id+(e.id==='connection'?':'+s.world.activeNpcId:'');
+    const eventKey=e=>'event:'+e.id;
     const event=events.find(e=>e.when&&!s.world.storyUsed[eventKey(e)]);
     if(!event)return '';
     s.world.storyUsed[eventKey(event)]=1;log(s,event.kind,event.text);
-    if(event.kind==='secret'){s.secretRevealed=true;s.facts.secret=p.secret;}
-    return event.kind==='secret'?simulation.dialogue.say(s,simulation.npc(s),p.secret,'plot_initiative'):event.text;
+    return event.text;
   }
   const semantic=root.StorySemantic;
   const semanticIntents={MOVE:'move',APPROACH:'approach',GREET:'greet',INSPECT:'inspect',SEARCH:'inspect',TAKE:'take',OPEN:'open',CLOSE:'close',USE:'use',GIVE:'give',DROP:'drop',SHOW:'show',TALK:'talk',REPAIR:'repair'};
@@ -2749,7 +3297,7 @@
   }
   function semanticMode(s,c,action) {
     const step=c.semantic;
-    if(action.intent==='request_permission')return null;
+    if(action.conversation||action.intent==='request_permission')return null;
     if(step?.unsupportedVerb){
       thread(s,'Не разобрано действие: '+step.raw,'unresolved:'+hash(step.raw));log(s,'intention',step.raw);
       return {status:'clarification',code:'unsupported_action',performed:false,effects:[],text:'Не удалось разобрать действие «'+step.unsupportedVerb+'» в команде «'+step.raw+'». Замысел сохранён в журнале. Уточните, что должно измениться и каким способом.'};
@@ -2780,6 +3328,7 @@
     return {...response,code:'capability_question',text:'Вы спрашиваете о действии: «'+target+'». '+detail+' Действие не выполнено.'};
   }
   function semanticAccess(s,c) {
+    if(c.conversation)return null;
     const step=c.semantic;
     if(step?.condition&&['execute','attempt','request'].includes(step.mode)){
       const person=Object.values(s.world.npcs).find(n=>root.StorySpatial.same(n.name,step.condition.name));
@@ -2826,6 +3375,7 @@
       let p=simulation.npcProfile(s,config,profile(config));
       const action=simulation.analyze(s,config,c,text);s.currentActionId=action.id;
       action.text=step.raw;action.semantic=c.semantic;action.dependsOnPrevious=step.dependsOnPrevious;
+      simulation.conversation.prepare(s,c,action);
       const previousResult=results.at(-1);
       if(step.dependsOnPrevious&&previousResult&&((previousResult.status!=='success'&&!(previousResult.status==='partial_success'&&previousResult.completed))||previousResult.performed===false&&['execute','attempt','request'].includes(step.mode))){
         results.push({status:'refused',code:'dependency_failed',reason:'dependency_failed',skipped:true,performed:false,text:'Шаг «'+step.raw+'» не выполнен: предыдущее действие не завершено.',action,effects:[]});continue;
@@ -2842,7 +3392,7 @@
         p=simulation.npcProfile(s,config,profile(config));
         const answer=execute(s,p,c,config);r={...s.currentResolution,text:answer};
       }
-      if(c.hypothetical||c.negated||['intention','question','hypothetical','negated','speech','report'].includes(c.semantic?.mode)&&c.semantic?.intent!=='TALK')r.performed=false;
+      if(!r.conversation&&(c.hypothetical||c.negated||['intention','question','hypothetical','negated','speech','report'].includes(c.semantic?.mode)&&c.semantic?.intent!=='TALK'))r.performed=false;
       if(['refused','clarification'].includes(r.status))r.performed=false;
       if(['refused','clarification'].includes(r.status))r.completed=false;else if(r.completed===undefined)r.completed=r.status==='success';
       if(['refused','clarification'].includes(r.status)){s.entities=clone(before.entities);s.inventory=clone(before.inventory);s.clocks=clone(before.clocks);s.stage=before.stage;}
@@ -2850,6 +3400,7 @@
       if(r.performed!==false)simulation.after(s,p,c,action,r);
       else if(action.intent==='goal'&&simulation.dialogue.active(s,simulation.npc(s))&&s.facts.goal){const person=simulation.npc(s);if(person)person.memory.playerGoal=s.facts.goal;}
       simulation.social.after(s,before,c,action,r);
+      simulation.conversation.observe(s,before,c,action,r);
       r.action=action;r.effects=simulation.effects(s,before,action);
       root.StoryMessages.finish(s,r);
       results.push(r);intents.push(action.intent);s.lastIntent=c.negated?'refuse':action.intent;
@@ -2877,7 +3428,7 @@
     if(goalAssessment?.status==='pending' && ['success','partial_success'].includes(status)){status='partial_success';narration.blocks.push({speaker:{type:'narrator'},trigger:'goal_assessment',text:goalAssessment.reason,effects:[]});output+='\n\n'+goalAssessment.reason;}
     const effects=results.flatMap(r=>r.effects||[]);
     const information={novel:results.some(r=>r.information?.novel),discoveries:[...new Set(results.flatMap(r=>r.information?.discoveries||[]))],opportunities:[...new Set(results.flatMap(r=>r.information?.opportunities||[]))]};
-    const outcome={status,goalAssessment,information,semanticPlan,results:results.map(r=>({status:r.status,code:r.code,reason:r.text,information:r.information||null,skipped:Boolean(r.skipped),performed:r.performed!==false,completed:Boolean(r.completed),action:r.action,effects:r.effects})),effects};
+    const outcome={status,goalAssessment,information,semanticPlan,results:results.map(r=>({status:r.status,code:r.code,reason:r.text,information:r.information||null,conversation:r.conversation||null,skipped:Boolean(r.skipped),performed:r.performed!==false,completed:Boolean(r.completed),action:r.action,effects:r.effects})),effects};
     if(results.length>1) {
       const plan={id:'turn-plan:'+s.turn,actor:'player',goal:results[0].action.goal,expectedEffect:results[0].action.expectedEffect,steps:outcome.results,status,goalAssessment,causes:effects.map(e=>e.id)};
       s.world.plans.push(plan);s.world.plans=s.world.plans.slice(-40);
@@ -2887,7 +3438,7 @@
     return {text:output,messages:narration.blocks,narrative:narration.blocks,memory:s,outcome,semantic:semanticPlan,results:outcome.results,analysis:outcome.results.map(r=>r.action)};
   }
   const simulation=root.StorySimulation.create({clean,norm,normalizedInput,words,stem,hash,clone,profile,matchEntity,addEntity,log,voice,resolveBarrier,containerText});
-  root.StoryEngine={version:VERSION,fresh,reply,profile,restore:init,reframe,parse,clauses,
+  root.StoryEngine={version:VERSION,release:'5.0',fresh,reply,profile,restore:init,reframe,parse,clauses,
     resolve(config,memory,text){const s=init(config,memory);return semantic.resolve(text,{...semantic.context(s),legacyStarts});},
     analyze(config,memory,text){const s=init(config,memory);return resolveInput(s,text).steps.map(step=>simulation.analyze(s,config,semanticCommand(step,s),text));},
     map(memory){return simulation.map(memory);}};
@@ -2904,7 +3455,7 @@ const send = document.querySelector('#send');
 const engine = globalThis.StoryEngine;
 const key = 'between-lines-offline-v2';
 const outcomeLabels={success:'Успех',partial_success:'Частичный успех',refused:'Отказ',clarification:'Нужно уточнение'};
-const intentLabels={claim:'сообщить версию',plant_evidence:'подбросить улику',request_plan:'предложить план',carry:'перенести',hide_item:'спрятать предмет',defer:'отложить действие',craft_gift:'сделать подарок',give:'передать предмет',move:'перейти',return:'вернуться',open:'открыть',close:'закрыть',take:'взять',inspect:'осмотреть',agree:'согласиться',help:'попросить помощи',apology:'извиниться',insult:'оскорбить',greet:'поздороваться',find_job:'найти работу',work:'выполнить работу',collect_pay:'получить плату',deliver_job:'доставить посылку',explore:'исследовать',buy:'купить',select_npc:'обратиться к персонажу',magic:'магия',use:'использовать',destroy:'сломать',drop:'оставить предмет',goal:'обозначить цель',question:'задать вопрос',remember:'вспомнить',custom:'уточнить замысел'};
+const intentLabels={conversation_answer:'ответить собеседнику',claim:'сообщить версию',plant_evidence:'подбросить улику',request_plan:'предложить план',carry:'перенести',hide_item:'спрятать предмет',defer:'отложить действие',craft_gift:'сделать подарок',give:'передать предмет',move:'перейти',return:'вернуться',open:'открыть',close:'закрыть',take:'взять',inspect:'осмотреть',agree:'согласиться',help:'попросить помощи',apology:'извиниться',insult:'оскорбить',greet:'поздороваться',find_job:'найти работу',work:'выполнить работу',collect_pay:'получить плату',deliver_job:'доставить посылку',explore:'исследовать',buy:'купить',select_npc:'обратиться к персонажу',magic:'магия',use:'использовать',destroy:'сломать',drop:'оставить предмет',goal:'обозначить цель',question:'задать вопрос',remember:'вспомнить',custom:'уточнить замысел'};
 let debugView=false;
 try {debugView=localStorage.getItem('between-lines-debug')==='true';}catch{}
 document.querySelector('#debug-view').checked=debugView;
@@ -2956,7 +3507,7 @@ function render() {
     list.append(item);
   }
   const profile = engine.profile(state.config);
-  document.querySelector('#badge').textContent = '● Локально · 4.4';
+  document.querySelector('#badge').textContent = '● Локально · 5.0';
   const currentNpc=state.memory.world.npcs[state.memory.world.activeNpcId];
   const title = state.memory.place || profile.title || 'Ваша история';
   document.querySelector('#story-title').textContent = title[0].toUpperCase() + title.slice(1);
@@ -3054,6 +3605,11 @@ function renderWorld() {
   for(const exit of map.exits) {const b=document.createElement('button');b.type='button';b.textContent=exit.name+(exit.blocked?' · заперто':' →');b.disabled=exit.blocked;b.addEventListener('click',()=>issueCommand('Иду в '+exit.name));exits.append(b);}
   const people=document.querySelector('#nearby-people');people.replaceChildren();
   for(const person of Object.values(world.npcs).filter(n=>n.location===world.player.location&&n.dialogueState?.status!=='undiscovered')){const b=document.createElement('button');b.type='button';b.textContent=person.name;b.addEventListener('click',()=>issueCommand('Говорю с '+person.name));people.append(b);}
+  const interlocutor=world.npcs[world.activeNpcId],topicButtons=document.querySelector('#conversation-topics');topicButtons.replaceChildren();
+  const summary=document.querySelector('#conversation-summary');summary.textContent=interlocutor?`${interlocutor.name} · Тема: ${interlocutor.conversation.activeTopic?globalThis.ConversationTopics.topic(interlocutor.conversation.activeTopic).label:'знакомство'} · Обсуждено тем: ${Object.keys(interlocutor.conversation.discussedTopics).length}`:'Обратитесь к замеченному персонажу, чтобы начать разговор.';
+  if(interlocutor)for(const id of ['name','identity','place','occupation','hobbies','goal','trust'].filter(id=>!interlocutor.conversation.discussedTopics[id]).slice(0,4)){const topic=globalThis.ConversationTopics.topic(id),button=document.createElement('button');button.type='button';button.textContent=topic.questions[0];button.addEventListener('click',()=>issueCommand(topic.questions[0]));topicButtons.append(button);}
+  const conversationRecords=document.querySelector('#conversation-records');conversationRecords.replaceChildren();
+  for(const person of Object.values(world.npcs).filter(n=>n.dialogueState.status!=='undiscovered')){const m=person.conversation,row=document.createElement('li');row.textContent=`${person.name}: ${m.activeTopic?globalThis.ConversationTopics.topic(m.activeTopic).label:'тем пока нет'} · раскрыто сведений: ${m.disclosedFacts.length} · неотвеченных вопросов: ${m.unresolvedQuestions.length}${m.pendingNpcQuestion?' · вопрос герою: '+m.pendingNpcQuestion.text:''}`;conversationRecords.append(row);}
   const research=world.player.research;
   const discoveries=document.querySelector('#learned-facts');discoveries.replaceChildren();
   for(const knowledge of Object.values(research.knowledge)){const row=document.createElement('li');const source=memory.entities.find(e=>e.id===knowledge.sourceId)?.label||world.npcs[knowledge.sourceId]?.name||world.locations.find(l=>l.id===knowledge.locationId)?.name;row.textContent=knowledge.text+(source?' · Источник: '+source:'');discoveries.append(row);}

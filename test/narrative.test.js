@@ -6,6 +6,11 @@ import '../messages.js';
 import '../dialogue.js';
 import '../developer.js';
 import '../social.js';
+import '../conversation-topics.js';
+import '../npc-personality.js';
+import '../conversation-memory.js';
+import '../npc-biography.js';
+import '../conversation-engine.js';
 import '../semantic.js';
 import '../scenes.js';
 import '../simulation.js';
@@ -131,7 +136,7 @@ test('NPC help provides another route and creates an obligation',()=>{
  const r=play({...base,canon:'Доступ персонажа: ларец'},'Привет','Помоги открыть ларец','Да');assert.equal(item(r.memory,'ларец').opened,true);assert.equal(r.memory.facts.debt,'защитить сестру');
 });
 test('motives and secrets come from author supplied canon',()=>{
- const config={...kitchen,canon:kitchen.canon+'\nЦель персонажа: вернуть дневник'};
+ const config={...kitchen,canon:kitchen.canon+'\nЦель персонажа: вернуть дневник\nРаскрытие NPC: Анна | secret | доверие=2'};
  const r=play(config,'Чего ты хочешь?','Привет','Спасибо','Расскажи секрет');assert.match(r.text,/старого друга/);assert.equal(r.memory.facts.secret,'ужин готовится для старого друга');
 });
 test('repetition alone cannot farm unlimited trust',()=>{

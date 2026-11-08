@@ -3,7 +3,7 @@ const read = name => readFile(new URL('../' + name, import.meta.url), 'utf8');
 const css = await read('style.css');
 let html = await read('index.html');
 html = html.replace('<link rel="stylesheet" href="style.css">', () => `<style>${css}</style>`);
-for (const name of ['spatial.js', 'narrator.js', 'messages.js', 'dialogue.js', 'developer.js', 'social.js', 'semantic.js', 'scenes.js', 'simulation.js', 'engine.js', 'app.js']) {
+for (const name of ['spatial.js', 'narrator.js', 'messages.js', 'dialogue.js', 'developer.js', 'social.js', 'conversation-topics.js', 'npc-personality.js', 'conversation-memory.js', 'npc-biography.js', 'conversation-engine.js', 'semantic.js', 'scenes.js', 'simulation.js', 'engine.js', 'app.js']) {
   const code = (await read(name)).replace(/<\/script/gi, '<\\/script');
   html = html.replace(`<script defer src="${name}"></script>`, () => `<script>${code}</script>`);
 }

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-for(const f of ['spatial','narrator','messages','dialogue','developer','social','semantic','scenes','simulation','engine'])await import('../'+f+'.js');
+for(const f of ['spatial','narrator','messages','dialogue','developer','social','conversation-topics','npc-personality','conversation-memory','npc-biography','conversation-engine','semantic','scenes','simulation','engine'])await import('../'+f+'.js');
 const E=globalThis.StoryEngine;
 const base={world:'Магическая лавка.',character:'Мира — хозяйка лавки.',player:'Путник',canon:''};
 const play=(commands,c=base,m=E.fresh())=>commands.reduce((r,t)=>E.reply(c,r.memory,t),{memory:m});

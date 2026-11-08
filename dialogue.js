@@ -17,6 +17,7 @@
       if(!here(s,n))return false;notice(s,n);const state=n.dialogueState;
       if(s.world.activeNpcId&&s.world.activeNpcId!==n.id)close(s,'switched');
       if(state.status!=='active'){state.contactTurn??=s.turn;state.startedTurn=s.turn;state.status='active';emit(s,'dialogue_started',n.id,null,{trigger});}
+      if(!s.world.loops.social.contacts.includes(n.id))s.world.loops.social.contacts.push(n.id);
       state.lastTrigger=trigger;s.world.activeNpcId=n.id;return true;
     }
     function close(s,reason='ended'){
@@ -25,6 +26,7 @@
     }
     function active(s,n){return Boolean(here(s,n)&&s.world.activeNpcId===n.id&&n.dialogueState.status==='active');}
     function addressed(c,a){
+      if(a.conversation)return true;
       if(c.negated||c.hypothetical||['negated','hypothetical','report'].includes(c.semantic?.mode))return false;
       if(a.intent==='request_permission')return true;
       if(c.semantic?.recognized&&c.semantic.intent!=='TALK'&&['question','intention','hypothetical','negated','report'].includes(c.semantic.mode))return false;
@@ -33,7 +35,7 @@
       return ['greet','talk','question','identity','name','remember','thanks','apology','help','bargain','insult','threat','claim','agree','refuse','select_npc','find_job','collect_pay','buy','give','show','deliver_job','request_plan','request_npc','borrow','rent','pay_fine','return_property','compensate','confess','report_event','promise'].includes(a.intent)||c.speech;
     }
     function before(s,c,a){
-      if(a.semantic?.unsupportedVerb)return;
+      if(a.semantic?.unsupportedVerb&&!a.conversation)return;
       if(a.intent==='end_dialogue'){close(s,'ended');return;}
       if(['move','return','approach','work','repair','repair_craft','repair_install','inspect'].includes(a.intent)&&!addressed(c,a)){if(s.world.activeNpcId)close(s,['move','return'].includes(a.intent)?'separated':a.intent==='work'?'working':'attention_shift');return;}
       if(!addressed(c,a))return;

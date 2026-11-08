@@ -66,7 +66,7 @@
     }
     function init(s,p,config) {
       const reusable=s.world?.schema===4&&Array.isArray(s.world.locations)&&Array.isArray(s.world.edges)&&s.world.player&&s.world.npcs&&Array.isArray(s.world.events)&&Array.isArray(s.world.deferred)&&s.world.locations.some(l=>l.id===s.world.player.location);
-      if(reusable && JSON.stringify(s.world.authorCanon)===JSON.stringify(config)) { dialogue.init(s);bind(s,s.world.boundNpcId);s.place=byLoc(s,s.world.player.location).name;presence(s);scenes.init(s,p,config);social.init(s,config);developer.init(s,config);for(const e of s.entities){annotate(s,e,p);syncEntityTruth(s,e,'canon');}return; }
+      if(reusable && JSON.stringify(s.world.authorCanon)===JSON.stringify(config)) { dialogue.init(s);bind(s,s.world.boundNpcId);s.place=byLoc(s,s.world.player.location).name;presence(s);scenes.init(s,p,config);social.init(s,config);developer.init(s,config);conversation.init(s,config);for(const e of s.entities){annotate(s,e,p);syncEntityTruth(s,e,'canon');}return; }
       const old=s.world;const previousPlace=s.place;
       const w={schema:4,authorCanon:clone(config),locations:[],edges:[],npcs:{},activeNpcId:null,player:{location:null,previousLocation:null,counters:{},variants:{},money:0},facts:{},events:[],nextEvent:1,plans:[],deferred:[],loops:{work:{status:'idle',serial:0},exploration:{visited:[],discoveries:[]},social:{contacts:[]}},storyUsed:{}};
       s.world=w;
@@ -135,7 +135,7 @@
         addEntity(s,label,{id:'stock:'+hash(label),location:merchant.id,source:'stock',kind:'tool',portable:true,price,stockOwner:merchant.id});
       }
       for(const e of s.entities){annotate(s,e,p);syncEntityTruth(s,e,'canon');}
-      dialogue.init(s);w.loops.exploration.visited.push(current.id);bind(s,main.id);presence(s);scenes.init(s,p,config);social.init(s,config);developer.init(s,config);for(const e of s.entities){annotate(s,e,p);syncEntityTruth(s,e,'canon');}
+      dialogue.init(s);w.loops.exploration.visited.push(current.id);bind(s,main.id);presence(s);scenes.init(s,p,config);social.init(s,config);developer.init(s,config);conversation.init(s,config);for(const e of s.entities){annotate(s,e,p);syncEntityTruth(s,e,'canon');}
     }
     function annotate(s,e,p) {
       if(e.portable===undefined)e.portable=!['fixed','barrier'].includes(e.kind)||/ларец|сундук|ящик|шкатулк/.test(norm(e.label));
@@ -189,7 +189,7 @@
     function syncEntityTruth(s,e,source='event') {
       for(const key of ['location','opened','locked','destroyed','hidden','condition','pinInstalled','moved','containerId','supportId','openingDegree'])truth(s,'entity:'+e.id+':'+key,e[key]??false,source);
     }
-    function snapshot(s){return clone({entities:s.entities,inventory:s.inventory,clocks:s.clocks,stage:s.stage,player:s.world.player,relationships:Object.values(s.world.npcs).map(n=>({id:n.id,trust:n.trust,tension:n.tension,location:n.location,health:n.health,status:n.status,relationship:n.social?.relationship})),npcBeliefs:Object.fromEntries(Object.values(s.world.npcs).map(n=>[n.id,n.beliefs])),facts:s.world.facts});}
+    function snapshot(s){return clone({entities:s.entities,inventory:s.inventory,clocks:s.clocks,stage:s.stage,player:s.world.player,work:s.world.loops.work,relationships:Object.values(s.world.npcs).map(n=>({id:n.id,trust:n.trust,tension:n.tension,location:n.location,health:n.health,status:n.status,relationship:n.social?.relationship})),npcBeliefs:Object.fromEntries(Object.values(s.world.npcs).map(n=>[n.id,n.beliefs])),facts:s.world.facts});}
     function observeProperty(s,e,key,value,action) {
       for(const n of Object.values(s.world.npcs)) {
         if(!social.permitsObservation(s,n,e,action))continue;
@@ -405,12 +405,13 @@
       if(c.hypothetical||c.negated)return null;
       if(a.unresolvedActor)return ask('Кого из существующих персонажей вы просите выполнить действие?','unknown_actor');
       if(a.unresolvedRecipient)return ask('К какому из существующих персонажей вы обращаетесь?','unknown_recipient');
-      const conversation=a.intent==='request_npc'?a.actor:a.recipientId;
-      if(conversation&&conversation!=='player'&&conversation!==s.world.boundNpcId) {
-        const receiver=s.world.npcs[conversation];
+      const interlocutorId=a.intent==='request_npc'?a.actor:a.recipientId;
+      if(interlocutorId&&interlocutorId!=='player'&&interlocutorId!==s.world.boundNpcId) {
+        const receiver=s.world.npcs[interlocutorId];
         if(!here(s,receiver))return no('Персонаж '+receiver.name+' находится в другом месте. Разговор и передача отсюда невозможны.','npc_absent');
         flush(s);bind(s,receiver.id);n=receiver;p=npcProfile(s,config,p);
       }
+      if(a.conversation)return conversation.handle(s,p,c,a);
       if(a.intent==='request_npc'){
         if(!a.semantic?.actorId||!n||!here(s,n))return ask('Кого из находящихся рядом персонажей вы просите выполнить действие?','unknown_actor');
         if(a.semantic.intent==='GREET'){
@@ -660,8 +661,9 @@
     const dialogue=root.StoryDialogue.create({emit});
     const developer=root.DeveloperIntervention.create({...H,emit});
     const social=root.StorySocial.create({...H,emit,truth,findNpc,findLocation,here,npc,flush,bind,moveActor,conflict,openGrievances,reconcile,dialogue});
+    const conversation=root.StoryConversation.create({...H,emit,dialogue,npc,here,openGrievances,social});
     const spatial=root.StorySpatial.create({...H,emit,containerAccess});
     const scenes=root.StoryScenes.create({...H,npc,here,findLocation,openGrievances,emit,truth,containerAccess,spatial,dialogue,sayNpc:(s,n,text,trigger)=>dialogue.say(s,n,text,trigger)});
-    return {dialogue,developer,social,containerAccess,inspectScene:scenes.inspect,openedText:scenes.openedText,init,analyze,handle,after,flush,bind,presence,npc,npcProfile,openGrievances,snapshot,effects,runDue,map,assessGoal,proposition,emit,truth,annotate,statuses,result};
+    return {dialogue,developer,social,conversation,containerAccess,inspectScene:scenes.inspect,openedText:scenes.openedText,init,analyze,handle,after,flush,bind,presence,npc,npcProfile,openGrievances,snapshot,effects,runDue,map,assessGoal,proposition,emit,truth,annotate,statuses,result};
   }};
 })(globalThis);

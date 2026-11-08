@@ -105,6 +105,8 @@
     if (/^(?:я\s+)?(?:говорю|сказал|скажу|шепчу|кричу|рассказываю)\s*[:«“"]/.test(norm(text))) return 'speech';
     const addressed=q.match(/^([а-я-]+)\s*[:,]\s*(?:открой|выйди|возьми|осмотри)/);
     if (/^(?:я\s+)?(?:попрошу|прошу|попросить|попроси|попросил|попросила)\s/.test(q) || addressed&&!modifiers.has(addressed[1])) return 'request';
+    const conversation=root.ConversationTopics?.resolve(text);
+    if(conversation?.confidence===1)return 'question';
     if (/(?:^|\s)не\s+(?:(?:буду|стану|хочу|собираюсь|могу|планирую)\s+)?[а-я]+/.test(q) && !/(?:беру|взять|забираю)\s+не\s/.test(q)) return 'negated';
     if (/\?|^(?:а\s+)?(?:можно|могу\s+ли|как\s|почему\s|зачем\s|когда\s|где\s|что\s+(?:будет|случится))/.test(q)) return 'question';
     if (/(?:^|\s)(?:если|бы)(?:\s|$)|^(?:я\s+)?(?:думаю|представь|допустим|предположим)/.test(q)) return 'hypothetical';
@@ -255,7 +257,7 @@
   }
   function starts(text,context) {
     const q = tidy(text).replace(/^(?:затем|потом|после этого|сначала)\s+/iu,'');
-    return Boolean(head(q,context)) || /^(?:я\s+)?(?:прошу|попрошу|попросить|не\s|хочу\s|меня зовут|говорю|шепчу|привет|танцую|ломаю|беру|изготавливаю|устанавливаю|превращаю)/u.test(norm(q)) || Boolean(context.legacyStarts?.(q));
+    return Boolean(head(q,context)) || (/^(?:а )?(?:кто|что|как|почему|зачем|когда|где|чем|вы|ты)(?:\s|$)/iu.test(norm(q))&&Boolean(root.ConversationTopics?.resolve(q))) || /^(?:я\s+)?(?:прошу|попрошу|попросить|не\s|хочу\s|меня зовут|говорю|шепчу|привет|танцую|ломаю|беру|изготавливаю|устанавливаю|превращаю)/u.test(norm(q)) || Boolean(context.legacyStarts?.(q));
   }
   function split(text,context) {
     const chunks=[];let part='',quote=null,dependent=false;
@@ -263,6 +265,7 @@
     const source=String(text || '').trim().slice(0,6000).replace(/(беру|взять|забираю|отдаю|бросаю)\s+не\s+[^,]+,\s*а\s+([^.!?]+)/giu,'$1 $2');
     // A request to carry/hide/open is one negotiated NPC plan in the existing simulation.
     if ((/^(?:я\s+)?(?:прошу|договариваюсь|предлагаю|попрошу|попросить)/u.test(norm(source))||/^[а-я-]+[:,]\s*(?:вынеси|перенеси|унеси|спрячь)/u.test(norm(source))) && /вынест|перенест|унест|спрят|вынеси|перенеси|унеси|спрячь/.test(norm(source))) return [{raw:source,dependsOnPrevious:false}];
+    if(root.ConversationTopics?.resolve(source,context)?.confidence===1)return [{raw:source,dependsOnPrevious:false}];
     for(let i=0;i<source.length;i++){
       const char=source[i];
       if(!quote&&['«','“','"'].includes(char))quote=char==='«'?'»':char==='“'?'”':'"';else if(quote===char)quote=null;
@@ -272,7 +275,7 @@
         const comma=char===','&&!introductory&&starts(source.slice(i+1),context);
         const embeddedQuestion=comma&&head(part,context)?.intent==='TALK'&&/^(?:можно|могу|как|что|где|когда|почему|кто|зачем)/u.test(norm(source.slice(i+1)));
         const coordinatedQuestion=connector&&/^\s*(?:,\s*)?и\s+$/u.test(connector[0])&&head(part,context)?.intent==='TALK'&&/,\s*(?:можно|могу|как|что|где|когда|почему|кто|зачем)/u.test(norm(part));
-        const vocative=comma&&(context.people||[]).some(person=>sameName(part,person.name))&&head(source.slice(i+1),context);
+        const vocative=comma&&(context.people||[]).some(person=>sameName(part,person.name))&&(head(source.slice(i+1),context)||root.ConversationTopics?.resolve(source.slice(i+1)));
         if((connector&&!coordinatedQuestion&&starts(source.slice(i+connector[0].length),context))||comma&&!embeddedQuestion&&!vocative){
           flush();dependent=connector?!/(?:^|\s)(?:а|но)\s*$/.test(connector[0]):true;
           i+=connector?connector[0].length-1:0;continue;
