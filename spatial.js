@@ -37,7 +37,7 @@
       return refs[0]?{reference:{...refs[0]}}:{error:'unknown_spatial_target'};
     }
     let parents=spec.parent?entities(memory,spec.parent):memory.focus?memory.entities.filter(e=>e.id===memory.focus):[];
-    const local=parents.filter(e=>[memory.place,'inventory',memory.world.activeNpcId].includes(e.location));if(local.length)parents=local;
+    const local=parents.filter(e=>[memory.place,'inventory',memory.world.boundNpcId].includes(e.location));if(local.length)parents=local;
     if(parents.length!==1)return {error:parents.length?'ambiguous_target':'unknown_parent',parent:spec.parent};
     const parent=parents[0],label=norm(parent.label);
     const supported=spec.part==='surface'||spec.part==='lid'&&/ларец|сундук|ящик|шкатулк|сейф|короб|банка/.test(label)||spec.part==='handle'&&/двер|шкаф|окно|ящик/.test(label)||spec.part==='leg'&&/стол|стул|верстак/.test(label)&&!/без нож|нет нож/.test(label+' '+norm(parent.description));

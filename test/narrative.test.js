@@ -2,6 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import '../spatial.js';
 import '../narrator.js';
+import '../messages.js';
+import '../dialogue.js';
+import '../developer.js';
+import '../social.js';
 import '../semantic.js';
 import '../scenes.js';
 import '../simulation.js';
@@ -200,7 +204,7 @@ test('a compound hypothetical does not enact the follow-up',()=>{
 });
 
 test('a feeling receives an emotional response rather than a compulsory puzzle',()=>{
- const r=play(base,'Мне грустно и одиноко');assert.ok(r.memory.facts.mood.includes('грустно'));assert.match(r.text,/выслушать/);assert.doesNotMatch(r.text,/ключ|ларец/);
+ const r=play(base,'Привет','Мне грустно и одиноко');assert.ok(r.memory.facts.mood.includes('грустно'));assert.match(r.text,/выслушать/);assert.doesNotMatch(r.text,/ключ|ларец/);
 });
 test('a conversational goal changes the offered next step',()=>{
  const r=play(base,'Хочу просто поговорить','Что делать?');assert.match(r.text,/поговорить/);assert.doesNotMatch(r.text,/Пока закрыто/);

@@ -2,6 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import '../spatial.js';
 import '../narrator.js';
+import '../messages.js';
+import '../dialogue.js';
+import '../developer.js';
+import '../social.js';
 import '../semantic.js';
 import '../scenes.js';
 import '../simulation.js';
@@ -109,7 +113,7 @@ test('audit A10/B20: changing the observation method does not invent a changed s
  const m=E.reply(config,workshop(),'Осматриваюсь').memory;const r=E.reply(config,m,'Слушаю мастерскую');assert.doesNotMatch(r.text,/обстановка изменилась/);assert.match(r.text,/звякнуть|дребезж/);
 });
 test('audit D32: public equipment and private objects receive distinct owner reactions',()=>{
- const m=workshop();const publicLook=E.reply(config,m,'Осматриваю верстак');assert.match(publicLook.text,/Илья:/);assert.ok(publicLook.outcome.effects.some(e=>e.type==='npc_research_reaction'));
+ const m=workshop();const publicLook=E.reply(config,m,'Осматриваю верстак');assert.equal(publicLook.messages.filter(m=>m.speaker.type==='npc').length,0);assert.equal(publicLook.memory.world.activeNpcId,null);
  const privateLook=E.reply(config,m,'Осматриваю личный ящик');assert.equal(privateLook.outcome.status,'refused');assert.match(privateLook.text,/личные вещи/);assert.equal(privateLook.outcome.information.discoveries.length,0);
 });
 test('audit C28: properties remember tested methods and key functionality learned through actual use',()=>{

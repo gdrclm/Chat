@@ -284,7 +284,9 @@
     flush();return chunks;
   }
   function resolve(text, context = {}) {
-    const chunks=split(text,context);const steps=[];
+    const conditional=String(text).match(/^\s*пока\s+([^,]+?)\s+(работает|занят|отвернулся|спит),\s*(.+)$/iu);
+    const condition=conditional?{type:'npc_attention',name:conditional[1],attention:/спит/iu.test(conditional[2])?'asleep':'busy'}:null;
+    const chunks=split(conditional?conditional[3]:text,context);const steps=[];
     for(const chunk of chunks){
       const previous=steps.at(-1);
       const inherited=chunk.dependsOnPrevious&&previous&&['intention','question','hypothetical','negated','speech','report','request'].includes(previous.mode)?previous.mode:null;
@@ -292,7 +294,7 @@
       if(inherited&&!/^(?:я\s+)?(?:не\s|хочу\s|можно\s|попрошу\s|прошу\s)/u.test(norm(chunk.raw)))parsed.mode=inherited;
       if(inherited==='request'&&previous.actor!=='player'&&parsed.actor==='player'){parsed.actor=previous.actor;if(parsed.intent==='GREET'&&!parsed.recipient)parsed.recipient='player';}
       if(parsed.target==='focused_entity'&&chunk.dependsOnPrevious&&previous?.intent==='MOVE'){parsed.target='current_location';if(parsed.method==='examine')parsed.method='survey';}
-      steps.push({...parsed,index:steps.length,dependsOnPrevious:chunk.dependsOnPrevious});
+      steps.push({...parsed,...(condition?{condition,originalInput:text}:{}),index:steps.length,dependsOnPrevious:chunk.dependsOnPrevious});
     }
     if(!steps.length)steps.push({...step('',context),index:0,dependsOnPrevious:false});
     return {mode:steps.every(s=>s.mode===steps[0].mode)?steps[0].mode:'mixed',steps};

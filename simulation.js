@@ -13,10 +13,10 @@
     const number=v=>Number.isFinite(v)?v:0;
     const rawFields=text=>clean(text).split('\n').map(line=>{const i=line.indexOf(':');return i>0?[norm(line.slice(0,i)),clean(line.slice(i+1))]:[];}).filter(v=>v.length);
     const field=(config,key)=>rawFields(config.canon).find(([k])=>k===key)?.[1]||'';
-    const npc=s=>s.world?.npcs?.[s.world.activeNpcId]||null;
+    const npc=s=>s.world?.npcs?.[s.world.boundNpcId]||null;
     const loc=s=>s.world.locations.find(l=>l.id===s.world.player.location);
     const byLoc=(s,id)=>s.world.locations.find(l=>l.id===id);
-    const here=(s,n)=>Boolean(n&&n.location===s.world.player.location);
+    const here=(s,n)=>Boolean(n&&n.location===s.world.player.location&&!n.hidden&&!['incapacitated','dead'].includes(n.status));
     function findLocation(s,text) {
       const q=norm(text).replace(/^(?:в|на|к|из)\s+/,'').replace(/[.!?]+$/,'');
       if(/^(?:наружу|снаружи|улицу|выход)$/.test(q))return byLoc(s,s.world.outdoorId);
@@ -66,7 +66,7 @@
     }
     function init(s,p,config) {
       const reusable=s.world?.schema===4&&Array.isArray(s.world.locations)&&Array.isArray(s.world.edges)&&s.world.player&&s.world.npcs&&Array.isArray(s.world.events)&&Array.isArray(s.world.deferred)&&s.world.locations.some(l=>l.id===s.world.player.location);
-      if(reusable && JSON.stringify(s.world.authorCanon)===JSON.stringify(config)) { bind(s,s.world.activeNpcId);s.place=byLoc(s,s.world.player.location).name;presence(s);scenes.init(s,p,config);for(const e of s.entities){annotate(s,e,p);syncEntityTruth(s,e,'canon');}return; }
+      if(reusable && JSON.stringify(s.world.authorCanon)===JSON.stringify(config)) { dialogue.init(s);bind(s,s.world.boundNpcId);s.place=byLoc(s,s.world.player.location).name;presence(s);scenes.init(s,p,config);social.init(s,config);developer.init(s,config);for(const e of s.entities){annotate(s,e,p);syncEntityTruth(s,e,'canon');}return; }
       const old=s.world;const previousPlace=s.place;
       const w={schema:4,authorCanon:clone(config),locations:[],edges:[],npcs:{},activeNpcId:null,player:{location:null,previousLocation:null,counters:{},variants:{},money:0},facts:{},events:[],nextEvent:1,plans:[],deferred:[],loops:{work:{status:'idle',serial:0},exploration:{visited:[],discoveries:[]},social:{contacts:[]}},storyUsed:{}};
       s.world=w;
@@ -135,7 +135,7 @@
         addEntity(s,label,{id:'stock:'+hash(label),location:merchant.id,source:'stock',kind:'tool',portable:true,price,stockOwner:merchant.id});
       }
       for(const e of s.entities){annotate(s,e,p);syncEntityTruth(s,e,'canon');}
-      w.loops.exploration.visited.push(current.id);bind(s,main.id);presence(s);scenes.init(s,p,config);for(const e of s.entities){annotate(s,e,p);syncEntityTruth(s,e,'canon');}
+      dialogue.init(s);w.loops.exploration.visited.push(current.id);bind(s,main.id);presence(s);scenes.init(s,p,config);social.init(s,config);developer.init(s,config);for(const e of s.entities){annotate(s,e,p);syncEntityTruth(s,e,'canon');}
     }
     function annotate(s,e,p) {
       if(e.portable===undefined)e.portable=!['fixed','barrier'].includes(e.kind)||/ларец|сундук|ящик|шкатулк/.test(norm(e.label));
@@ -150,14 +150,15 @@
     }
     function bind(s,id) {
       const n=s.world.npcs[id];
-      s.world.activeNpcId=n?id:null;
+      s.world.boundNpcId=n?id:null;
       s.trust=n?.trust||0;s.tension=n?.tension||0;s.seen=n?n.seen:s.world.player.counters;s.used=n?n.used:s.world.player.variants;s.pending=n?.pending||null;s.secretRevealed=Boolean(n?.secretRevealed);
       for(const key of memoryKeys){delete s.facts[key];if(n?.memory[key]!==undefined)s.facts[key]=clone(n.memory[key]);}
       s.npcPresent=here(s,n);
     }
     function presence(s) {
-      const current=npc(s);if(here(s,current)){s.npcPresent=true;return;}
-      const local=Object.values(s.world.npcs).find(n=>here(s,n));bind(s,local?.id||null);
+      if(s.world.activeNpcId&&!dialogue.here(s,s.world.npcs[s.world.activeNpcId]))dialogue.close(s,'separated');
+      const current=npc(s),speaker=s.world.npcs[s.world.activeNpcId];if(dialogue.here(s,speaker)&&speaker.id!==current?.id){if(current)flush(s);bind(s,speaker.id);return;}if(here(s,current)){s.npcPresent=true;return;}
+      const local=Object.values(s.world.npcs).find(n=>dialogue.here(s,n));if(current)flush(s);bind(s,local?.id||null);
     }
     function npcProfile(s,config,fallback) {
       const n=npc(s);if(!n)return fallback;
@@ -175,17 +176,23 @@
       return Boolean(n.cherished&&words(n.cherished).map(stem).some(w=>w.length>=3&&words(labels).map(stem).includes(w)));
     }
     function reconcile(s,n) {
-      let count=0;for(const g of openGrievances(n))if(g.apology&&g.reparation){g.resolved=true;g.resolvedTurn=s.turn;count++;}
-      if(!count)return false;
-      n.reconciliations.push({turn:s.turn,conflicts:n.grievances.filter(g=>g.resolvedTurn===s.turn).map(g=>g.id)});s.trust=Math.max(1,s.trust);s.tension=Math.max(0,s.tension-2);
+      const repaired=openGrievances(n).filter(g=>g.apology&&g.reparation);
+      if(!repaired.length)return false;
+      for(const g of repaired){g.resolved=true;g.resolvedTurn=s.turn;}
+      n.reconciliations.push({turn:s.turn,conflicts:repaired.map(g=>g.id)});
+      const property=repaired.filter(g=>g.socialEventId&&!['insult','threat'].includes(g.kind));
+      if(property.length){const cap=Math.min(...property.map(g=>(g.trustBefore??1)-(n.social.profile.forgiveness>=.6?1:2)));s.trust=Math.min(s.trust,cap);n.social.cautious=true;}
+      else s.trust=Math.max(1,s.trust);
+      s.tension=Math.max(0,s.tension-2);n.social.accessRestricted=openGrievances(n).length>0;
       emit(s,'reconciliation',n.id,null,n.reconciliations.at(-1));log(s,'reconciliation',n.name+': причина конфликта признана и выполнено условие примирения.');return true;
     }
     function syncEntityTruth(s,e,source='event') {
       for(const key of ['location','opened','locked','destroyed','hidden','condition','pinInstalled','moved','containerId','supportId','openingDegree'])truth(s,'entity:'+e.id+':'+key,e[key]??false,source);
     }
-    function snapshot(s){return clone({entities:s.entities,inventory:s.inventory,clocks:s.clocks,stage:s.stage,player:s.world.player,relationships:Object.values(s.world.npcs).map(n=>({id:n.id,trust:n.trust,tension:n.tension,location:n.location})),facts:s.world.facts});}
+    function snapshot(s){return clone({entities:s.entities,inventory:s.inventory,clocks:s.clocks,stage:s.stage,player:s.world.player,relationships:Object.values(s.world.npcs).map(n=>({id:n.id,trust:n.trust,tension:n.tension,location:n.location,health:n.health,status:n.status,relationship:n.social?.relationship})),npcBeliefs:Object.fromEntries(Object.values(s.world.npcs).map(n=>[n.id,n.beliefs])),facts:s.world.facts});}
     function observeProperty(s,e,key,value,action) {
       for(const n of Object.values(s.world.npcs)) {
+        if(!social.permitsObservation(s,n,e,action))continue;
         const ownItem=e.location===n.id;
         const isHere=n.location===s.world.player.location;
         const actorHere=action.actor===n.id;
@@ -212,7 +219,7 @@
       }
       for(const n of Object.values(s.world.npcs)) {
         const old=before.relationships.find(v=>v.id===n.id);if(!old)continue;
-        for(const key of ['trust','tension','location'])if(old[key]!==n[key])emit(s,'npc_'+key,n.id,old[key],n[key],action.id);
+        for(const key of ['trust','tension','location','health','status'])if(old[key]!==n[key])emit(s,'npc_'+key,n.id,old[key],n[key],action.id);
       }
       for(const key of ['danger','discovery'])if(before.clocks[key]!==s.clocks[key]){emit(s,'clock_'+key,key,before.clocks[key],s.clocks[key],action.id);truth(s,'clock:'+key,s.clocks[key]);}
       if(before.player.location!==s.world.player.location)emit(s,'player_move','player',before.player.location,s.world.player.location,action.id);
@@ -248,6 +255,16 @@
       if(!c.question&&!c.speech&&/^(?:я )?(?:осмотр|осматр|огляд|исслед|изуч|рассматри|разгляды|обыски|слуш|прислуш|провер|читаю|прочита)/.test(lower))intent='inspect';
       if(!c.question&&/устан[оа]в|вставля/.test(lower)&&/штифт/.test(lower))intent='repair_install';
       if(!c.question&&/изгот[оа]в|сдела/.test(lower)&&/штифт/.test(lower))intent='repair_craft';
+      if(/^(?:я )?(?:отхожу|отойти|отступаю) от|заканчиваю разговор|прекращаю разговор|до свидания/.test(lower))intent='end_dialogue';
+      if(/^(?:я )?(?:прошу одолжить|одолжи|беру в долг|одолжить)/.test(lower))intent='borrow';
+      if(/^(?:я )?(?:(?:незаметно|тайно) )?(?:возвращаю|верну|вернуть) .*(?:молот|ключ|инструмент|вещ|письм|ларец|книг)/.test(lower))intent='return_property';
+      if(/^(?:я )?(?:возмещаю|компенсирую|плачу компенсацию)/.test(lower))intent='compensate';
+      if(/^(?:я )?(?:арендую|беру .* в аренду)/.test(lower))intent='rent';
+      if(/^(?:я )?(?:плачу|оплачиваю) штраф/.test(lower))intent='pay_fine';
+      if(/^(?:я )?(?:рассказываю|сообщаю).*о (?:краже|нападении|порче)/.test(lower))intent='report_event';
+      if(/^(?:я )?(?:прикрываю|помогаю .* скрыть (?:кражу|нападение))/.test(lower))intent='complicity';
+      if(/^(?:я )?(?:признаюсь|сознаюсь)/.test(lower))intent='confess';
+      if(/^(?:я )?(?:обещаю|клянусь)/.test(lower))intent='promise';
       if(c.hypothetical||c.negated)intent=c.intent;
       const semantic=c.semantic;
       if(semantic?.recognized){
@@ -260,12 +277,14 @@
         else if(semantic.mode==='question')intent='question';
         else if(semantic.mode==='negated')intent='refuse';
       }
+      if(!c.negated&&!c.hypothetical&&/^(?:я )?(?:прошу разреш|разреши|разрешите|можно.*(?:инструмент|верстак|личный ящик))/.test(norm(c.originalText||c.text)))intent='request_permission';
+      if(['borrow','rent','return_property'].includes(intent)&&!semantic?.recognized){const options=s.entities.filter(e=>!e.destroyed&&(intent==='return_property'?e.location==='inventory':e.ownerId&&here(s,s.world.npcs[e.ownerId])&&[s.place,e.ownerId].includes(e.location)));target=matchEntity({...s,entities:options},c.text,true)||target;}
       const explicitGoal=fullText.match(/(?:чтобы|с целью|ради того чтобы)\s+([^,.!?]+)/iu)?.[1];
       const goal=clean(explicitGoal||s.facts.goal||'');
       const method=clean(c.text.match(/(?:с помощью|используя|посредством)\s+([^,.!?]+)/iu)?.[1]||(/^(?:прошу|договариваюсь)/.test(lower)?'договорённость':/незаметно/.test(lower)?'скрытно':intent==='craft_gift'?(/превращаю/.test(lower)&&profile(config).magic?'преобразование':'ремесло'):intent));
       let expectedEffect=/довер|располож|примир/.test(norm(goal))?'изменить отношение адресата':intent==='claim'||intent==='plant_evidence'?'изменить убеждение адресата':intent==='move'||intent==='return'?'оказаться в соседней локации':intent==='request_plan'?'согласовать перенос, укрытие и отложенный шаг':intent==='open'?'получить доступ к содержимому':goal||'получить результат указанного действия';
       if(c.negated)expectedEffect='воздержаться от действия';
-      return {id:'action:'+s.turn+':'+s.world.nextEvent+':'+hash(c.originalText||c.text),actor:semantic?.recognized&&semantic.mode==='request'?semantic.actorId||semantic.actor:'player',intent,intention:intent,targetId:target?.id||null,targetLabel:target?.label||semantic?.targetLabel||null,recipientId:semantic?.recipientId||receiver?.id||s.world.activeNpcId,unresolvedActor:semantic?.recognized&&semantic.mode==='request'&&!semantic.actorId,unresolvedRecipient:semantic?.recognized?Boolean(semantic.recipient&&!semantic.recipientId):unresolvedRecipient,destinationId:semantic?.destinationId||null,goal,goalSource:explicitGoal?'explicit':goal?'player-context':'unspecified',method:semantic?.manner?.length?semantic.manner.join(', '):method,expectedEffect,text:c.originalText||c.text,scope:semantic?.scope||'play',hypothetical:c.hypothetical,negated:c.negated,semantic};
+      return {id:'action:'+s.turn+':'+s.world.nextEvent+':'+hash(c.originalText||c.text),actor:semantic?.recognized&&semantic.mode==='request'?semantic.actorId||semantic.actor:'player',intent,intention:intent,targetId:target?.id||null,targetLabel:target?.label||semantic?.targetLabel||null,recipientId:semantic?.recipientId||receiver?.id||s.world.boundNpcId,unresolvedActor:semantic?.recognized&&semantic.mode==='request'&&!semantic.actorId,unresolvedRecipient:semantic?.recognized?Boolean(semantic.recipient&&!semantic.recipientId):unresolvedRecipient,destinationId:semantic?.destinationId||null,goal,goalSource:explicitGoal?'explicit':goal?'player-context':'unspecified',method:semantic?.manner?.length?semantic.manner.join(', '):method,expectedEffect,text:c.originalText||c.text,scope:semantic?.scope||'play',hypothetical:c.hypothetical,negated:c.negated,semantic};
     }
     function containerAccess(s,e,seen=new Set()){
       if(!e?.containerId)return true;
@@ -323,8 +342,8 @@
       if(meta.witnessedBy?.includes(n.id)) {
         hear(s,n,meta.proposition,'evidence:'+e.id,0,true);
         conflict(s,n,'staged_evidence','Вы пытались выдать подброшенную улику за независимое подтверждение.');
-        if(n.id===s.world.activeNpcId){s.trust=Math.max(-5,s.trust-1);s.tension++;}
-        return voice(s,npcProfile(s,s.world.authorCanon,profile(s.world.authorCanon)),'Я видел, откуда появилась эта улика. Она не подтверждает вашу версию независимо.');
+        if(n.id===s.world.boundNpcId){s.trust=Math.max(-5,s.trust-1);s.tension++;}
+        return dialogue.say(s,n,'Я видел, откуда появилась эта улика. Она не подтверждает вашу версию независимо.','witness_event');
       }
       const belief=hear(s,n,meta.proposition,'evidence:'+e.id,.68,false);
       return `${n.name} изучает «${e.label}». ${belief.confidence>=.7?'Теперь версия кажется убедительной':'Пока это только предположение'}: ${belief.text}.`;
@@ -334,7 +353,7 @@
       if(!accessible(s,e,n.id))return no('Предмет находится не там, где персонаж.','target_not_present');
       if(e.opened)return ok('Предмет уже открыт.','already_open');
       if(openGrievances(n).length)return no(n.name+' помнит конфликт и не соглашается помогать до примирения.','unresolved_conflict');
-      if(e.locked&&!canUnlock(s,n,e))return no(n.name+': подходящего ключа или права доступа у меня нет.','npc_has_no_access');
+      if(e.locked&&!canUnlock(s,n,e))return no(n.name+': подходящего ключа или права доступа нет.','npc_has_no_access');
       const old=s.place;s.place=byLoc(s,n.location).name;const text=resolveBarrier(s,p,e,'помощь '+n.name);s.place=old;return ok(text,'npc_opened');
     }
     function makeDeferred(s,actor,e,text,planId) {
@@ -387,7 +406,7 @@
       if(a.unresolvedActor)return ask('Кого из существующих персонажей вы просите выполнить действие?','unknown_actor');
       if(a.unresolvedRecipient)return ask('К какому из существующих персонажей вы обращаетесь?','unknown_recipient');
       const conversation=a.intent==='request_npc'?a.actor:a.recipientId;
-      if(conversation&&conversation!=='player'&&conversation!==s.world.activeNpcId) {
+      if(conversation&&conversation!=='player'&&conversation!==s.world.boundNpcId) {
         const receiver=s.world.npcs[conversation];
         if(!here(s,receiver))return no('Персонаж '+receiver.name+' находится в другом месте. Разговор и передача отсюда невозможны.','npc_absent');
         flush(s);bind(s,receiver.id);n=receiver;p=npcProfile(s,config,p);
@@ -395,12 +414,12 @@
       if(a.intent==='request_npc'){
         if(!a.semantic?.actorId||!n||!here(s,n))return ask('Кого из находящихся рядом персонажей вы просите выполнить действие?','unknown_actor');
         if(a.semantic.intent==='GREET'){
-          if(openGrievances(n).length)return no(n.name+': «Я помню нашу ссору. Сначала давайте уладим её».','unresolved_conflict');
+          if(openGrievances(n).length)return no(dialogue.say(s,n,'Я помню нашу ссору. Сначала давайте уладим её.'),'unresolved_conflict');
           const recipient=a.semantic.recipientId||'player';const person=s.world.npcs[recipient];
           if(recipient!=='player'&&!here(s,person))return no('Адресат приветствия находится в другом месте.','npc_absent');
           n.memory.outgoingGreetings||={};n.memory.outgoingGreetings[recipient]=(n.memory.outgoingGreetings[recipient]||0)+1;
           emit(s,'greeting',n.id,null,{actor:n.id,recipient});
-          return ok(n.name+' '+(n.memory.outgoingGreetings[recipient]>1?'снова ':'')+'приветствует '+(recipient==='player'?'вас':person.name)+': «Здравствуйте».','npc_greeted');
+          return ok(dialogue.say(s,n,(n.memory.outgoingGreetings[recipient]>1?'Снова здравствуйте':'Здравствуйте')+(recipient==='player'?'':', '+person.name)+'.','greeting_requested'),'npc_greeted');
         }
         if(a.semantic.intent==='APPROACH')return spatial.approach(s,a.semantic,n.id);
         if(a.semantic.intent==='OPEN'){
@@ -413,6 +432,7 @@
         }
         return ask('Просьба адресована '+n.name+'. Для этого способа помощи пока нет исполнимого действия; уточните конкретный шаг.','unsupported_npc_action');
       }
+      if(a.intent==='end_dialogue')return ok('Вы заканчиваете разговор и отступаете. Местоположение не изменилось.','dialogue_ended');
       if(a.intent==='approach')return spatial.approach(s,a.semantic);
       if(a.intent==='greet'&&a.recipientId==='player')return ok('Вы приветствуете себя. На отношения с другими людьми это не влияет.','self_greeting');
       if(a.semantic?.intent==='OPEN'&&['unlock','slightly'].includes(a.semantic.variant)&&e){
@@ -455,7 +475,7 @@
         if(!paper||paper.location!=='inventory'||paper.destroyed)return no('Для такой улики нужен реальный носитель при вас: записка, письмо или бумага.','missing_evidence_carrier');
         const payload=c.text.match(/[:«]\s*([^»]+)/u)?.[1];
         if(!payload&&!paper.evidence)return ask('Что именно должно быть написано на улике?','missing_evidence_content');
-        const witnesses=Object.values(s.world.npcs).filter(v=>here(s,v)&&!s.facts.hidden&&!/незаметно|тайно/.test(c.lower)).map(v=>v.id);
+        const witnesses=Object.values(s.world.npcs).filter(v=>social.visible(s,v,a)).map(v=>v.id);
         if(payload)paper.evidence={proposition:proposition(s,payload),authenticity:'fabricated',createdBy:'player',witnessedBy:witnesses};
         if(/подбрасыва/.test(c.lower)){paper.location=s.place;paper.hidden=false;s.inventory=s.inventory.filter(v=>v!==paper.label);}
         emit(s,'evidence_created',paper.id,null,paper.evidence);log(s,'evidence','На носителе '+paper.label+' записана версия: '+paper.evidence.proposition.text);
@@ -524,7 +544,7 @@
         if(!e||e.location!=='inventory'||e.destroyed)return no('Этого предмета у вас нет.','item_not_owned');
         const important=meaningful(s,n,e),effort=Boolean(e.craftedEffort);e.location=n.id;s.inventory=s.inventory.filter(v=>v!==e.label);s.facts.lastGift=e.label;s.focus=e.id;
         const before=s.trust;s.trust=Math.min(5,s.trust+(important?2:1));
-        if(important)for(const g of openGrievances(n))g.reparation=true;
+        if(important)for(const g of openGrievances(n))if(!g.socialEventId||['insult','threat'].includes(g.kind))g.reparation=true;
         const repaired=reconcile(s,n);
         emit(s,'gift_received',n.id,null,{itemId:e.id,lineage:e.lineage,meaningful:important,crafted:effort,expectedEffect:a.expectedEffect});
         const eligible=s.trust>=1&&!openGrievances(n).length;emit(s,'cooperation_access',n.id,before>=1,{eligible,reason:repaired?'reconciliation':important?'meaningful_gift':'gift'},a.id);
@@ -533,7 +553,7 @@
       }
       if(c.intent==='apology'&&n&&openGrievances(n).length) {
         for(const g of openGrievances(n))g.apology=true;
-        s.trust=Math.min(5,s.trust+1);s.tension=Math.max(1,s.tension-1);const repaired=reconcile(s,n);
+        if(!n.grievances.some(g=>g.apology&&g.apologyTurn<s.turn))s.trust=Math.min(5,s.trust+1);for(const g of openGrievances(n))g.apologyTurn??=s.turn;s.tension=Math.max(1,s.tension-1);const repaired=reconcile(s,n);
         return repaired?ok(voice(s,p,'Извинение и поступок приняты. Мы можем продолжить.'),'reconciled'):partial(voice(s,p,`Я услышал извинение. Причина ссоры — «${openGrievances(n)[0].reason}». Покажите серьёзность намерения: для меня важно ${n.cherished||n.motive}.`),'reconciliation_pending');
       }
       if(['help','bargain'].includes(c.intent)||c.intent==='question'&&/секрет|откроешь|поможешь/.test(c.lower)) {
@@ -606,10 +626,10 @@
     function after(s,p,c,a,r) {
       scenes.sourceLearnedAfter(s,c,a,r);
       const n=npc(s);
-      if(n&&here(s,n)&&!c.hypothetical&&!c.negated) {
+      if(n&&here(s,n)&&!c.hypothetical&&!c.negated&&dialogue.active(s,n)) {
         if(/меня зовут|мое имя|зови меня/.test(c.lower)&&s.facts.name){n.memory.playerName=s.facts.name;hear(s,n,{key:'player:name',value:s.facts.name,text:'Игрок представился: '+s.facts.name},'player:identity',.6);}
         if(/хочу|моя цель|мне нужно|собираюсь/.test(c.lower)&&s.facts.goal&&!c.question)n.memory.playerGoal=s.facts.goal;
-        if(['insult','threat','attack'].includes(c.intent)&&r.status!=='clarification'&&r.status!=='refused'&&!r.text.includes('не нападение на собеседника'))conflict(s,n,c.intent,c.text);
+        if(!r.socialHandled&&['insult','threat','attack'].includes(c.intent)&&r.status!=='clarification'&&r.status!=='refused'&&!r.text.includes('не нападение на собеседника'))conflict(s,n,c.intent,c.text);
         if((['greet','identity','talk','comfort'].includes(c.intent)||['select_npc','find_job','show','buy','give','bargain'].includes(a.intent))&&!s.world.loops.social.contacts.includes(n.id))s.world.loops.social.contacts.push(n.id);
       }
       if(c.intent==='open'&&r.status==='success')for(const task of s.world.deferred)if(task.targetId===a.targetId&&task.actor==='player'&&task.status==='pending'&&s.entities.find(e=>e.id===task.targetId)?.opened){task.status='completed';task.completedTurn=s.turn;}
@@ -621,9 +641,9 @@
         if(task.actor==='player')continue;
         const actor=s.world.npcs[task.actor],target=s.entities.find(v=>v.id===task.targetId);
         if(!actor||!target||!here(s,actor))continue;
-        const before=snapshot(s);const previousCause=s.currentActionId;s.currentActionId=task.id;
+        root.StoryMessages.begin(s);const before=snapshot(s);const previousCause=s.currentActionId;s.currentActionId=task.id;
         const r=npcOpen(s,p,actor,target,task.id);task.lastOutcome=r.status;
-        if(r.status==='success'){task.status='completed';task.completedTurn=s.turn;}emit(s,'deferred_result',task.id,null,{status:task.status,outcome:r.status},task.id);lines.push({...r,action:{id:task.id,actor:task.actor,intent:'open',intention:'open',targetId:task.targetId,goal:'исполнить отложенное действие',method:'договорённость',expectedEffect:'получить доступ',scope:'play'},effects:effects(s,before,{id:task.id})});s.currentActionId=previousCause;
+        if(r.status==='success'){task.status='completed';task.completedTurn=s.turn;}emit(s,'deferred_result',task.id,null,{status:task.status,outcome:r.status},task.id);lines.push(root.StoryMessages.finish(s,{...r,action:{id:task.id,actor:task.actor,intent:'open',intention:'open',targetId:task.targetId,goal:'исполнить отложенное действие',method:'договорённость',expectedEffect:'получить доступ',scope:'play'},effects:effects(s,before,{id:task.id})}));s.currentActionId=previousCause;
       }return lines;
     }
     function assessGoal(s,results) {
@@ -637,8 +657,11 @@
       return {status:achieved?'achieved':'pending',goal:relevant[0].action.goal,recipientId:recipient,observedTrust:n?.trust??null,openConflicts:openGrievances(n).map(g=>g.id),reason:achieved?'Достигнуты условия сотрудничества.':'Предмет мог быть передан, но требуемое доверие пока не достигнуто.'};
     }
     function map(s){return {current:s.world.player.location,locations:s.world.locations.map(v=>({...v,people:Object.values(s.world.npcs).filter(n=>n.location===v.id).map(n=>n.name)})),edges:clone(s.world.edges),exits:exits(s)};}
+    const dialogue=root.StoryDialogue.create({emit});
+    const developer=root.DeveloperIntervention.create({...H,emit});
+    const social=root.StorySocial.create({...H,emit,truth,findNpc,findLocation,here,npc,flush,bind,moveActor,conflict,openGrievances,reconcile,dialogue});
     const spatial=root.StorySpatial.create({...H,emit,containerAccess});
-    const scenes=root.StoryScenes.create({...H,npc,here,findLocation,openGrievances,emit,truth,containerAccess,spatial});
-    return {containerAccess,inspectScene:scenes.inspect,openedText:scenes.openedText,init,analyze,handle,after,flush,bind,presence,npc,npcProfile,openGrievances,snapshot,effects,runDue,map,assessGoal,proposition,emit,truth,annotate,statuses,result};
+    const scenes=root.StoryScenes.create({...H,npc,here,findLocation,openGrievances,emit,truth,containerAccess,spatial,dialogue,sayNpc:(s,n,text,trigger)=>dialogue.say(s,n,text,trigger)});
+    return {dialogue,developer,social,containerAccess,inspectScene:scenes.inspect,openedText:scenes.openedText,init,analyze,handle,after,flush,bind,presence,npc,npcProfile,openGrievances,snapshot,effects,runDue,map,assessGoal,proposition,emit,truth,annotate,statuses,result};
   }};
 })(globalThis);

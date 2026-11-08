@@ -17,6 +17,7 @@
       workshop:{description:'В мастерской пахнет нагретым металлом. На верстаке разобран механизм, рядом — ящик с инструментами. Дверца кладовой прикрыта; личный ящик мастера стоит отдельно.',features:[
         {key:'bench',label:'верстак',description:'На верстаке есть тиски и место для обработки небольшой детали. Для работы нужно разрешение мастера.',fact:{key:'workshop.bench',text:'На верстаке можно изготовить штифт, если есть проволока, инструменты и разрешение.',unlocks:['изготовить штифт']}},
         {key:'mechanism',label:'повреждённый механизм',aliases:['механизм','узел','устройство','поломка'],description:'Узел разобран. Одна шестерня смещается вбок: ей не хватает удерживающего штифта.',condition:'broken',fact:{key:'repair.diagnosis',text:'Шестерня механизма смещается: удерживающий штифт отсутствует.',unlocks:['проверить комплект деталей']}},
+        {key:'hammer',label:'молоток мастера',aliases:['молоток','молоток Ильи'],kind:'tool',portable:true,description:'Рабочий молоток принадлежит мастеру. Его можно попросить во временное пользование.'},
         {key:'tools',label:'ящик с инструментами',aliases:['инструменты','ящик инструментов'],description:'В ящике лежат плоскогубцы и напильник. Ими можно обработать проволоку на верстаке после разрешения мастера.',fact:{key:'workshop.tools',text:'Плоскогубцы и напильник доступны на рабочем месте с разрешения мастера.',unlocks:['попросить разрешение на инструменты']}},
         {key:'store',label:'дверца кладовой',aliases:['кладовая','дверца'],description:'За дверцей слышно, как дребезжат металлические заготовки. Сама дверь прикрыта, а не заперта.',sound:'Прикосновение к двери заставляет звякнуть сложенные внутри обрезки металла.',fact:{key:'workshop.stock',text:'В кладовой хранятся заготовки; запасной штифт мастер уже искал и не нашёл.'}},
         {key:'private',label:'личный ящик мастера',aliases:['личный ящик','ящик мастера'],private:true,description:'Это личный ящик. Его содержимое не выставлено для общего осмотра.'}
@@ -67,7 +68,16 @@
     }
     function init(s,p,config){
       research(s);
-      if(s.world.sceneVersion===1){H.spatial.init(s);return;}
+      if(s.world.sceneVersion===1){
+        for(const place of s.world.locations.filter(l=>role(l)==='workshop'&&l.scene?.features?.length)){
+          const owner=Object.values(s.world.npcs).find(n=>n.location===place.id);
+          if(!s.entities.some(e=>e.id===place.id+':hammer')){
+            const e=addEntity(s,'молоток мастера',{id:place.id+':hammer',source:'local-scene',location:place.name,kind:'tool',portable:true,known:true,hidden:false,localKey:'hammer',localRole:'workshop',ownerId:owner?.id||null,description:'Рабочий молоток принадлежит мастеру.'});place.scene.features.push(e.id);
+            if(owner?.social)owner.social.expected[e.id]=place.name;
+          }
+        }
+        H.spatial.init(s);return;
+      }
       rootFact(s,p,config);
       const urban=!['space','survival','sea'].includes(p.genre);
       for(const node of s.world.locations){
@@ -93,7 +103,7 @@
       s.world.sceneFlags||={};s.world.sceneVersion=1;H.spatial.init(s);
     }
     function node(s){return s.world.locations.find(l=>l.id===s.world.player.location);}
-    function local(s,e){return e&&(e.location===s.place||e.location==='inventory'||e.location===s.world.activeNpcId)&&!e.destroyed&&H.containerAccess(s,e);}
+    function local(s,e){return e&&(e.location===s.place||e.location==='inventory'||e.location===s.world.boundNpcId)&&!e.destroyed&&H.containerAccess(s,e);}
     function isVisible(s,e){return !e.hidden&&e.known&&local(s,e);}
     function names(a,b){if(words(b).length===1&&stem(b).length>=3&&words(a).map(stem).includes(stem(b)))return true;const nouns=v=>words(v).filter(w=>!/(?:ый|ий|ая|ое|ые|ую|ой|ого|ыми|ную)$/.test(w)).map(stem);const tokens=nouns(a);return nouns(b).filter(w=>w.length>=3).some(w=>tokens.includes(w));}
     function method(text){const q=norm(text);return /слуш|прислуш/.test(q)?'listen':/загляд|под стол|под скам|обыск|ищу|поиск|обшар/.test(q)?'search':/провер|испыт|хватает|деталей/.test(q)?'check':/чита|прочита/.test(q)?'read':'examine';}
@@ -127,7 +137,7 @@
     function entryBlocks(s,phase='observation'){
       const where=node(s);const seen=s.entities.filter(e=>e.location===s.place&&e.known&&!e.hidden&&!e.destroyed&&H.containerAccess(s,e));
       const social=s.world.loops.social;
-      for(const n of Object.values(s.world.npcs).filter(n=>n.location===where.id)){if(!social.noticed.includes(n.id))social.noticed.push(n.id);if(!social.encountered.includes(n.id))social.encountered.push(n.id);}
+      for(const n of Object.values(s.world.npcs).filter(n=>n.location===where.id)){H.dialogue.notice(s,n);if(!social.noticed.includes(n.id))social.noticed.push(n.id);if(!social.encountered.includes(n.id))social.encountered.push(n.id);}
       const repaired=role(where)==='workshop'&&s.entities.some(e=>e.localKey==='mechanism'&&e.location===s.place&&e.condition==='repaired');
       const description=repaired?'В мастерской на верстаке работает собранный механизм. Причина прежней поломки устранена; инструменты сложены рядом.':where.scene.description;
       return [{kind:'location',locationId:where.id,phase,text:description},...(seen.length?[{kind:'visible',locationId:where.id,phase,text:'Видно: '+seen.map(e=>'«'+e.label+'»').slice(0,5).join(', ')+'.'}]:[])];
@@ -186,7 +196,7 @@
       if(!local(s,e))return fail('refused','target_elsewhere','«'+e.label+'» находится в другом месте.');
       if((!e.known||e.hidden)&&!canReveal(s,e,m))return fail('refused','discovery_conditions','С этой позиции содержимое недоступно. Нужен подходящий способ или открытый доступ.');
       if(!e.known||e.hidden){e.known=true;e.hidden=false;}
-      if(e.private&&!permission(s,e,'private'))return privateReaction(s,e);
+      if(e.private&&!permission(s,e,'private')&&here(s,s.world.npcs[e.ownerId]))return privateReaction(s,e);
       s.focus=e.id;
       rememberProperties(s,e,m);
       if(m==='listen'&&!e.sound)return ok('Вы прислушиваетесь к «'+e.label+'». Новых звуков не обнаружено.','no_new_information',{novel:false,discoveries:[]});
@@ -202,10 +212,8 @@
       if(discoveries.length&&!s.world.loops.exploration.understood.includes(where.id))s.world.loops.exploration.understood.push(where.id);
       if(discoveries.includes('square.guild'))unlockGuildKnowledge(s,e,where);
       const shortcut=e.localKey==='lamp'?openShortcut(s,e):'';
-      let ownerReaction='';const owner=s.world.npcs[e.ownerId];
-      if(owner&&here(s,owner)&&e.localRole==='workshop'&&['bench','tools'].includes(e.localKey)){owner.memory.researchNotices||={};if(!owner.memory.researchNotices[e.id]){owner.memory.researchNotices[e.id]=s.turn;emit(s,'npc_research_reaction',owner.id,null,{itemId:e.id,kind:'public_workplace'});ownerReaction='\n'+owner.name+': «Если хотите поработать, сначала договоримся об инструментах». ';}}
       const extra=discoveries.length?'\nТеперь можно: '+[...new Set(discoveries.flatMap(id=>r.knowledge[id]?.unlocks||[]))].join('; '):'';
-      return ok((m==='listen'?e.sound:describe(s,e))+(details.length?'\n'+[...new Set(details)].filter(d=>!describe(s,e).includes(d)).join('\n'):'')+(extra.endsWith(': ')?'':extra)+shortcut+ownerReaction,'object_studied',{novel:true,sourceId:e.id,locationId:where.id,discoveries,opportunities:r.capabilities.slice(-6)});
+      return ok((m==='listen'?e.sound:describe(s,e))+(details.length?'\n'+[...new Set(details)].filter(d=>!describe(s,e).includes(d)).join('\n'):'')+(extra.endsWith(': ')?'':extra)+shortcut,'object_studied',{novel:true,sourceId:e.id,locationId:where.id,discoveries,opportunities:r.capabilities.slice(-6)});
     }
     function permission(s,e,type='tools'){
       return !e.ownerId||s.world.player.permissions?.[e.ownerId]?.[type]===true;
@@ -215,7 +223,7 @@
       if(owner&&here(s,owner)){
         owner.memory.researchWarnings||={};
         if(!owner.memory.researchWarnings[e.id]){owner.memory.researchWarnings[e.id]=s.turn;emit(s,'npc_research_reaction',owner.id,null,{itemId:e.id,reason:'private_object'});}
-        return fail('refused','private_requires_permission',owner.name+': «Это личные вещи. Сначала спросите разрешение». Содержимое не открыто.');
+        return fail('refused','private_requires_permission',H.sayNpc(s,owner,'Это личные вещи. Сначала спросите разрешение.','private_boundary')+' Содержимое не открыто.');
       }
       return fail('refused','private_requires_permission','Для осмотра личного содержимого нужно разрешение владельца.');
     }
@@ -254,60 +262,61 @@
       emit(s,'permission_granted',n.id,null,{type,player:'player'});
     }
     function npcInteraction(s,p,c,a){
+      const q=norm(c.originalText||c.text);
       const n=npc(s),e=a.targetId&&s.entities.find(v=>v.id===a.targetId);
       if(!n||!here(s,n))return null;
-      if(/разреш|можно.*(?:инструмент|верстак|ящик)|возьму.*инструмент/.test(c.lower)){
-        const privateAccess=/личн/.test(c.lower);
+      if(/разреш|можно.*(?:инструмент|верстак|ящик)|возьму.*инструмент/.test(q)){
+        const privateAccess=/личн/.test(q);
         const owned=s.entities.some(item=>item.ownerId===n.id&&item.location===s.place&&(privateAccess?item.private:item.localRole==='workshop'&&['bench','tools'].includes(item.localKey)));
         if(!owned)return null;
-        if(openGrievances(n).length)return fail('refused','unresolved_conflict',n.name+': «Сначала нужно уладить нашу ссору».');
-        if(privateAccess&&s.trust<2)return fail('refused','private_requires_trust',n.name+': «К личным вещам я пока не готов вас допустить».');
-        grantPermission(s,n,privateAccess?'private':'tools');return ok(n.name+': «Разрешаю пользоваться '+(privateAccess?'личным ящиком':'верстаком и рабочими инструментами')+'. Верните всё на место».','permission_granted',{novel:true,discoveries:[],opportunities:['пользоваться рабочим местом']});
+        if(openGrievances(n).length)return fail('refused','unresolved_conflict',H.sayNpc(s,n,'Сначала нужно уладить нашу ссору','dialogue'));
+        if(privateAccess&&s.trust<2)return fail('refused','private_requires_trust',H.sayNpc(s,n,'К личным вещам я пока не готов вас допустить','dialogue'));
+        grantPermission(s,n,privateAccess?'private':'tools');return ok(H.sayNpc(s,n,'Разрешаю пользоваться '+(privateAccess?'личным ящиком':'верстаком и рабочими инструментами')+'. Верните всё на место','dialogue'),'permission_granted',{novel:true,discoveries:[],opportunities:['пользоваться рабочим местом']});
       }
-      if(/предлагаю|давай|помоги/.test(c.lower)&&/изгот[оа]в|сделать/.test(c.lower)&&(/штифт/.test(c.lower)||/его/.test(c.lower)&&n.memory.lastRecipe==='pin')&&n.expertise?.['repair.pin']){
-        if(openGrievances(n).length||s.trust<0)return fail('refused','unresolved_conflict',n.name+': «Сначала уладим конфликт».');
-        s.pending={kind:'joint-repair',recipe:'pin',npcId:n.id};return ok(n.name+': «Могу помочь на верстаке. Ваш материал, наши инструменты. Подтверждаете?»','joint_work_proposed',{novel:true,discoveries:[]});
+      if(/предлагаю|давай|помоги/.test(q)&&/изгот[оа]в|сделать/.test(q)&&(/штифт/.test(q)||/его/.test(q)&&n.memory.lastRecipe==='pin')&&n.expertise?.['repair.pin']){
+        if(openGrievances(n).length||s.trust<0)return fail('refused','unresolved_conflict',H.sayNpc(s,n,'Сначала уладим конфликт','dialogue'));
+        s.pending={kind:'joint-repair',recipe:'pin',npcId:n.id};return ok(H.sayNpc(s,n,'Могу помочь на верстаке. Ваш материал, наши инструменты. Подтверждаете?','dialogue'),'joint_work_proposed',{novel:true,discoveries:[]});
       }
       if(c.intent==='agree'&&s.pending?.kind==='joint-repair'){
         if(s.pending.npcId!==n.id)return fail('refused','wrong_participant','Договорённость относится к другому мастеру.');
-        if(openGrievances(n).length)return fail('refused','unresolved_conflict',n.name+': «Прежде нужно уладить ссору».');
+        if(openGrievances(n).length)return fail('refused','unresolved_conflict',H.sayNpc(s,n,'Прежде нужно уладить ссору','dialogue'));
         s.pending=null;grantPermission(s,n,'tools');return repair(s,p,{...c,question:false,lower:'изготавливаю штифт',text:'Изготавливаю штифт'});
       }
-      if(c.question&&/знак|символ|метк|гильди/.test(c.lower)&&n.expertise?.['guild.sign']){
-        if(!fact(s,'city.mark')&&!fact(s,'street.mark'))return ok(n.name+': «Покажите или опишите знак, который вы действительно нашли».','knowledge_context_required',{novel:false,discoveries:[]});
+      if(c.question&&/знак|символ|метк|гильди/.test(q)&&n.expertise?.['guild.sign']){
+        if(!fact(s,'city.mark')&&!fact(s,'street.mark'))return ok(H.sayNpc(s,n,'Покажите или опишите знак, который вы действительно нашли','dialogue'),'knowledge_context_required',{novel:false,discoveries:[]});
         const source={id:n.id};const spec=n.expertise['guild.sign'];const fresh=know(s,{key:'guild.sign',...spec},source,node(s).id);
-        n.memory.discussedSign=true;return ok(n.name+': «'+spec.text+'»','local_expertise',{novel:fresh,discoveries:fresh?['guild.sign']:[]});
+        n.memory.discussedSign=true;return ok(H.sayNpc(s,n,''+spec.text+'','dialogue'),'local_expertise',{novel:fresh,discoveries:fresh?['guild.sign']:[]});
       }
-      if(c.question&&/штифт|проволок|полом|механизм/.test(c.lower)&&n.expertise?.['repair.pin']){
+      if(c.question&&/штифт|проволок|полом|механизм/.test(q)&&n.expertise?.['repair.pin']){
         const mech=s.entities.find(v=>v.localKey==='mechanism'&&v.location===s.place);
-        if(mech?.condition==='repaired')return ok(n.name+': «Механизм уже работает. Теперь его можно обслуживать, а не устранять прежнюю поломку».','current_condition',{novel:false,discoveries:[]});
-        if(!fact(s,'repair.diagnosis'))return ok(n.name+': «Сначала изучите поломку на механизме».','diagnosis_required',{novel:false,discoveries:[]});
+        if(mech?.condition==='repaired')return ok(H.sayNpc(s,n,'Механизм уже работает. Теперь его можно обслуживать, а не устранять прежнюю поломку','dialogue'),'current_condition',{novel:false,discoveries:[]});
+        if(!fact(s,'repair.diagnosis'))return ok(H.sayNpc(s,n,'Сначала изучите поломку на механизме','dialogue'),'diagnosis_required',{novel:false,discoveries:[]});
         n.memory.lastRecipe='pin';
         const hasWire=s.entities.some(e=>e.location==='inventory'&&!e.destroyed&&/проволок/.test(norm(e.label)));
         const bench=s.entities.find(e=>e.localKey==='bench'&&e.location===s.place&&!e.destroyed);
         const readiness=hasWire&&bench&&permission(s,bench)?' Всё необходимое сейчас доступно.':' Пока не хватает '+(!hasWire?'проволоки':!bench?'верстака':'разрешения на работу')+'.';
         const spec=n.expertise['repair.pin'];const fresh=know(s,{key:'repair.recipe',...spec},{id:n.id},node(s).id);
-        return ok(n.name+': «'+spec.text+readiness+'»','recipe_explained',{novel:fresh,discoveries:fresh?['repair.recipe']:[]});
+        return ok(H.sayNpc(s,n,''+spec.text+readiness+'','dialogue'),'recipe_explained',{novel:fresh,discoveries:fresh?['repair.recipe']:[]});
       }
       if((c.intent==='show'||a.intent==='show')&&e?.recommendation){
         if(!local(s,e))return fail('refused','target_elsewhere','Рекомендация находится не здесь.');
-        if(!s.entities.some(item=>item.stockOwner===n.id))return ok(n.name+': «Вижу подпись мастера. Торговую скидку нужно обсуждать с продавцом на рынке».','recommendation_seen',{novel:false,discoveries:[]});
+        if(!s.entities.some(item=>item.stockOwner===n.id))return ok(H.sayNpc(s,n,'Вижу подпись мастера. Торговую скидку нужно обсуждать с продавцом на рынке','dialogue'),'recommendation_seen',{novel:false,discoveries:[]});
         s.world.player.discounts||={};const first=!s.world.player.discounts[n.id];s.world.player.discounts[n.id]=1;
         if(first){s.trust=Math.min(5,s.trust+1);emit(s,'trade_discount',n.id,0,1);}
-        return ok(n.name+': «Подпись мастера узнаю. Для вас скидка в одну монету на эти товары».','recommendation_used',{novel:first,discoveries:[],opportunities:['купить товар со скидкой']});
+        return ok(H.sayNpc(s,n,'Подпись мастера узнаю. Для вас скидка в одну монету на эти товары','dialogue'),'recommendation_used',{novel:first,discoveries:[],opportunities:['купить товар со скидкой']});
       }
       if((c.intent==='show'||a.intent==='show'||c.question)&&e&&(e.kind==='clue'||e.localFacts?.length||e.writtenText)){
         if(e.evidence)return null; // The belief system handles testimony and fabricated evidence.
         n.researchKnowledge||={};
         const known=Object.values(n.researchKnowledge).filter(f=>f.sourceId===e.id);
-        if(c.question&&known.length)return ok(n.name+': «Я знаю из этого источника: '+known.map(f=>f.text).join(' ')+'»','npc_source_knowledge',{novel:false,discoveries:[]});
-        if(c.question&&!e.localKey)return ok(n.name+': «Я не знаю содержимого этого источника. Ваше знание само по себе не становится моим».','npc_unknown_source',{novel:false,discoveries:[]});
+        if(c.question&&known.length)return ok(H.sayNpc(s,n,'Я знаю из этого источника: '+known.map(f=>f.text).join(' ')+'','dialogue'),'npc_source_knowledge',{novel:false,discoveries:[]});
+        if(c.question&&!e.localKey)return ok(H.sayNpc(s,n,'Я не знаю содержимого этого источника. Ваше знание само по себе не становится моим','dialogue'),'npc_unknown_source',{novel:false,discoveries:[]});
         if(!local(s,e))return fail('refused','target_elsewhere','Источник не находится рядом.');
         const visible=sourceFacts(s,e).filter(f=>availableFact(s,e,f,'read'));
-        if(!visible.length)return ok(n.name+': «Содержимое не доступно для чтения. Сначала откройте источник».','source_unreadable',{novel:false,discoveries:[]});
+        if(!visible.length)return ok(H.sayNpc(s,n,'Содержимое не доступно для чтения. Сначала откройте источник','dialogue'),'source_unreadable',{novel:false,discoveries:[]});
         for(const f of visible)n.researchKnowledge[f.key]={...clone(f),sourceId:e.id,turn:s.turn};
         emit(s,'npc_source_read',n.id,null,{sourceId:e.id,facts:visible.map(f=>f.key)});
-        return ok(n.name+': «Здесь сказано: '+visible.map(f=>f.text).join(' ')+'»','source_shared',{novel:true,discoveries:[]});
+        return ok(H.sayNpc(s,n,'Здесь сказано: '+visible.map(f=>f.text).join(' ')+'','dialogue'),'source_shared',{novel:true,discoveries:[]});
       }
       return null;
     }

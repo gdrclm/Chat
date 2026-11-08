@@ -295,7 +295,7 @@
     return { text, lower, intent, hypothetical, question, speech, negated };
   }
   function knownPlayer(s,key) { const n=s.world?.npcs[s.world.activeNpcId];return n?.memory[key==='name'?'playerName':'playerGoal']; }
-  function npcHolder(s) { return s.world?.activeNpcId || 'npc:absent'; }
+  function npcHolder(s) { return s.world?.boundNpcId || 'npc:absent'; }
   function verdict(s,status,code,text) {
     if(s.currentResolution){s.currentResolution.status=status;s.currentResolution.code=code;}
     return text;
@@ -305,7 +305,7 @@
     const candidates = s.entities.filter(e => includeAbsent || !e.destroyed && (e.location === s.place || e.location === 'inventory' || e.location === npcHolder(s)));
     const scored = candidates.map(e => {
       let score = 0;
-      if (lower.includes(norm(e.label))) score += 12;
+      if (lower.includes(norm(e.label))) score += 12+words(e.label).length;
       for (const token of words(e.label).map(stem)) if (token.length >= 3 && tokens.includes(token)) score += 3;
       const key = OBJECTS.find(([label]) => label === e.label);
       if (key && new RegExp(key[1]).test(lower)) score += 3;
@@ -324,9 +324,10 @@
       const feminine = {рад:'рада',готов:'готова',услышал:'услышала',видел:'видела',слышал:'слышала',скрывал:'скрывала',рассмеялся:'рассмеялась',отвлекся:'отвлеклась',перестал:'перестала',запомнил:'запомнила',понял:'поняла',пробовал:'пробовала',мог:'могла'};
       line=line.replace(/[А-Яа-яЁё]+/gu, token => { const replacement=feminine[norm(token)];return replacement ? (token[0]===token[0].toUpperCase()?replacement[0].toUpperCase()+replacement.slice(1):replacement) : token; });
     }
-    if (!s.npcPresent) return 'Вокруг нет собеседника. Вы можете вернуться или исследовать новое место.';
+    const person=simulation.npc(s);
+    if(!simulation.dialogue.canSpeak(s,person,'dialogue'))return 'Вы ещё не начали разговор. Можно обратиться к персонажу или продолжить действовать самостоятельно.';
     const manner = s.tension >= 3 ? 'Ответ звучит настороженно.' : p.timid ? 'Голос тихий; каждое слово даётся с осторожностью.' : p.warm ? choose(s, 'warm', ['В голосе чувствуется участие.', 'Интонация становится мягче.', 'В ответе нет торопливости.']) : p.cold ? choose(s, 'cold', ['Ответ звучит сдержанно.', 'После короткой паузы следует ответ.', 'Ни одного лишнего слова.']) : '';
-    return `${p.name}${manner ? '. ' + manner : ':'}\n«${line}»`;
+    return simulation.dialogue.say(s,person,line,'dialogue',{manner});
   }
   function thread(s, text, id = hash(text)) {
     if (!s.threads.some(t => t.id === id)) s.threads.push({ id, text: clean(text).slice(0,180), status: 'open' });
@@ -415,12 +416,14 @@
   function execute(s, p, c, config) {
     const primary=['take','drop','give','use','combine'].includes(c.intent) ? c.text.split(/\s+(?:в|на|под|за|через|чтобы)\s+/iu)[0] : c.text;
     const item = c.semantic?.recognized&&!c.semantic.targetIds ? s.entities.find(e=>e.id===c.semantic.targetId)||null : matchEntity(s,primary,true);
-    if (c.hypothetical) return voice(s,p,`Пока это только план. ${/маг|превращ|телепорт/.test(c.lower) && !p.magic ? 'В этом мире магия не подтверждена; понадобится обычный способ.' : item?.kind === 'barrier' ? 'Можно попробовать, но замок, инструмент и шум повлияют на результат.' : 'Результат будет зависеть от способа и того, что есть рядом.'} Само действие ещё не произошло.`);
-    if (c.negated) { log(s,'boundary',c.text); return voice(s,p,'Хорошо. Вы этого не делаете. Можно выбрать другой способ; я не стану решать за вас.'); }
+    if (c.hypothetical) return (`Пока это только план. ${/маг|превращ|телепорт/.test(c.lower) && !p.magic ? 'В этом мире магия не подтверждена; понадобится обычный способ.' : item?.kind === 'barrier' ? 'Можно попробовать, но замок, инструмент и шум повлияют на результат.' : 'Результат будет зависеть от способа и того, что есть рядом.'} Само действие ещё не произошло.`);
+    if (c.negated) { log(s,'boundary',c.text); return 'Вы этого не делаете. Можно выбрать другой способ.'; }
+    if(c.intent==='custom'){thread(s,c.originalText||c.text,'unresolved:'+hash(c.originalText||c.text));return verdict(s,'clarification','unknown_intent','Такой способ пока не реализован. Уточните цель, предмет и ожидаемое изменение.');}
     learnFacts(s,c);
+    if(['gesture','emotion','fear','perform','rest'].includes(c.intent)&&!simulation.dialogue.active(s,simulation.npc(s))){if(c.intent==='emotion'){s.facts.mood=(s.feelingTurn===s.turn?s.facts.mood+'; '+c.text:c.text).slice(0,240);s.feelingTurn=s.turn;}if(c.intent==='perform')s.facts.performance=c.text;log(s,c.intent,c.text);return 'Вы '+({gesture:'делаете жест',emotion:'отмечаете своё настроение',fear:'чувствуете тревогу',perform:'выступаете',rest:'отдыхаете'}[c.intent])+'. Разговор не начат.';}
     if (!s.npcPresent && ['greet','thanks','apology','comfort','joke','insult','bargain','lie','threat','attack','perform','identity'].includes(c.intent))return verdict(s,'refused','npc_absent','Здесь нет прежнего собеседника. Можно вернуться к нему или установить нового участника через вводные.');
     const count = s.seen[c.intent] || 0; s.seen[c.intent] = count + 1;
-    const available = item && !item.destroyed && [s.place,'inventory',npcHolder(s)].includes(item.location)&&simulation.containerAccess(s,item);
+    const available = item && !item.destroyed && ([s.place,'inventory',npcHolder(s)].includes(item.location)||c.allowTakingHeld&&s.world.npcs[item.location]?.location===s.world.player.location)&&simulation.containerAccess(s,item);
     const targetText = c.text.replace(/^\s*(?:я\s+)?\S+\s*/u,'').replace(/[.!?]+$/,'').slice(0,100);
     switch (c.intent) {
       case 'name': return voice(s,p,s.facts.name ? `${s.facts.name}. Запомню. ${s.facts.goal ? 'Вы всё ещё хотите ' + s.facts.goal + '?' : 'Что привело вас сюда?'}` : 'Как мне к вам обращаться?');
@@ -434,7 +437,7 @@
       case 'inventory': return s.inventory.length ? 'При вас: ' + s.inventory.map(v=>'«'+v+'»').join(', ') + '.' : 'При вас нет учтённых предметов. Можно добавить стартовые вещи в описание героя или явно сказать: «У меня есть …».';
       case 'greet': if(simulation.openGrievances(simulation.npc(s)).length)return voice(s,p,'Здравствуйте. Я помню нашу ссору; приветствие само по себе её не уладит. Если хотите, обсудим, как её исправить.');if (count === 0) s.trust++; return voice(s,p,choose(s,'greeting',[`Здравствуйте${knownPlayer(s,'name') ? ', ' + knownPlayer(s,'name') : ''}. ${knownPlayer(s,'goal') ? 'Вы ищете: ' + knownPlayer(s,'goal') + '?' : 'С чем вы пришли?'}`, 'Я здесь. Продолжим с того, на чём остановились?', 'Снова здравствуйте. За это время вы ничего не обязаны были решить.']));
       case 'thanks': if (count < 2) s.trust++; return voice(s,p,choose(s,'thanks',[p.ironic ? 'Благодарность принята. Сдачи, правда, не будет.' : 'Спасибо, что сказали. Это не прошло незамеченным.', 'Я рад, что помощь оказалась кстати. Дальше решение за вами.', 'Мы можем обойтись без церемоний. Но я вас услышал.']));
-      case 'apology': s.trust = clamp(s.trust+1);s.tension=Math.max(0,s.tension-2);return voice(s,p,'Принимаю извинение. Последствия не исчезнут, но разговор можно продолжить иначе.');
+      case 'apology': if(simulation.npc(s)?.social.cautious)return voice(s,p,'Я услышал извинение. История не забыта; доверие будут восстанавливать дальнейшие поступки.');s.trust = clamp(s.trust+1);s.tension=Math.max(0,s.tension-2);return voice(s,p,'Принимаю извинение. Последствия не исчезнут, но разговор можно продолжить иначе.');
       case 'refuse': s.pending=null;log(s,'boundary',c.text);return voice(s,p,'Нет — значит нет. Этот путь закрыт по вашему решению, а не вся история. Что вы предложите вместо него?');
       case 'emotion': {
         s.facts.mood=(s.feelingTurn===s.turn ? s.facts.mood+'; '+c.text : c.text).slice(0,240);s.feelingTurn=s.turn;log(s,'feeling',s.facts.mood);if(count<2)s.trust++;
@@ -443,7 +446,7 @@
       }
       case 'fear': s.trust++;return voice(s,p,p.warm ? 'Можно остановиться и выдохнуть. Скажите, что вас пугает, и мы подумаем, как снизить риск.' : 'Страх сообщает о риске. Можно осмотреться, подготовить путь отхода или попросить поддержки.');
       case 'comfort': if (count < 3) s.trust++;s.tension=Math.max(0,s.tension-1);return voice(s,p,p.cold && s.trust<2 ? 'Не так близко, пожалуйста. Но намерение я понимаю. Лучше побудьте рядом.' : p.warm ? 'Спасибо. С вами стало легче говорить. Что бы ни случилось дальше, это я запомню.' : 'Неожиданно. Я не сразу нахожу ответ, но отстраняться не хочется.');
-      case 'insult': s.trust-=1;s.tension++;return voice(s,p,p.ironic ? 'Остроумие пока уступает громкости. Попробуем говорить о деле?' : 'Мне неприятно это слышать. Я готов говорить, но не на таких условиях.');
+      case 'insult': s.trust-=1;s.tension++;return 'Вы произносите оскорбление.';
       case 'gesture':
         if(/сжимаю кулак|закатываю глаз/.test(c.lower)){s.tension++;return voice(s,p,'Я вижу, что вы напряжены. Скажите прямо, что вас не устраивает.');}
         s.tension=Math.max(0,s.tension-1);log(s,'gesture',c.text);return voice(s,p,choose(s,'gesture',[p.ironic?'Этот взгляд красноречивее длинной речи. Что за ним стоит?':'Я замечаю ваш жест. Не буду додумывать за вас — хотите продолжить?', 'Я понял, что вы отреагировали. Если это согласие или сомнение, скажите, к чему именно оно относится.', 'Пауза и жест меняют тон разговора. Можно обойтись без спешки.']));
@@ -475,7 +478,7 @@
         if(!available || !item.known) return verdict(s,item?'refused':'clarification',item?'target_not_present':'missing_target',item?.destroyed ? 'Эта вещь разрушена. Взять её в прежнем виде нельзя.' : `Не удаётся найти здесь ${item ? '«'+item.label+'»' : 'такой предмет'}. Можно осмотреться или изменить авторские вводные.`);
         if(item.location==='inventory')return `«${item.label}» уже у вас.`;
         if(['barrier','fixed'].includes(item.kind) && !item.portable)return verdict(s,'refused','not_portable',`«${item.label}» не получится просто унести. Его можно исследовать или использовать на месте.`);
-        if(item.location===npcHolder(s) && s.trust<2)return verdict(s,'refused','item_not_owned',voice(s,p,'Теперь эта вещь у меня. Попросите вернуть или предложите обмен.'));
+        if(item.location===npcHolder(s) && s.trust<2&&!c.allowTakingHeld)return verdict(s,'refused','item_not_owned',voice(s,p,'Теперь эта вещь у меня. Попросите вернуть или предложите обмен.'));
         addInventory(s,item);s.focus=item.id;if(item.unlocks?.length)s.stage=Math.max(s.stage,2);log(s,'item','Получено: '+item.label);return `Вы берёте «${item.label}». Предмет теперь при вас.`;
       }
       case 'drop': case 'give': {
@@ -589,22 +592,9 @@
       case 'eat': if(!available || item.kind!=='food')return verdict(s,'refused','missing_food','Назовите доступную еду или напиток. От желания поесть предметы не появляются.');removeInventory(s,item,'consumed');item.destroyed=true;s.tension=Math.max(0,s.tension-1);log(s,'item','Использовано: '+item.label);return `Вы пробуете «${item.label}». Небольшая пауза помогает собраться; этот запас уже израсходован.`;
       case 'write': {const note=c.text.replace(/^\s*(?:я\s+)?(?:пишу|рисую|черчу|записываю)\s*/iu,'').slice(0,180);s.facts.writing=note;log(s,'creation',note);return `На месте остаётся ваша запись или рисунок: «${note}». Это след, к которому можно вернуться или который можно показать собеседнику.`;}
       case 'knock': if(!s.npcPresent)return 'Стук расходится в тишине. Известный вам собеседник остался в другом месте; ответа пока нет.';return voice(s,p,choose(s,'knock',['Я слышу. Входите в разговор — что вам нужно?', 'Вы не обязаны стучать снова. Я уже здесь и жду ваших слов.', 'Стук привлёк внимание. Теперь тихо наблюдать будет сложнее.']));
-      case 'wait': if(s.clocks.danger)danger(s);return s.npcPresent?voice(s,p,choose(s,'wait',[`Не буду заполнять паузу за вас. Для меня по-прежнему важно ${p.motive}.`, 'Можно не отвечать сразу. Иногда пауза честнее обещания.', 'Пока мы молчим, решение остаётся открытым.'])):'Вы ждёте. Необычных изменений пока не видно; можно осмотреть новое место или вернуться.';
+      case 'wait': if(s.clocks.danger)danger(s);return simulation.dialogue.active(s,simulation.npc(s))?voice(s,p,choose(s,'wait',[`Не буду заполнять паузу за вас. Для меня по-прежнему важно ${p.motive}.`, 'Можно не отвечать сразу. Иногда пауза честнее обещания.', 'Пока мы молчим, решение остаётся открытым.'])):'Вы ждёте. Необычных изменений пока не видно; можно осмотреть новое место или вернуться.';
       case 'talk': s.facts.topic=c.text.slice(0,160);return voice(s,p,`Я услышал вашу версию. ${knownPlayer(s,'goal')?'Как это поможет вам '+knownPlayer(s,'goal')+'?':'Чего вы хотите добиться этим разговором?'}`);
-      default: {
-        verdict(s,'clarification','unknown_intent','');
-        if(/обещаю|клянусь/.test(c.lower)){verdict(s,'success','promise_recorded','');s.facts.promise=c.text.slice(0,180);log(s,'promise',s.facts.promise);return voice(s,p,'Я запомню обещание. Доверие будет зависеть от того, что вы сделаете дальше.');}
-        if(item && available) {
-          s.focus=item.id;log(s,'attempt',c.text);
-          return `Вы пробуете необычный подход к «${item.label}». ${item.opened?'Доступ уже открыт; способ не отменяет найденного.':item.kind==='barrier'?'Преграда остаётся на месте: опишите, как ваш способ должен обойти запор.':'Предмет остаётся в сцене. Уточните ожидаемый эффект, и можно будет проверить способ.'}\n${s.npcPresent?voice(s,p,p.ironic?'Я такого ещё не видел. Объясните замысел — возможно, в нём есть смысл.':'Любопытно. Вы хотите что-то проверить или показать мне?'):''}`;
-        }
-        s.facts.topic=c.text.slice(0,140);thread(s,c.text,'player-topic');
-        return voice(s,p,choose(s,'unfamiliar',[
-          `Похоже, вы предлагаете другой ход. Я пока не понимаю его цели. Это поступок, новая деталь мира или реплика мне? Можно описать желаемый результат своими словами.`,
-          `Мы ещё не пробовали такой путь. ${knownPlayer(s,'goal')?'Ваша цель — '+knownPlayer(s,'goal')+'. ':''}Что должно измениться после этого? Объясните, с чем вы хотите взаимодействовать и каким способом.`,
-          `Я не хочу приписать вам чужой замысел. Что в вашем предложении главное — изменить обстановку, повлиять на меня или установить факт истории?`
-        ]));
-      }
+      default: thread(s,c.originalText||c.text,'unresolved:'+hash(c.originalText||c.text));return verdict(s,'clarification','unknown_intent','Такой способ пока не реализован. Уточните цель, предмет и ожидаемое изменение.');
     }
   }
   function move(s,p,c,magic) {
@@ -617,7 +607,7 @@
     // Storylets have eligibility conditions and fire once, rather than hijacking every turn.
     const events=[
       {id:'pressure',when:s.clocks.danger>=4 && !s.facts.hidden, text:p.pressure,kind:'danger'},
-      {id:'connection',when:s.trust>=3 && !simulation.openGrievances(simulation.npc(s)).length && s.npcPresent && !s.secretRevealed && !intents.includes('question'), text:`${p.name} решается сказать больше: «${p.secret}».`,kind:'secret'},
+      {id:'connection',when:s.trust>=3 && !simulation.openGrievances(simulation.npc(s)).length && simulation.dialogue.active(s,simulation.npc(s)) && !s.secretRevealed && !intents.includes('question'), text:`${p.name} решается сказать больше: «${p.secret}».`,kind:'secret'},
       {id:'discovery',when:s.clocks.discovery>=4 && s.stage<3, text:'Зацепки начинают сходиться. Есть основания попробовать другой способ, а не повторять прежний.',kind:'clue'}
     ];
     const eventKey=e=>'event:'+e.id+(e.id==='connection'?':'+s.world.activeNpcId:'');
@@ -625,13 +615,13 @@
     if(!event)return '';
     s.world.storyUsed[eventKey(event)]=1;log(s,event.kind,event.text);
     if(event.kind==='secret'){s.secretRevealed=true;s.facts.secret=p.secret;}
-    return event.text;
+    return event.kind==='secret'?simulation.dialogue.say(s,simulation.npc(s),p.secret,'plot_initiative'):event.text;
   }
   const semantic=root.StorySemantic;
   const semanticIntents={MOVE:'move',APPROACH:'approach',GREET:'greet',INSPECT:'inspect',SEARCH:'inspect',TAKE:'take',OPEN:'open',CLOSE:'close',USE:'use',GIVE:'give',DROP:'drop',SHOW:'show',TALK:'talk',REPAIR:'repair'};
   function legacyStarts(text) {
     const head=normalizedInput(text).replace(/^(?:(?:я|мы|не|осторожно|быстро|медленно|теперь|сейчас)\s+)+/u,'');
-    const delegated=/^(?:приподнима|отодвига|сдвига|передвига|изгот[оа]в|устан[оа]в|делаю|сделать|вытач|согну|очища|чищу|смазыва|калибру|подбрасыва|подделыва|фабрикую|выношу|переношу|уношу|тащу|несу|покупаю|куплю|знакомлюсь)/u;
+    const delegated=/^(?:разреши|разрешите|оскорбляю|сообщаю|утверждаю|заявляю|арендую|оплачиваю|прикрываю|отхожу|отойти|отступаю|заканчиваю|прекращаю|одолжи|прошу одолжить|беру в долг|возмещаю|компенсирую|плачу|признаюсь|сознаюсь|обещаю|клянусь|верну|вернуть|приподнима|отодвига|сдвига|передвига|изгот[оа]в|устан[оа]в|делаю|сделать|вытач|согну|очища|чищу|смазыва|калибру|подбрасыва|подделыва|фабрикую|выношу|переношу|уношу|тащу|несу|покупаю|куплю|знакомлюсь)/u;
     return delegated.test(head)||ACTIONS.some(([,re])=>new RegExp('^(?:'+re.source+')',re.flags).test(head));
   }
   function resolveInput(s,text) {
@@ -649,7 +639,7 @@
   function semanticCommand(step,s) {
     const bound=semantic.bind(step,s);
     if(!step.recognized){
-      const c=parse(step.raw);
+      const c=parse(step.raw);c.negated=step.mode==='negated'||c.negated;
       // Legacy narrative acts still need a real predicate, never a keyword in a description.
       if(['move','open','close','take','drop','give','use','destroy','burn','magic','attack'].includes(c.intent)&&!legacyStarts(step.raw)&&!/^приподнима/.test(c.lower))c.intent='custom';
       if(['intention','question','hypothetical','speech','report'].includes(step.mode)&&step.dependsOnPrevious){c.hypothetical=true;c.intent=step.mode==='intention'?'goal':'talk';}
@@ -666,6 +656,7 @@
   }
   function semanticMode(s,c,action) {
     const step=c.semantic;
+    if(action.intent==='request_permission')return null;
     if(step?.unsupportedVerb){
       thread(s,'Не разобрано действие: '+step.raw,'unresolved:'+hash(step.raw));log(s,'intention',step.raw);
       return {status:'clarification',code:'unsupported_action',performed:false,effects:[],text:'Не удалось разобрать действие «'+step.unsupportedVerb+'» в команде «'+step.raw+'». Замысел сохранён в журнале. Уточните, что должно измениться и каким способом.'};
@@ -696,7 +687,12 @@
     return {...response,code:'capability_question',text:'Вы спрашиваете о действии: «'+target+'». '+detail+' Действие не выполнено.'};
   }
   function semanticAccess(s,c) {
-    const step=c.semantic;if(!step?.recognized||!['execute','attempt','request'].includes(step.mode))return null;
+    const step=c.semantic;
+    if(step?.condition&&['execute','attempt','request'].includes(step.mode)){
+      const person=Object.values(s.world.npcs).find(n=>root.StorySpatial.same(n.name,step.condition.name));
+      if(!person||person.location!==s.world.player.location||person.social.attention!==step.condition.attention)return {status:'refused',code:'condition_unmet',text:'Условие не выполнено: персонаж сейчас не находится в указанном состоянии. Действие не произошло.',effects:[]};
+    }
+    if(!step?.recognized||!['execute','attempt','request'].includes(step.mode))return null;
     if(['TALK','GREET','APPROACH'].includes(step.intent)||step.targetRef&&!step.targetId)return null;
     if(step.ambiguous)return {status:'clarification',code:'ambiguous_target',text:'Какой именно предмет вы имеете в виду: «'+step.target+'»? Уточните название или источник.',effects:[]};
     const e=s.entities.find(e=>e.id===step.targetId);
@@ -741,8 +737,14 @@
       if(step.dependsOnPrevious&&previousResult&&((previousResult.status!=='success'&&!(previousResult.status==='partial_success'&&previousResult.completed))||previousResult.performed===false&&['execute','attempt','request'].includes(step.mode))){
         results.push({status:'refused',code:'dependency_failed',reason:'dependency_failed',skipped:true,performed:false,text:'Шаг «'+step.raw+'» не выполнен: предыдущее действие не завершено.',action,effects:[]});continue;
       }
+      const physicalHolder=s.world.npcs[s.entities.find(e=>e.id===action.targetId)?.location];
+      const view=action.intent==='take'&&simulation.dialogue.here(s,physicalHolder)?physicalHolder:null;
+      if(view&&view.id!==s.world.boundNpcId){simulation.flush(s);simulation.bind(s,view.id);p=simulation.npcProfile(s,config,profile(config));}
       const before=simulation.snapshot(s);s.currentResolution={status:'success',code:'completed'};
-      let r=semanticMode(s,c,action)||semanticAccess(s,c)||simulation.handle(s,p,c,config,action);
+      root.StoryMessages.begin(s);simulation.dialogue.before(s,c,action);
+      let r=semanticMode(s,c,action)||semanticAccess(s,c)||simulation.social.handle(s,p,c,action);
+      c.allowTakingHeld=action.allowTakingHeld;
+      if(!r)r=simulation.handle(s,p,c,config,action);
       if(!r) {
         p=simulation.npcProfile(s,config,profile(config));
         const answer=execute(s,p,c,config);r={...s.currentResolution,text:answer};
@@ -751,10 +753,12 @@
       if(['refused','clarification'].includes(r.status))r.performed=false;
       if(['refused','clarification'].includes(r.status))r.completed=false;else if(r.completed===undefined)r.completed=r.status==='success';
       if(['refused','clarification'].includes(r.status)){s.entities=clone(before.entities);s.inventory=clone(before.inventory);s.clocks=clone(before.clocks);s.stage=before.stage;}
-      r.reason=r.code;
+      r=simulation.developer.route(s,c,action,r);r.reason=r.code;
       if(r.performed!==false)simulation.after(s,p,c,action,r);
-      else if(action.intent==='goal'&&s.npcPresent&&s.facts.goal){const person=simulation.npc(s);if(person)person.memory.playerGoal=s.facts.goal;}
+      else if(action.intent==='goal'&&simulation.dialogue.active(s,simulation.npc(s))&&s.facts.goal){const person=simulation.npc(s);if(person)person.memory.playerGoal=s.facts.goal;}
+      simulation.social.after(s,before,c,action,r);
       r.action=action;r.effects=simulation.effects(s,before,action);
+      root.StoryMessages.finish(s,r);
       results.push(r);intents.push(action.intent);s.lastIntent=c.negated?'refuse':action.intent;
       if(c.semantic?.mode==='negated')s.lastIntent='refuse';
       if(r.status==='clarification'&&step.recognized&&!pendingAction){
@@ -765,14 +769,19 @@
     }
     if(pendingAction)s.world.player.pendingAction=pendingAction;
     const p=simulation.npcProfile(s,config,profile(config));
-    const event=director(s,p,intents);simulation.flush(s);
+    root.StoryMessages.begin(s);
+    const event=director(s,p,intents);simulation.flush(s);simulation.social.tick(s);simulation.presence(s);
+    const eventResult=root.StoryMessages.finish(s,{text:event});
+    root.StoryMessages.begin(s);
+    const metaBefore=simulation.snapshot(s),meta=simulation.developer.tick(s);
+    if(meta){meta.effects=simulation.effects(s,metaBefore,meta.action);root.StoryMessages.finish(s,meta);results.push(meta);}else root.StoryMessages.finish(s,{text:''});
     const due=simulation.runDue(s,p);results.push(...due);
-    const narration=root.StoryNarrator.compose({intro:s.turn===1?clean(config.world)||'История начинается.':'',results,event});
+    const narration=root.StoryNarrator.compose({intro:s.turn===1?clean(config.world)||'История начинается.':'',results,event:eventResult.narration});
     let output=narration.text;
     const statuses=results.map(r=>r.status);
     let status=statuses.every(v=>v==='success')?'success':statuses.includes('partial_success')||statuses.includes('success')?'partial_success':statuses.includes('refused')?'refused':'clarification';
     const goalAssessment=simulation.assessGoal(s,results);
-    if(goalAssessment?.status==='pending' && ['success','partial_success'].includes(status)){status='partial_success';output+='\n\n'+goalAssessment.reason;}
+    if(goalAssessment?.status==='pending' && ['success','partial_success'].includes(status)){status='partial_success';narration.blocks.push({speaker:{type:'narrator'},trigger:'goal_assessment',text:goalAssessment.reason,effects:[]});output+='\n\n'+goalAssessment.reason;}
     const effects=results.flatMap(r=>r.effects||[]);
     const information={novel:results.some(r=>r.information?.novel),discoveries:[...new Set(results.flatMap(r=>r.information?.discoveries||[]))],opportunities:[...new Set(results.flatMap(r=>r.information?.opportunities||[]))]};
     const outcome={status,goalAssessment,information,semanticPlan,results:results.map(r=>({status:r.status,code:r.code,reason:r.text,information:r.information||null,skipped:Boolean(r.skipped),performed:r.performed!==false,completed:Boolean(r.completed),action:r.action,effects:r.effects})),effects};
@@ -782,7 +791,7 @@
     }
     s.facts.activePlace=s.place;s.lastReply=output;s.lastOutcome=outcome;log(s,'turn',text);s.version=VERSION;
     delete s.currentResolution;delete s.currentActionId;
-    return {text:output,narrative:narration.blocks,memory:s,outcome,semantic:semanticPlan,results:outcome.results,analysis:outcome.results.map(r=>r.action)};
+    return {text:output,messages:narration.blocks,narrative:narration.blocks,memory:s,outcome,semantic:semanticPlan,results:outcome.results,analysis:outcome.results.map(r=>r.action)};
   }
   const simulation=root.StorySimulation.create({clean,norm,normalizedInput,words,stem,hash,clone,profile,matchEntity,addEntity,log,voice,resolveBarrier,containerText});
   root.StoryEngine={version:VERSION,fresh,reply,profile,restore:init,reframe,parse,clauses,

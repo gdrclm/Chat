@@ -31,7 +31,7 @@ with sync_playwright() as p:
     page.locator('[name=canon]').fill('Истина: виновник = Антон\nЦенный предмет: компас')
     page.locator('#debug-view').check()
     page.locator('#settings button').tap()
-    send('Лгу: виновник = Борис');send('Беру письмо');send('Незаметно подбрасываю письмо: виновник = Борис')
+    send('Лгу: виновник = Борис');send('Беру письмо');send('Прячусь');send('Незаметно подбрасываю письмо: виновник = Борис')
     assert 'Я считаю' in send('Кто виноват?')
     m=data();main=m['world']['npcs'][m['world']['primaryNpcId']]
     assert main['beliefs']['виновник']['value']=='Борис'

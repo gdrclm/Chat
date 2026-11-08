@@ -39,9 +39,13 @@ function render() {
   }
   for (const message of state.messages) {
     const item = document.createElement('article'); item.className = message.role;
-    const label = document.createElement('small'); label.textContent = message.role === 'user' ? 'ВЫ' : 'РАССКАЗЧИК';
-    const text = document.createElement('p'); text.textContent = message.content;
-    item.append(label, text);
+    const utterances=message.role==='assistant'&&Array.isArray(message.utterances)&&message.utterances.length?message.utterances:[{speaker:{type:message.role==='user'?'player':'narrator'},text:message.content}];
+    for(const row of utterances){
+      const type=['player','narrator','npc','developer'].includes(row.speaker?.type)?row.speaker.type:'narrator';
+      const section=document.createElement('section');section.className='utterance speaker-'+type;section.dataset.speaker=type;section.dataset.trigger=row.trigger||'legacy';
+      const label=document.createElement('small');label.textContent=type==='player'?'ВЫ':type==='npc'?(row.speaker.name||'ПЕРСОНАЖ'):type==='developer'?'РАЗРАБОТЧИК':'РАССКАЗЧИК';
+      const text=document.createElement('p');text.textContent=row.text;section.append(label,text);item.append(section);
+    }
     if(debugView&&message.outcome?.status) {
       const result = document.createElement('small');result.className='outcome-label';result.dataset.status=message.outcome.status;
       result.textContent=outcomeLabels[message.outcome.status]||'Результат';item.append(result);
@@ -57,13 +61,13 @@ function render() {
     list.append(item);
   }
   const profile = engine.profile(state.config);
-  document.querySelector('#badge').textContent = '● Локально · 4.3';
+  document.querySelector('#badge').textContent = '● Локально · 4.4';
   const currentNpc=state.memory.world.npcs[state.memory.world.activeNpcId];
   const title = state.memory.place || profile.title || 'Ваша история';
   document.querySelector('#story-title').textContent = title[0].toUpperCase() + title.slice(1);
   document.querySelector('#memory').textContent = `${currentNpc?.name||'Нет собеседника'} · Доверие: ${currentNpc?.trust??'—'} · Монеты: ${state.memory.world.player.money} · Вещи: ${state.memory.inventory.join(', ') || 'нет'}`;
   list.scrollTop = list.scrollHeight;
-  document.querySelector('#remembered-goal').textContent = `Цель героя: ${state.memory.facts.goal || 'пока не названа'}. Цель собеседника: ${currentNpc?.motive||'рядом никого' }.`;
+  document.querySelector('#remembered-goal').textContent = `Цель героя: ${state.memory.facts.goal || 'пока не названа'}. Цель собеседника: ${currentNpc?.motive||'разговор не начат' }.`;
   const journal = document.querySelector('#journal'); journal.replaceChildren();
   for (const event of state.memory.journal.filter(e => e.kind !== 'turn').slice(-14)) {
     const row = document.createElement('li'); row.textContent = event.text; journal.append(row);
@@ -83,7 +87,8 @@ settings.addEventListener('submit', event => {
     state.config = config;
     if (changed && state.messages.length) {
       const p = engine.profile(config);
-      state.messages.push({ role: 'assistant', content: `Вводные обновлены. Место: ${state.memory.place}. Персонаж: ${p.name}. Переписка сохранена; дальнейшие события учитывают новые условия.` });
+      const content=`Вводные обновлены. Место: ${state.memory.place}. Персонаж: ${p.name}. Переписка сохранена; дальнейшие события учитывают новые условия.`;
+      state.messages.push({role:'assistant',content,utterances:[{speaker:{type:'developer',id:'developer'},trigger:'author_settings',text:content,effects:[]}]});
     }
     status.textContent = 'Вводные применены. История продолжается.'; save(); render(); showSettings(false);
   } catch (error) { status.textContent = 'Не удалось применить вводные: ' + error.message; showSettings(false); }
@@ -99,12 +104,12 @@ chat.addEventListener('submit', async event => {
   busy = true; send.disabled = true; settings.querySelector('button').disabled = true;
   try {
     state.messages.push({ role: 'user', content: text }); field.value = '';
-    status.textContent = 'Персонаж обдумывает ответ…';
+    status.textContent = 'История продолжается…';
     render();
     const result = engine.reply(state.config, state.memory, text);
     state.memory = result.memory;
     const answer = result.text;
-    state.messages.push({ role: 'assistant', content: answer, outcome: { status:result.outcome.status, information:result.outcome.information, steps:result.results.map(r=>({status:r.status,intent:r.action.intent,target:r.action.targetLabel,goal:r.action.goal,method:r.action.method,expectedEffect:r.action.expectedEffect})) } }); status.textContent = ''; save();
+    state.messages.push({ role: 'assistant', content: answer, utterances:result.messages, outcome: { status:result.outcome.status, information:result.outcome.information, steps:result.results.map(r=>({status:r.status,intent:r.action.intent,target:r.action.targetLabel,goal:r.action.goal,method:r.action.method,expectedEffect:r.action.expectedEffect})) } }); status.textContent = ''; save();
   } catch (error) {
     state.messages.pop(); field.value = text; status.textContent = `${error.message} Сообщение возвращено в поле ввода — попробуйте снова.`; save();
   } finally { busy = false; send.disabled = false; settings.querySelector('button').disabled = false; render(); }
@@ -153,7 +158,7 @@ function renderWorld() {
   const exits=document.querySelector('#map-exits');exits.replaceChildren();
   for(const exit of map.exits) {const b=document.createElement('button');b.type='button';b.textContent=exit.name+(exit.blocked?' · заперто':' →');b.disabled=exit.blocked;b.addEventListener('click',()=>issueCommand('Иду в '+exit.name));exits.append(b);}
   const people=document.querySelector('#nearby-people');people.replaceChildren();
-  for(const person of Object.values(world.npcs).filter(n=>n.location===world.player.location)){const b=document.createElement('button');b.type='button';b.textContent=person.name;b.addEventListener('click',()=>issueCommand('Говорю с '+person.name));people.append(b);}
+  for(const person of Object.values(world.npcs).filter(n=>n.location===world.player.location&&n.dialogueState?.status!=='undiscovered')){const b=document.createElement('button');b.type='button';b.textContent=person.name;b.addEventListener('click',()=>issueCommand('Говорю с '+person.name));people.append(b);}
   const research=world.player.research;
   const discoveries=document.querySelector('#learned-facts');discoveries.replaceChildren();
   for(const knowledge of Object.values(research.knowledge)){const row=document.createElement('li');const source=memory.entities.find(e=>e.id===knowledge.sourceId)?.label||world.npcs[knowledge.sourceId]?.name||world.locations.find(l=>l.id===knowledge.locationId)?.name;row.textContent=knowledge.text+(source?' · Источник: '+source:'');discoveries.append(row);}
@@ -165,10 +170,18 @@ function renderWorld() {
   document.querySelector('#world-work').textContent=`${workLabels[world.loops.work.status]||'Работа'} · Монеты: ${world.player.money} · Знакомства: ${world.loops.social.contacts.length}`;
   const tasks=document.querySelector('#deferred-actions');tasks.replaceChildren();
   for(const task of world.deferred.filter(t=>t.status==='pending')){const row=document.createElement('li');const actor=world.npcs[task.actor]?.name||'Вы';const target=memory.entities.find(e=>e.id===task.targetId)?.label||'предмет';row.textContent=`${actor}: открыть «${target}» ${task.trigger==='manual'?'по отдельному сигналу':'по возвращении'}, если условия позволят.`;tasks.append(row);}
+  const values=document.querySelector('#relationship-values');values.replaceChildren();
+  const socialEvents=document.querySelector('#social-event-records');socialEvents.replaceChildren();
+  const socialKnowledge=document.querySelector('#social-knowledge-records');socialKnowledge.replaceChildren();
+  const eventNames={theft:'кража',theft_attempt:'попытка кражи',damage:'порча',assault:'нападение',threat:'угроза',insult:'оскорбление',deception:'раскрытый обман',framing:'подстава',trespass:'нарушение границ',unauthorized_use:'использование без разрешения',broken_promise:'нарушенное обещание',complicity:'соучастие'};
+  for(const event of world.social.events.slice(-15)){const row=document.createElement('li');row.textContent=`${eventNames[event.type]||'Поступок'} · ${memory.entities.find(e=>e.id===event.targetId)?.label||world.npcs[event.targetId]?.name||'событие'} · свидетели: ${event.witnesses.map(id=>world.npcs[id]?.name||id).join(', ')||'нет'}${event.resolved?' · последствия урегулированы':''}`;socialEvents.append(row);}
   const conflicts=document.querySelector('#relationship-records');conflicts.replaceChildren();
   const beliefs=document.querySelector('#belief-records');beliefs.replaceChildren();
   for(const n of Object.values(world.npcs)) {
-    for(const g of n.grievances){const row=document.createElement('li');row.textContent=`${n.name}: ${g.reason} · ${g.resolved?'примирение состоялось':`нужны извинение${g.apology?' (получено)':''} и значимый поступок: ${g.requiredItem||n.motive}${g.reparation?' (получено)':''}`}`;conflicts.append(row);}
+    if(n.dialogueState.status!=='undiscovered'){const rel=n.social.relationship,row=document.createElement('li');row.textContent=`${n.name}: доверие ${n.trust}, уважение ${rel.respect}, страх ${rel.fear}, подозрение ${rel.suspicion}, враждебность ${rel.hostility}, симпатия ${rel.affection}${n.social.cautious?' · сохраняет осторожность':''}`;values.append(row);}
+    const sources={witness:'собственное наблюдение',report:'пересказ',missing:'обнаружена пропажа',confession:'признание',property_identified:'опознана вещь',promise:'срок обещания',agreement:'условия договора',damage_discovered:'обнаружен ущерб'};
+    for(const k of Object.values(n.social.knowledge).slice(-8)){const row=document.createElement('li');row.textContent=`${n.name}: ${sources[k.source]||'получены сведения'} · виновник: ${k.actorId==='player'?'герой':world.npcs[k.actorId]?.name||'не установлен'} · уверенность ${Math.round(k.confidence*100)}%`;socialKnowledge.append(row);}
+    for(const g of n.grievances){const row=document.createElement('li');row.textContent=`${n.name}: ${g.reason} · ${g.resolved?'примирение состоялось':`нужны извинение${g.apology?' (получено)':''} и значимый поступок: ${g.compensation?'возместить ущерб: '+g.compensation+' монеты':g.requiredItem||n.motive}${g.reparation?' (получено)':''}`}`;conflicts.append(row);}
     for(const belief of Object.values(n.beliefs).filter(b=>!b.key.startsWith('entity:'))){const row=document.createElement('li');row.textContent=`${n.name}: ${belief.text} · уверенность ${Math.round(belief.confidence*100)}%`;beliefs.append(row);}
   }
 }

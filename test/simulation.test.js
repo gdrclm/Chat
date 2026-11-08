@@ -2,6 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import '../spatial.js';
 import '../narrator.js';
+import '../messages.js';
+import '../dialogue.js';
+import '../developer.js';
+import '../social.js';
 import '../semantic.js';
 import '../scenes.js';
 import '../simulation.js';
@@ -15,12 +19,12 @@ const status=r=>r.outcome.status;
 const repairSteps=['Осматриваю механизм','Проверяю хватает ли деталей','Изготавливаю штифт','Устанавливаю штифт','Проверяю ход механизма'];
 
 test('A: testimony plus an unwitnessed forged clue persuades the NPC without rewriting world truth',()=>{
- const r=play(config,'Лгу: виновник = Борис','Беру письмо','Незаметно подбрасываю письмо: виновник = Борис','Кто виноват?');
+ const r=play(config,'Лгу: виновник = Борис','Беру письмо','Прячусь','Незаметно подбрасываю письмо: виновник = Борис','Кто виноват?');
  const n=person(r.memory);assert.equal(n.beliefs['виновник'].value,'Борис');assert.ok(n.beliefs['виновник'].confidence>=.7);
  assert.equal(r.memory.world.facts['виновник'].value,'Антон');assert.equal(n.agenda.target,'Борис');assert.match(r.text,/Я считаю.*Борис/s);
 });
 test('A: repeating the same artifact does not create independent corroboration',()=>{
- const one=play(config,'Лгу: виновник = Борис','Беру письмо','Незаметно подбрасываю письмо: виновник = Борис');
+ const one=play(config,'Лгу: виновник = Борис','Беру письмо','Прячусь','Незаметно подбрасываю письмо: виновник = Борис');
  const after=E.reply(config,one.memory,'Показываю письмо');assert.equal(person(after.memory).beliefs['виновник'].confidence,person(one.memory).beliefs['виновник'].confidence);
 });
 test('A: observed evidence fabrication is not mistaken for an independent witness',()=>{
@@ -168,7 +172,7 @@ test('E: physical completion and the intended social effect are evaluated separa
 
 test('A: a naturally phrased lie and planted clue use the same proposition as canon',()=>{
  const c={...config,canon:'Истина: монету украл Антон'};
- const r=play(c,'Лгу: монету украл Борис','Беру письмо','Незаметно подбрасываю письмо: монету украл Борис','Кто украл монету?');assert.equal(r.memory.world.facts['виновник'].value,'Антон');assert.equal(person(r.memory).beliefs['виновник'].value,'Борис');assert.match(r.text,/Я считаю.*Борис/s);
+ const r=play(c,'Лгу: монету украл Борис','Беру письмо','Прячусь','Незаметно подбрасываю письмо: монету украл Борис','Кто украл монету?');assert.equal(r.memory.world.facts['виновник'].value,'Антон');assert.equal(person(r.memory).beliefs['виновник'].value,'Борис');assert.match(r.text,/Я считаю.*Борис/s);
 });
 test('B: addressing the NPC by name does not accidentally execute the request as the player',()=>{
  const r=play(config,'Мира, вынеси ларец наружу, спрячь его и открой позже');assert.equal(r.memory.world.plans[0].actor,person(r.memory).id);assert.equal(item(r.memory,'ларец').location,'лавка');assert.equal(item(r.memory,'ларец').opened,false);assert.equal(r.memory.world.deferred.length,0);

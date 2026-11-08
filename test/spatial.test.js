@@ -2,6 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import '../spatial.js';
 import '../narrator.js';
+import '../messages.js';
+import '../dialogue.js';
+import '../developer.js';
+import '../social.js';
 import '../semantic.js';
 import '../scenes.js';
 import '../simulation.js';
@@ -22,7 +26,7 @@ for(const phrase of ['Поприветствовать Миру','Поздоро
  const r=E.reply(config,fresh(),phrase);assert.equal(r.results.length,1);assert.equal(r.outcome.status,'success');assert.equal(r.analysis[0].actor,'player');assert.equal(r.analysis[0].recipientId,r.memory.world.primaryNpcId);
 });
 for(const phrase of ['Мира, поздоровайся','Мира, поприветствуй меня','Прошу Миру поздороваться','Попрошу Миру поприветствовать меня','Поздоровайся, Мира','Поприветствуй меня, Мира'])test('GREET requested NPC actor: '+phrase,()=>{
- const m=fresh(),r=E.reply(config,m,phrase);const n=actor(r.memory);assert.equal(r.results.length,1);assert.equal(r.semantic.steps[0].mode,'request');assert.equal(r.analysis[0].actor,n.id);assert.equal(r.analysis[0].recipientId,'player');assert.equal(r.outcome.status,'success');assert.equal(n.seen.greet,undefined);assert.equal(n.memory.outgoingGreetings.player,1);assert.equal(n.trust,0);assert.equal(layout(r.memory),layout(m));assert.match(r.text,/Мира приветствует вас/);
+ const m=fresh(),r=E.reply(config,m,phrase);const n=actor(r.memory);assert.equal(r.results.length,1);assert.equal(r.semantic.steps[0].mode,'request');assert.equal(r.analysis[0].actor,n.id);assert.equal(r.analysis[0].recipientId,'player');assert.equal(r.outcome.status,'success');assert.equal(n.seen.greet,undefined);assert.equal(n.memory.outgoingGreetings.player,1);assert.equal(n.trust,0);assert.equal(layout(r.memory),layout(m));assert.ok(r.messages.some(m=>m.speaker.type==='npc'&&m.speaker.name==='Мира'&&/Здравствуйте/.test(m.text)));
 });
 test('a fronted greeting recipient is not mistaken for the actor or the active interlocutor',()=>{
  const c={...config,canon:'Персонаж: Илья | лавка | изучить письмо | книга'};const m=play(c,'Говорю с Ильёй').memory;
