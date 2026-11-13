@@ -151,16 +151,16 @@
       const discovered=new Set(revealed),lines=[];
       for(const [id,old] of before){
         const e=after.get(id);
-        if(!e){lines.push('«'+old.label+'» больше не видно на прежнем месте');continue;}
+        if(!e){lines.push('Предмет «'+old.label+'» больше не находится на прежнем месте');continue;}
         if(old.label!==e.label)lines.push('«'+old.label+'» теперь выглядит как «'+e.label+'»');
         if(old.opened!==e.opened||old.openingDegree!==e.openingDegree)
-          lines.push(e.opened?(e.openingDegree==='slightly'?'«'+e.label+'» приоткрыт':'Открыт доступ внутрь «'+e.label+'»'):'«'+e.label+'» снова закрыт');
+          lines.push(e.opened?(e.openingDegree==='slightly'?'Изменилось положение крышки или створки «'+e.label+'»':'Содержимое объекта «'+e.label+'» теперь доступно'):'Объект «'+e.label+'» снова закрыт');
         if(old.moved!==e.moved)lines.push('Изменилось положение «'+e.label+'»');
         if(old.condition!==e.condition||old.pinInstalled!==e.pinInstalled)
           lines.push('Изменилось состояние «'+e.label+'»');
       }
       for(const [id,e] of after)if(!before.has(id)&&!discovered.includes(e.label))
-        lines.push('Теперь видно «'+e.label+'»');
+        lines.push('Теперь заметен объект «'+e.label+'»');
       const oldPeople=new Map(previous.people.map(n=>[n.id,n]));
       const newPeople=new Map(current.people.map(n=>[n.id,n]));
       for(const [id,p] of oldPeople)if(!newPeople.has(id))lines.push('Рядом больше нет '+p.name);
@@ -172,7 +172,9 @@
       const social=s.world.loops.social;
       for(const n of Object.values(s.world.npcs).filter(n=>n.location===where.id)){H.dialogue.notice(s,n);if(!social.noticed.includes(n.id))social.noticed.push(n.id);if(!social.encountered.includes(n.id))social.encountered.push(n.id);}
       const repaired=role(where)==='workshop'&&s.entities.some(e=>e.localKey==='mechanism'&&e.location===s.place&&e.condition==='repaired');
-      const description=repaired?'В мастерской на верстаке работает собранный механизм. Причина прежней поломки устранена; инструменты сложены рядом.':where.scene.description;
+      const general=clean(s.world.authorCanon?.world);
+      const usesWorldOverview=where.id===s.world.startId&&general&&norm(where.scene.description)===norm(general);
+      const description=repaired?'В мастерской на верстаке работает собранный механизм. Причина прежней поломки устранена; инструменты сложены рядом.':usesWorldOverview?'Вы осматриваете место «'+where.name+'».':where.scene.description;
       return [{kind:'location',locationId:where.id,phase,text:description},...(seen.length?[{kind:'visible',locationId:where.id,phase,text:'Видно: '+seen.map(e=>'«'+e.label+'»').slice(0,5).join(', ')+'.'}]:[])];
     }
     function entry(s){return entryBlocks(s).map(block=>block.text).join(' ');}
