@@ -613,6 +613,76 @@
     const delegated=/^(?:разреши|разрешите|оскорбляю|сообщаю|утверждаю|заявляю|арендую|оплачиваю|прикрываю|отхожу|отойти|отступаю|заканчиваю|прекращаю|одолжи|прошу одолжить|беру в долг|возмещаю|компенсирую|плачу|признаюсь|сознаюсь|обещаю|клянусь|верну|вернуть|приподнима|отодвига|сдвига|передвига|изгот[оа]в|устан[оа]в|делаю|сделать|вытач|согну|очища|чищу|смазыва|калибру|подбрасыва|подделыва|фабрикую|выношу|переношу|уношу|тащу|несу|покупаю|куплю|знакомлюсь)/u;
     return delegated.test(head)||ACTIONS.some(([,re])=>new RegExp('^(?:'+re.source+')',re.flags).test(head));
   }
+
+  // Searchable actions are generated from the *current* scene, not the 325-item
+  // authoring catalog. A suggestion is a draft command, never an executed move.
+  function contextOptions(s, query='', limit=6) {
+    const items=[],used=new Set(),world=s.world||{},location=world.player?.location;
+    const add=(command,label,kind,tags=[],rank=0)=>{
+      if(!command||used.has(command))return;
+      used.add(command);items.push({command,label,kind,tags,rank});
+    };
+    add('Осматриваюсь','Осмотреться','inspect',['осмотр','вокруг','место','обстановка'],1);
+    for(const exit of simulation.map(s).exits||[]){
+      if(exit.blocked)continue;
+      add('Иду в '+exit.name,'Перейти: '+exit.name,'move',[exit.name,'путь','выход','идти','перейти'],5);
+    }
+    for(const n of Object.values(world.npcs||{})){
+      if(n.location!==location||n.hidden||n.agency?.activity==='sleeping'||n.dialogueState?.status==='undiscovered')continue;
+      add('Говорю с '+n.name,'Поговорить: '+n.name,'talk',[n.name,'разговор','общение','спросить'],6);
+    }
+    for(const e of s.entities||[]){
+      if(!e.known||e.hidden||e.destroyed||![s.place,'inventory'].includes(e.location))continue;
+      const tags=[e.label,...(e.aliases||[])];
+      add('Осматриваю '+e.label,'Осмотреть: '+e.label,'inspect',[...tags,'осмотреть','изучить','рассмотреть'],5);
+      if(e.kind==='barrier'){
+        const verb=e.opened?'Закрываю':'Открываю';
+        add(verb+' '+e.label,(e.opened?'Закрыть: ':'Открыть: ')+e.label,e.opened?'close':'open',[...tags,e.opened?'закрыть':'открыть','дверь','контейнер'],5);
+      }
+      if(e.portable&&e.location===s.place)add('Беру '+e.label,'Взять: '+e.label,'take',[...tags,'взять','забрать','подобрать'],3);
+      if(e.location==='inventory')add('Использую '+e.label,'Использовать: '+e.label,'use',[...tags,'использовать','применить','предмет'],2);
+    }
+    const partner=world.npcs?.[world.activeNpcId];
+    if(partner&&partner.location===location&&!partner.hidden){
+      for(const t of root.ConversationTopics?.all||[]){
+        if(!t.questions?.[0])continue;
+        add(t.questions[0],'Спросить: '+t.label,'question',[t.label,t.id,...t.questions,'поговорить','спросить'],1);
+      }
+    }
+    for(const command of simulation.rpg.suggestions(s)||[])add(command,command,'situation',[command,'ситуация','предложение'],3);
+    if(/мастерск|рынок|лавк/u.test(norm(s.place||'')))add('Ищу работу','Найти работу','work',['работа','подработка','заработок','задание'],2);
+    const q=norm(query).trim(),parts=q.split(/\s+/u).filter(Boolean);
+    if(!parts.length)return [];
+    return items.map((item,index)=>{
+      const name=norm(item.label),body=norm(item.command),tags=norm(item.tags.join(' '));
+      if(!parts.every(part=>name.includes(part)||body.includes(part)||tags.includes(part)))return null;
+      const score=(name.startsWith(q)?90:body.startsWith(q)?80:0)
+        +(name.split(/[\s:]+/u).some(word=>word.startsWith(q))?40:0)
+        +(tags.split(/\s+/u).some(word=>word.startsWith(q))?20:0)
+        +item.rank*5-index/1000;
+      return {...item,score};
+    }).filter(Boolean).sort((a,b)=>b.score-a.score).slice(0,Math.max(1,Math.min(10,limit)));
+  }
+  function expandKeyword(s,input){
+    const q=norm(input).trim();
+    if(!/^[а-яa-z-]{2,}$/u.test(q))return input;
+    const same=(label)=>norm(label).split(/[^а-яa-z0-9]+/u).some(word=>word===q||(q.length>=4&&word.startsWith(q))||(q.length>=5&&word.slice(0,Math.max(3,word.length-2))===q.slice(0,Math.max(3,word.length-2))));
+    const visible=(s.entities||[]).filter(e=>e.known&&!e.hidden&&!e.destroyed&&[s.place,'inventory'].includes(e.location)&&[e.label,...(e.aliases||[])].some(same));
+    if(visible.length===1)return 'Осматриваю '+visible[0].label;
+    if(visible.length>1)return 'Осматриваю '+input;
+    const location=s.world?.player?.location;
+    const people=Object.values(s.world?.npcs||{}).filter(n=>n.location===location&&!n.hidden&&n.agency?.activity!=='sleeping'&&n.dialogueState?.status!=='undiscovered'&&same(n.name));
+    if(people.length===1)return 'Говорю с '+people[0].name;
+    const exits=(simulation.map(s).exits||[]).filter(e=>!e.blocked&&same(e.name));
+    if(exits.length===1)return 'Иду в '+exits[0].name;
+    if(s.world?.activeNpcId){
+      const topics=(root.ConversationTopics?.all||[]).filter(t=>same(t.label));
+      if(topics.length===1)return topics[0].questions[0];
+    }
+    if(/^(?:работа|подработка|заработок)$/u.test(q))return 'Ищу работу';
+    return input;
+  }
+
   function resolveInput(s,text) {
     const plan=semantic.resolve(text,{...semantic.context(s),legacyStarts});
     const pending=s.world.player.pendingAction;
@@ -623,6 +693,10 @@
       completed.raw=pending.step.raw+' → '+clean(text);completed.dependsOnPrevious=false;
       delete completed.targetId;delete completed.destinationId;delete completed.targetLabel;
       return {mode:completed.mode,resumed:true,steps:[completed,...pending.remaining].map((step,index)=>({...step,index}))};
+    }
+    if(!pending&&plan.steps.length===1&&!plan.steps[0].recognized&&!legacyStarts(text)){
+      const expanded=expandKeyword(s,text);
+      if(expanded!==text)return semantic.resolve(expanded,{...semantic.context(s),legacyStarts});
     }
     return plan;
   }
@@ -795,7 +869,8 @@
   const simulation=root.StorySimulation.create({clean,norm,normalizedInput,words,stem,hash,clone,profile,matchEntity,addEntity,log,voice,resolveBarrier,containerText});
   root.StoryEngine={version:VERSION,release:'6.0',fresh,reply,profile,restore:init,reframe,parse,clauses,
     suggestions(memory){return simulation.rpg.suggestions(memory);},
-    resolve(config,memory,text){const s=init(config,memory);return semantic.resolve(text,{...semantic.context(s),legacyStarts});},
+    resolve(config,memory,text){const s=init(config,memory);return resolveInput(s,text);},
+    searchActions(memory,query,limit=6){return memory?.world?contextOptions(memory,query,limit):[];},
     analyze(config,memory,text){const s=init(config,memory);return resolveInput(s,text).steps.map(step=>simulation.analyze(s,config,semanticCommand(step,s),text));},
     map(memory){return simulation.map(memory);}};
 })(globalThis);
