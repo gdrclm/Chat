@@ -46,6 +46,15 @@ test('opening a known container reports the concrete change once',()=>{
  assert.equal(again.outcome.information.novel,false);
 });
 
+test('newly exposed objects are listed once after a barrier breaks',()=>{
+ const c={world:'Ночной город, где воспоминания продаются в стеклянных флаконах. Я прихожу в закрытую лавку за своим прошлым.',character:'Мира — хозяйка лавки',player:'Путник с компасом'};
+ const baseline=E.reply(c,null,'Осматриваюсь');
+ const changed=E.reply(c,baseline.memory,'Ломаю ларец, затем осмотреться');
+ assert.match(changed.text,/После прошлого осмотра:/);
+ assert.match(changed.text,/флакон/);
+ assert.ok(changed.narrative.some(block=>block.kind==='change'));
+});
+
 test('irrelevant scene revision must not masquerade as an observable change',()=>{
  const first=step(fresh(),'Осматриваюсь');
  const saved=structuredClone(first.memory);
