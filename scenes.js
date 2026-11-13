@@ -37,6 +37,54 @@
     const ok=(text,code,information)=>({status:'success',code,text,information,effects:[]});
     const fail=(status,code,text)=>({status,code,text,effects:[]});
     function role(node){return node.role||Object.keys(roleAliases).find(key=>roleAliases[key].some(v=>norm(node.name)===v))||'custom';}
+    // World prose sets the overall premise; a scene needs its own description.
+    // Authors can override any place with:
+    // Описание локации: лавка | В воздухе пахнет воском и сухой бумагой.
+    function localDescriptions(config){
+      const descriptions=new Map();
+      for(const line of String(config.canon||'').split(/\r?\n/u)){
+        const match=line.match(/^\s*описание\s+(?:локации|места)\s*:\s*([^|]+?)\s*\|\s*(.+?)\s*$/iu);
+        if(match)descriptions.set(norm(match[1].trim()),clean(match[2]));
+      }
+      return descriptions;
+    }
+    function defaultDescription(place,config){
+      const label=norm(place.name),type=role(place);
+      if(type==='street'||/(?:^| )улиц/.test(label))return 'Улица тянется между соседними зданиями. Здесь открывается вид на проходы и примыкающие к ним сооружения.';
+      if(type==='city')return packs.city.description;
+      if(type==='workshop')return packs.workshop.description;
+      if(type==='market')return packs.market.description;
+      if(type==='square')return packs.square.description;
+      if(/лавк|магазин|торгов[а-я]* зал/u.test(label))return 'Внутри лавки полумрак и теснота. Выставленные вещи находятся близко друг к другу; рассматривать их приходится почти вплотную.';
+      if(/сад|оранжере|парк/u.test(label))return 'Сад отделён от зданий участками зелени. Дорожки проходят между зарослями, оставляя часть пространства вне прямого взгляда.';
+      if(/маяк/u.test(label))return 'Высокая башня маяка поднимается над окружающей местностью. На открытом месте ощутим ветер.';
+      if(/порт|пристан|причал/u.test(label))return 'На причале слышна вода у опор, а открытое пространство продувается ветром.';
+      if(/убежищ|бункер/u.test(label))return 'Внутри укрытия стены приглушают звуки снаружи. Пространство отделено от непогоды и внешнего движения.';
+      if(/коридор|проход|тоннел/u.test(label))return 'Узкий проход ограничивает обзор: за ближайшим поворотом не видно, что находится дальше.';
+      if(/кают|палуб|корабл/u.test(label))return 'Под ногами отзывается настил судна. Вокруг чувствуется замкнутое пространство корабля.';
+      if(/станц|отсек|модул|орбит/u.test(label))return 'Панели и соединения технического отсека образуют ровные линии; пространство отделено от внешней среды.';
+      if(/комнат|покои|дом|квартир/u.test(label))return /пустая|нет предметов|ничего нет/u.test(norm(config.world))?'Комната почти пуста: взгляд не задерживается на мебели или вещах.':'Стены комнаты отделяют её от соседних помещений. Окружение видно в пределах комнаты.';
+      if(/двор/u.test(label))return 'Во дворе пространство открывается между фасадами соседних построек.';
+      if(/архив|библиотек/u.test(label))return 'Ряды хранилищ и мест для записей определяют обстановку этого помещения.';
+      if(/лес|рощ/u.test(label))return 'Деревья заслоняют дальний обзор; пространство между стволами позволяет различить ближайшее окружение.';
+      return 'У этого места пока нет отдельного описания обстановки.';
+    }
+    function upgradeLocalDescriptions(s,config){
+      const overrides=localDescriptions(config);
+      const world=clean(config.world),stripped=root.StoryNarrator.locationDescription(world,'');
+      for(const place of s.world.locations){
+        if(!place.scene)continue;
+        const description=clean(place.scene.description);
+        const explicit=overrides.get(norm(place.name));
+        if(explicit){place.scene.description=explicit;place.scene.descriptionSource='author';continue;}
+        if(place.scene.descriptionSource==='author')continue;
+        const inherited=description&&[norm(world),norm(stripped),norm('Место: '+place.name+'.'),norm('Вы осматриваете место «'+place.name+'».')].includes(norm(description));
+        if(!description||inherited){
+          place.scene.description=defaultDescription(place,config);
+          place.scene.descriptionSource='local-default';
+        }
+      }
+    }
     function research(s){
       const p=s.world.player;p.research||={knowledge:{},observations:{},capabilities:[],properties:{},skills:{}};
       s.world.loops.exploration.observed||=[];s.world.loops.exploration.understood||=[];
@@ -69,6 +117,7 @@
     function init(s,p,config){
       research(s);
       if(s.world.sceneVersion===1){
+        upgradeLocalDescriptions(s,config);
         for(const place of s.world.locations.filter(l=>role(l)==='workshop'&&l.scene?.features?.length)){
           const owner=Object.values(s.world.npcs).find(n=>n.location===place.id);
           if(!s.entities.some(e=>e.id===place.id+':hammer')){
@@ -81,7 +130,7 @@
       rootFact(s,p,config);
       const urban=!['space','survival','sea'].includes(p.genre);
       for(const node of s.world.locations){
-        node.scene||={description:node.id===s.world.startId?clean(config.world):'Место: '+node.name+'.',features:[],observed:{},discoveries:{},events:[],revision:0};
+        node.scene||={description:defaultDescription(node,config),features:[],observed:{},discoveries:{},events:[],revision:0};
         const empty=node.id===s.world.startId&&/пустая|нет предметов|ничего нет/.test(norm(config.world));
         const authorObjects=node.id===s.world.startId&&/^предметы\s*:/imu.test(config.canon||'');
         const template=urban&&!empty&&!authorObjects?packs[role(node)]:null;
@@ -98,6 +147,7 @@
           }}
         }
       }
+      upgradeLocalDescriptions(s,config);
       const oldWork=s.world.loops.work;
       if(oldWork.type==='repair'&&['completed','paid'].includes(oldWork.status)){const employer=s.world.npcs[oldWork.employer];const place=employer&&s.world.locations.find(l=>l.id===employer.location);const machine=place&&s.entities.find(e=>e.localKey==='mechanism'&&e.location===place.name);if(machine){machine.condition='repaired';machine.label='исправный механизм';machine.pinInstalled=true;machine.tested=true;}}
       s.world.sceneFlags||={};s.world.sceneVersion=1;H.spatial.init(s);
@@ -182,9 +232,7 @@
       const social=s.world.loops.social;
       for(const n of Object.values(s.world.npcs).filter(n=>n.location===where.id)){H.dialogue.notice(s,n);if(!social.noticed.includes(n.id))social.noticed.push(n.id);if(!social.encountered.includes(n.id))social.encountered.push(n.id);}
       const repaired=role(where)==='workshop'&&s.entities.some(e=>e.localKey==='mechanism'&&e.location===s.place&&e.condition==='repaired');
-      const general=clean(s.world.authorCanon?.world);
-      const usesWorldOverview=where.id===s.world.startId&&general&&norm(where.scene.description)===norm(general);
-      const description=repaired?'В мастерской на верстаке работает собранный механизм. Причина прежней поломки устранена; инструменты сложены рядом.':usesWorldOverview?'Вы осматриваете место «'+where.name+'».':where.scene.description;
+      const description=repaired?'В мастерской на верстаке работает собранный механизм. Причина прежней поломки устранена; инструменты сложены рядом.':where.scene.description;
       return [{kind:'location',locationId:where.id,phase,text:description},...(seen.length?[{kind:'visible',locationId:where.id,phase,text:'Видно: '+seen.map(e=>'«'+e.label+'»').slice(0,5).join(', ')+'.'}]:[])];
     }
     // "Осмотреться" is a reusable scene overview, not a request for a delta.
