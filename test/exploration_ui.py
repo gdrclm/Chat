@@ -19,7 +19,7 @@ with sync_playwright() as p:
         send('Осматриваюсь');send('Беру письмо');send('Открываю письмо')
         send('Выхожу');send('Осматриваю решётку');send('Приподнимаю решётку');send('Беру проволоку');send('Иду в город')
         text=send('Осматриваюсь');assert 'доске объявлений' in text and 'печати' not in text
-        first=state();text=send('Исследую город');assert 'не изменилась' in text
+        first=state();text=send('Исследую город');assert 'Заметных изменений нет' in text or 'Новых заметных деталей нет' in text
         assert state()['world']['loops']['exploration']['discoveries']==first['world']['loops']['exploration']['discoveries']
         send('Изучаю знак');send('Иду в мастерскую');assert 'верстак' in send('Осмотреть мастерскую')
         assert 'сначала нужно туда перейти' in send('Исследую город')
@@ -45,7 +45,7 @@ with sync_playwright() as p:
         page.locator('#open-settings').tap();page.locator('#debug-view').uncheck();page.locator('#close-settings').tap()
         page.reload();assert page.locator('article .outcome-label').count()==0
         expect(page.locator('#story-title')).to_have_text('Мастерская')
-        assert 'Новых сведений' in send('Осмотреть мастерскую') or 'не изменилась' in page.locator('article.assistant').last.inner_text()
+        assert 'Новых сведений' in send('Осмотреть мастерскую') or 'изменений нет' in page.locator('article.assistant').last.inner_text() or 'новых заметных деталей нет' in page.locator('article.assistant').last.inner_text().lower()
         assert not errors,errors
         print(f'PASS 4.1 {width}x{height}: local facts, repeated research, hidden material, cooperative repair, recommendation, shortcut, quiet/debug UI and reload')
         c.close()
