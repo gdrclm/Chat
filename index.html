@@ -7841,7 +7841,7 @@ function renderWorld() {
   const people=document.querySelector('#nearby-people');people.replaceChildren();
   for(const person of Object.values(world.npcs).filter(n=>n.location===world.player.location&&!n.hidden&&n.agency?.activity!=='sleeping'&&n.dialogueState?.status!=='undiscovered')){const b=document.createElement('button');b.type='button';b.textContent=person.name;b.addEventListener('click',()=>issueCommand('Говорю с '+person.name));people.append(b);}
   const interlocutor=world.npcs[world.activeNpcId];
-  const summary=document.querySelector('#conversation-summary');summary.textContent=interlocutor?`${interlocutor.name} · Тема: ${interlocutor.conversation.activeTopic?globalThis.ConversationTopics.topic(interlocutor.conversation.activeTopic).label:'знакомство'} · Обсуждено тем: ${Object.keys(interlocutor.conversation.discussedTopics).length}`:'Обратитесь к замеченному персонажу, чтобы начать разговор.';
+
 
   const conversationRecords=document.querySelector('#conversation-records');conversationRecords.replaceChildren();
   for(const person of Object.values(world.npcs).filter(n=>n.dialogueState.status!=='undiscovered')){const m=person.conversation,row=document.createElement('li');row.textContent=`${person.name}: ${m.activeTopic?globalThis.ConversationTopics.topic(m.activeTopic).label:'тем пока нет'} · раскрыто сведений: ${m.disclosedFacts.length} · неотвеченных вопросов: ${m.unresolvedQuestions.length}${m.pendingNpcQuestion?' · вопрос герою: '+m.pendingNpcQuestion.text:''}`;conversationRecords.append(row);}
