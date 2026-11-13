@@ -10,6 +10,19 @@
 
 .utterance + .utterance{margin-top:14px}.utterance p{margin-bottom:0}.speaker-npc{border-left:3px solid #77b8a3;padding-left:12px}.speaker-npc small{color:#9fddc6}.speaker-developer{border-left:3px solid #d7a9f4;padding:10px 12px;background:#302538;border-radius:6px}.speaker-developer small{color:#e1bdf9}
 select{width:100%;background:#151b17;border:1px solid #394336;border-radius:10px;padding:12px;color:#e8e5dd;font:inherit;font-size:16px;margin-top:8px}.world-clock{font:22px Georgia,serif;color:#d8e5cb;margin-top:24px}#action-catalog{padding-left:30px;line-height:1.7}#action-catalog>li{padding:12px 0;border-bottom:1px solid #394336}#action-catalog p{margin:6px 0;overflow-wrap:anywhere}#action-catalog details{font-size:12px;color:#bac5b5}#action-catalog summary{cursor:pointer;min-height:44px;padding-top:10px}#action-search{position:relative}#rpg-equipment,#rpg-tasks{font-size:12px}
+
+/* Contextual search stays out of sight until the player types. */
+.compose{position:relative}
+.command-suggestions{position:absolute;bottom:calc(100% - 2px);left:20px;right:20px;max-height:min(48vh,300px);overflow-y:auto;z-index:10;background:#20291f;border:1px solid #526346;border-radius:12px 12px 5px 5px;box-shadow:0 -12px 26px #0008;padding:6px}
+.command-option{display:block;text-align:left;width:100%;min-height:38px;padding:9px 12px;border-radius:7px;background:transparent;color:#dfebd1;font-size:13px}
+.command-option:hover,.command-option[aria-selected=true]{background:#3b4a35;color:#fff}
+.context-term{display:inline;background:none;border:0;border-bottom:1px dotted #99b9a0;border-radius:0;min-height:0;padding:0 1px;margin:0 1px;color:inherit;font:inherit;line-height:inherit;vertical-align:baseline;text-align:inherit;cursor:pointer}
+.context-term:hover,.context-term:focus-visible{background:#384d37;border-bottom-style:solid}
+.context-panel{background:#171f19;border:1px solid #53614e;border-radius:9px;margin:12px 0 4px;padding:10px 12px;font-size:12px;line-height:1.6}
+.context-panel strong{font-size:13px;color:#c6dbb8}
+.context-panel p{margin:5px 0 8px}
+.context-draft{font-size:11px;line-height:1.3;min-height:34px;margin:3px 5px 3px 0;padding:7px 10px;border-radius:7px;background:#344333;color:#d9e6cc}
+@media(max-width:600px){.command-suggestions{left:10px;right:10px}.context-panel{padding:9px}}
 </style>
 
 
@@ -45,13 +58,12 @@ select{width:100%;background:#151b17;border:1px solid #394336;border-radius:10px
 <aside id="world-page" hidden aria-label="Мир и персонажи">
   <div class="page-top"><span class="eyebrow">МИР И ПЕРСОНАЖИ</span><button id="close-world" type="button" class="secondary">К чату ✕</button></div>
   <p id="world-time" class="world-clock"></p><p id="world-body" class="hint"></p>
-  <h3>Что можно попробовать</h3><div id="suggested-actions" class="world-buttons"></div><button id="open-actions" type="button" class="secondary">Каталог · 325 возможностей</button>
   <h3>Мои цели и истории</h3><ul id="rpg-goals"></ul><ul id="rpg-arcs"></ul>
   <h3>Снаряжение и груз</h3><p id="rpg-load" class="hint"></p><ul id="rpg-equipment"></ul>
   <h3>Поручения и встречи</h3><ul id="rpg-tasks"></ul><ul id="rpg-appointments"></ul>
   <h2 id="map-title">Карта</h2><p class="hint">Переход выполняется отдельным ходом. Доступны только соединённые места.</p><div id="map-exits" class="world-buttons"></div>
   <h3>Рядом</h3><div id="nearby-people" class="world-buttons"></div>
-  <h3>Разговор</h3><p id="conversation-summary" class="hint"></p><div id="conversation-topics" class="world-buttons"></div>
+
   <details><summary>Память бесед · просмотр автора</summary><ul id="conversation-records"></ul></details>
   <h3>Исследование и знания</h3><p id="exploration-progress" class="hint"></p><ul id="learned-facts"></ul><details><summary>Изученные свойства предметов</summary><ul id="known-properties"></ul></details>
   <h3>Дела и деньги</h3><p id="world-work"></p><p class="hint">На рынке и в мастерской можно искать работу. Загадку лавки для этого решать не требуется.</p>
@@ -62,16 +74,11 @@ select{width:100%;background:#151b17;border:1px solid #394336;border-radius:10px
   <details><summary>Поступки и сведения · просмотр автора</summary><ul id="social-event-records"></ul><ul id="social-knowledge-records"></ul><p class="hint">Само событие, наблюдение свидетеля и пересказ хранятся отдельно. Пропажа сама по себе не раскрывает виновника.</p></details>
   <details><summary>Убеждения персонажей · просмотр автора</summary><ul id="belief-records"></ul><p class="hint">Убеждение персонажа может быть ошибочным. Истина мира задаётся автором и событиями, отдельно от этих версий.</p></details>
 </aside>
-<aside id="actions-page" hidden aria-label="Каталог действий">
-  <div class="page-top"><span class="eyebrow">325 ВОЗМОЖНОСТЕЙ</span><button id="close-actions" type="button" class="secondary">К миру ←</button></div>
-  <h2>Ваш следующий ход</h2><p class="hint">Возможности зависят от мира, доступных вещей и отношений. Вопрос, замысел и выполненное действие различаются. В готовых историях уже есть предметы для разных занятий.</p>
-  <label>Найти действие<input id="action-search" type="search" placeholder="Верёвка, работа, разговор, 112…" autocomplete="off"></label><p id="action-count" class="hint" aria-live="polite"></p><ol id="action-catalog"></ol>
-</aside>
 <main id="chat-page">
   <header><div><span class="eyebrow">МЕЖДУ СТРОК · 6.0</span><h2 id="story-title">Ваша история</h2></div><div class="header-actions"><span id="badge">● Офлайн</span><button id="open-world" type="button">Мир</button><button id="open-settings" type="button" aria-label="Открыть настройки">⚙</button></div></header>
   <p id="memory" class="hint" aria-live="polite"></p>
   <section id="messages" aria-label="Диалог" aria-live="polite"></section>
-  <div class="compose"><p id="status" role="status">Запуск… Если кнопки не отвечают, откройте файл в браузере, а не в предпросмотре мессенджера.</p><form id="chat"><textarea id="message" aria-label="Ваш ответ" placeholder="Что вы скажете или сделаете?" rows="2" maxlength="6000" required></textarea><button id="send" type="submit">Отправить</button></form><p class="hint">Enter — отправить · Shift + Enter — новая строка</p></div>
+  <div class="compose"><p id="status" role="status">Запуск… Если кнопки не отвечают, откройте файл в браузере, а не в предпросмотре мессенджера.</p><div id="command-suggestions" class="command-suggestions" role="listbox" aria-label="Подходящие действия" hidden></div><form id="chat"><textarea id="message" aria-label="Ваш ответ" placeholder="Слово, вопрос или действие…" aria-autocomplete="list" aria-controls="command-suggestions" aria-expanded="false" rows="2" maxlength="6000" required></textarea><button id="send" type="submit">Отправить</button></form><p class="hint">Enter — отправить · Shift + Enter — новая строка</p></div>
 </main>
 <noscript><div class="no-script">Для игры нужен JavaScript. Откройте файл в полноценном браузере: предпросмотр вложений может блокировать скрипты.</div></noscript>
 <script>/* Local reference frames. Features and object parts are not loose inventory objects. */
@@ -7179,6 +7186,76 @@ select{width:100%;background:#151b17;border:1px solid #394336;border-radius:10px
     const delegated=/^(?:разреши|разрешите|оскорбляю|сообщаю|утверждаю|заявляю|арендую|оплачиваю|прикрываю|отхожу|отойти|отступаю|заканчиваю|прекращаю|одолжи|прошу одолжить|беру в долг|возмещаю|компенсирую|плачу|признаюсь|сознаюсь|обещаю|клянусь|верну|вернуть|приподнима|отодвига|сдвига|передвига|изгот[оа]в|устан[оа]в|делаю|сделать|вытач|согну|очища|чищу|смазыва|калибру|подбрасыва|подделыва|фабрикую|выношу|переношу|уношу|тащу|несу|покупаю|куплю|знакомлюсь)/u;
     return delegated.test(head)||ACTIONS.some(([,re])=>new RegExp('^(?:'+re.source+')',re.flags).test(head));
   }
+
+  // Searchable actions are generated from the *current* scene, not the 325-item
+  // authoring catalog. A suggestion is a draft command, never an executed move.
+  function contextOptions(s, query='', limit=6) {
+    const items=[],used=new Set(),world=s.world||{},location=world.player?.location;
+    const add=(command,label,kind,tags=[],rank=0)=>{
+      if(!command||used.has(command))return;
+      used.add(command);items.push({command,label,kind,tags,rank});
+    };
+    add('Осматриваюсь','Осмотреться','inspect',['осмотр','вокруг','место','обстановка'],1);
+    for(const exit of simulation.map(s).exits||[]){
+      if(exit.blocked)continue;
+      add('Иду в '+exit.name,'Перейти: '+exit.name,'move',[exit.name,'путь','выход','идти','перейти'],5);
+    }
+    for(const n of Object.values(world.npcs||{})){
+      if(n.location!==location||n.hidden||n.agency?.activity==='sleeping'||n.dialogueState?.status==='undiscovered')continue;
+      add('Говорю с '+n.name,'Поговорить: '+n.name,'talk',[n.name,'разговор','общение','спросить'],6);
+    }
+    for(const e of s.entities||[]){
+      if(!e.known||e.hidden||e.destroyed||![s.place,'inventory'].includes(e.location))continue;
+      const tags=[e.label,...(e.aliases||[])];
+      add('Осматриваю '+e.label,'Осмотреть: '+e.label,'inspect',[...tags,'осмотреть','изучить','рассмотреть'],5);
+      if(e.kind==='barrier'){
+        const verb=e.opened?'Закрываю':'Открываю';
+        add(verb+' '+e.label,(e.opened?'Закрыть: ':'Открыть: ')+e.label,e.opened?'close':'open',[...tags,e.opened?'закрыть':'открыть','дверь','контейнер'],5);
+      }
+      if(e.portable&&e.location===s.place)add('Беру '+e.label,'Взять: '+e.label,'take',[...tags,'взять','забрать','подобрать'],3);
+      if(e.location==='inventory')add('Использую '+e.label,'Использовать: '+e.label,'use',[...tags,'использовать','применить','предмет'],2);
+    }
+    const partner=world.npcs?.[world.activeNpcId];
+    if(partner&&partner.location===location&&!partner.hidden){
+      for(const t of root.ConversationTopics?.all||[]){
+        if(!t.questions?.[0])continue;
+        add(t.questions[0],'Спросить: '+t.label,'question',[t.label,t.id,...t.questions,'поговорить','спросить'],1);
+      }
+    }
+    for(const command of simulation.rpg.suggestions(s)||[])add(command,command,'situation',[command,'ситуация','предложение'],3);
+    if(/мастерск|рынок|лавк/u.test(norm(s.place||'')))add('Ищу работу','Найти работу','work',['работа','подработка','заработок','задание'],2);
+    const q=norm(query).trim(),parts=q.split(/\s+/u).filter(Boolean);
+    if(!parts.length)return [];
+    return items.map((item,index)=>{
+      const name=norm(item.label),body=norm(item.command),tags=norm(item.tags.join(' '));
+      if(!parts.every(part=>name.includes(part)||body.includes(part)||tags.includes(part)))return null;
+      const score=(name.startsWith(q)?90:body.startsWith(q)?80:0)
+        +(name.split(/[\s:]+/u).some(word=>word.startsWith(q))?40:0)
+        +(tags.split(/\s+/u).some(word=>word.startsWith(q))?20:0)
+        +item.rank*5-index/1000;
+      return {...item,score};
+    }).filter(Boolean).sort((a,b)=>b.score-a.score).slice(0,Math.max(1,Math.min(10,limit)));
+  }
+  function expandKeyword(s,input){
+    const q=norm(input).trim();
+    if(!/^[а-яa-z-]{2,}$/u.test(q))return input;
+    const same=(label)=>norm(label).split(/[^а-яa-z0-9]+/u).some(word=>word===q||(q.length>=4&&word.startsWith(q))||(q.length>=5&&word.slice(0,Math.max(3,word.length-2))===q.slice(0,Math.max(3,word.length-2))));
+    const visible=(s.entities||[]).filter(e=>e.known&&!e.hidden&&!e.destroyed&&[s.place,'inventory'].includes(e.location)&&[e.label,...(e.aliases||[])].some(same));
+    if(visible.length===1)return 'Осматриваю '+visible[0].label;
+    if(visible.length>1)return 'Осматриваю '+input;
+    const location=s.world?.player?.location;
+    const people=Object.values(s.world?.npcs||{}).filter(n=>n.location===location&&!n.hidden&&n.agency?.activity!=='sleeping'&&n.dialogueState?.status!=='undiscovered'&&same(n.name));
+    if(people.length===1)return 'Говорю с '+people[0].name;
+    const exits=(simulation.map(s).exits||[]).filter(e=>!e.blocked&&same(e.name));
+    if(exits.length===1)return 'Иду в '+exits[0].name;
+    if(s.world?.activeNpcId){
+      const topics=(root.ConversationTopics?.all||[]).filter(t=>same(t.label));
+      if(topics.length===1)return topics[0].questions[0];
+    }
+    if(/^(?:работа|подработка|заработок)$/u.test(q))return 'Ищу работу';
+    return input;
+  }
+
   function resolveInput(s,text) {
     const plan=semantic.resolve(text,{...semantic.context(s),legacyStarts});
     const pending=s.world.player.pendingAction;
@@ -7189,6 +7266,10 @@ select{width:100%;background:#151b17;border:1px solid #394336;border-radius:10px
       completed.raw=pending.step.raw+' → '+clean(text);completed.dependsOnPrevious=false;
       delete completed.targetId;delete completed.destinationId;delete completed.targetLabel;
       return {mode:completed.mode,resumed:true,steps:[completed,...pending.remaining].map((step,index)=>({...step,index}))};
+    }
+    if(!pending&&plan.steps.length===1&&!plan.steps[0].recognized&&!legacyStarts(text)){
+      const expanded=expandKeyword(s,text);
+      if(expanded!==text)return semantic.resolve(expanded,{...semantic.context(s),legacyStarts});
     }
     return plan;
   }
@@ -7361,7 +7442,8 @@ select{width:100%;background:#151b17;border:1px solid #394336;border-radius:10px
   const simulation=root.StorySimulation.create({clean,norm,normalizedInput,words,stem,hash,clone,profile,matchEntity,addEntity,log,voice,resolveBarrier,containerText});
   root.StoryEngine={version:VERSION,release:'6.0',fresh,reply,profile,restore:init,reframe,parse,clauses,
     suggestions(memory){return simulation.rpg.suggestions(memory);},
-    resolve(config,memory,text){const s=init(config,memory);return semantic.resolve(text,{...semantic.context(s),legacyStarts});},
+    resolve(config,memory,text){const s=init(config,memory);return resolveInput(s,text);},
+    searchActions(memory,query,limit=6){return memory?.world?contextOptions(memory,query,limit):[];},
     analyze(config,memory,text){const s=init(config,memory);return resolveInput(s,text).steps.map(step=>simulation.analyze(s,config,semanticCommand(step,s),text));},
     map(memory){return simulation.map(memory);}};
 })(globalThis);
@@ -7501,14 +7583,124 @@ function save() {
   try { localStorage.setItem(key, JSON.stringify(state)); }
   catch { status.textContent = 'Браузер не смог сохранить игру. Текущий диалог доступен до закрытия страницы.'; }
 }
+
+const optionMenu=document.querySelector('#command-suggestions');
+let currentOptions=[],selectedOption=-1;
+const normalizeWord=value=>String(value||'').toLocaleLowerCase('ru').replace(/ё/g,'е');
+function hideOptions(){
+  currentOptions=[];selectedOption=-1;optionMenu.hidden=true;optionMenu.replaceChildren();
+  field.setAttribute('aria-expanded','false');
+}
+function showOptions(){
+  const query=field.value.trim();
+  if(busy||query.length<2||query.includes('\n')){hideOptions();return;}
+  currentOptions=engine.searchActions(state.memory,query,6);
+  selectedOption=-1;optionMenu.replaceChildren();
+  for(const [index,option]of currentOptions.entries()){
+    const button=document.createElement('button');button.type='button';button.className='command-option';
+    button.setAttribute('role','option');button.setAttribute('aria-selected','false');
+    button.textContent=option.label;
+    button.addEventListener('click',()=>selectOption(index));optionMenu.append(button);
+  }
+  optionMenu.hidden=!currentOptions.length;field.setAttribute('aria-expanded',String(Boolean(currentOptions.length)));
+}
+function updateOptionSelection(){
+  for(const [i,button]of [...optionMenu.children].entries()){
+    button.setAttribute('aria-selected',String(i===selectedOption));
+  }
+}
+function selectOption(index){
+  const option=currentOptions[index];if(!option)return;
+  field.value=option.command;hideOptions();field.focus();
+  field.setSelectionRange(field.value.length,field.value.length);
+}
+function describeMention(target){
+  const memory=state.memory,world=memory.world;
+  if(target.type==='entity'){
+    const item=memory.entities.find(e=>e.id===target.id);
+    if(!item||item.hidden||!item.known||item.destroyed)return 'Сейчас этот объект недоступен для непосредственного взаимодействия.';
+    const knowledge=Object.values(world.player?.research?.knowledge||{}).find(k=>k.sourceId===item.id);
+    const observed=(world.loops?.exploration?.observed||[]).includes(item.id);
+    return knowledge?.text||(observed&&item.description)
+      ||(item.location==='inventory'?'Этот предмет находится среди ваших вещей.':'Объект находится в текущем месте. Дополнительные сведения можно получить осмотром.');
+  }
+  if(target.type==='npc'){
+    const n=world.npcs[target.id];
+    return n&&n.location===world.player.location&&!n.hidden
+      ?'Персонаж находится рядом. Его ответы зависят от того, что он знает и как относится к герою.'
+      :'Сейчас этот персонаж не рядом.';
+  }
+  if(target.type==='exit')return 'В это место ведёт известный переход. Сам переход выполняется отдельным действием.';
+  return 'Это возможный способ взаимодействия, но результат зависит от цели, доступных предметов и условий сцены. Выбор из подсказки лишь заполняет поле ввода.';
+}
+function contextTargets(){
+  const memory=state.memory,world=memory.world,here=world.player.location,targets=[];
+  for(const e of memory.entities||[]){
+    if(!e.known||e.hidden||e.destroyed||![memory.place,'inventory'].includes(e.location))continue;
+    targets.push({key:'entity:'+e.id,type:'entity',id:e.id,label:e.label,forms:[e.label,...(e.aliases||[])]});
+  }
+  for(const n of Object.values(world.npcs||{})){
+    if(n.location!==here||n.hidden||n.dialogueState?.status==='undiscovered')continue;
+    targets.push({key:'npc:'+n.id,type:'npc',id:n.id,label:n.name,forms:[n.name]});
+  }
+  for(const exit of engine.map(memory).exits||[]){
+    if(exit.blocked)continue;
+    targets.push({key:'exit:'+exit.name,type:'exit',label:exit.name,forms:[exit.name]});
+  }
+  return targets;
+}
+function matchesMention(word,form){
+  const token=normalizeWord(word),parts=normalizeWord(form).split(/[^a-zа-я0-9]+/u).filter(Boolean);
+  return parts.some(part=>token===part||(part.length>=5&&token.length>=5&&token.slice(0,4)===part.slice(0,4)));
+}
+function revealContext(section,target){
+  const previous=section.querySelector('.context-panel');
+  if(previous){const same=previous.dataset.key===target.key;previous.remove();if(same)return;}
+  const panel=document.createElement('div');panel.className='context-panel';panel.dataset.key=target.key;
+  const heading=document.createElement('strong');heading.textContent=target.label;
+  const info=document.createElement('p');info.textContent=describeMention(target);
+  panel.append(heading,info);
+  let options=engine.searchActions(state.memory,target.label,10);
+  if(target.type==='npc')options=options.filter(v=>v.kind==='talk');
+  if(target.type==='exit')options=options.filter(v=>v.kind==='move');
+  if(target.type==='entity')options=options.filter(v=>['inspect','open','close','take','use'].includes(v.kind)&&normalizeWord(v.command).includes(normalizeWord(target.label)));
+  for(const option of options.slice(0,3)){
+    const button=document.createElement('button');button.type='button';button.className='context-draft';
+    button.textContent=option.label;button.addEventListener('click',()=>{
+      field.value=option.command;hideOptions();field.focus();
+      field.setSelectionRange(field.value.length,field.value.length);
+    });panel.append(button);
+  }
+  section.append(panel);
+}
+function renderRichText(textNode,section,rawText,targets){
+  const rowText=String(rawText||'');let cursor=0,count=0;
+  for(const match of rowText.matchAll(/[a-zа-яё][a-zа-яё-]{2,}/giu)){
+    if(count>=7)break;
+    const token=match[0],word=normalizeWord(token),start=match.index;
+    const matched=targets.filter(t=>t.forms.some(v=>matchesMention(word,v)));
+    const action=/^(?:откры|закры|осмотр|изуч|взят|взять|взгля|провер|спрос|поговор|приблиз|подой|поднять|приподня|прочит|использ|исслед|перейт)/u.test(word);
+    const target=matched.length===1?matched[0]:matched.length===0&&action
+      ?{key:'action:'+word,type:'action',label:token}:null;
+    if(!target)continue;
+    textNode.append(document.createTextNode(rowText.slice(cursor,start)));
+    const link=document.createElement('button');link.type='button';link.className='context-term';
+    link.textContent=token;link.setAttribute('aria-label','Подробнее: '+target.label);
+    link.addEventListener('click',()=>revealContext(section,target));
+    textNode.append(link);cursor=start+token.length;count++;
+  }
+  textNode.append(document.createTextNode(rowText.slice(cursor)));
+}
+
 function render() {
   list.replaceChildren();
   if (!state.messages.length) {
     const intro = document.createElement('div'); intro.className = 'intro';
     const title = document.createElement('h3'); title.textContent = 'Каждая история начинается со слова.';
-    const text = document.createElement('p'); text.textContent = 'Начните с «Осматриваюсь». В «Мире» есть карта, цели, поручения и подходящие действия. Можно поставить собственную цель, уйти от загадки, работать и путешествовать со спутниками. В настройках — пять готовых историй.';
+    const text = document.createElement('p'); text.textContent = 'Напишите «осмотреться» или название того, что заинтересовало. По мере ввода появляются подходящие действия; выделенные слова в ответах раскрывают контекст без игрового хода.';
     intro.append(title, text); list.append(intro);
   }
+  const mentionTargets=contextTargets();
   for (const message of state.messages) {
     const item = document.createElement('article'); item.className = message.role;
     const utterances=message.role==='assistant'&&Array.isArray(message.utterances)&&message.utterances.length?message.utterances:[{speaker:{type:message.role==='user'?'player':'narrator'},text:message.content}];
@@ -7516,7 +7708,7 @@ function render() {
       const type=['player','narrator','npc','developer'].includes(row.speaker?.type)?row.speaker.type:'narrator';
       const section=document.createElement('section');section.className='utterance speaker-'+type;section.dataset.speaker=type;section.dataset.trigger=row.trigger||'legacy';
       const label=document.createElement('small');label.textContent=type==='player'?'ВЫ':type==='npc'?(row.speaker.name||'ПЕРСОНАЖ'):type==='developer'?'РАЗРАБОТЧИК':'РАССКАЗЧИК';
-      const text=document.createElement('p');text.textContent=row.text;section.append(label,text);item.append(section);
+      const text=document.createElement('p');if(type==='narrator'||type==='npc')renderRichText(text,section,row.text,mentionTargets);else text.textContent=row.text;section.append(label,text);item.append(section);
     }
     if(debugView&&message.outcome?.status) {
       const result = document.createElement('small');result.className='outcome-label';result.dataset.status=message.outcome.status;
@@ -7575,7 +7767,7 @@ chat.addEventListener('submit', async event => {
   if (!text) { status.textContent = 'Напишите сообщение.'; return; }
   busy = true; send.disabled = true; settings.querySelector('button').disabled = true;
   try {
-    state.messages.push({ role: 'user', content: text }); field.value = '';
+    hideOptions();state.messages.push({ role: 'user', content: text }); field.value = '';
     status.textContent = 'История продолжается…';
     render();
     const result = engine.reply(state.config, state.memory, text);
@@ -7586,7 +7778,16 @@ chat.addEventListener('submit', async event => {
     state.messages.pop(); field.value = text; status.textContent = `${error.message} Сообщение возвращено в поле ввода — попробуйте снова.`; save();
   } finally { busy = false; send.disabled = false; settings.querySelector('button').disabled = false; render(); }
 });
-field.addEventListener('keydown', event => { if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) { event.preventDefault(); send.click(); } });
+field.addEventListener('input',showOptions);
+field.addEventListener('keydown',event=>{
+  if(event.key==='ArrowDown'&&currentOptions.length){event.preventDefault();selectedOption=Math.min(currentOptions.length-1,selectedOption+1);updateOptionSelection();return;}
+  if(event.key==='ArrowUp'&&currentOptions.length){event.preventDefault();selectedOption=Math.max(-1,selectedOption-1);updateOptionSelection();return;}
+  if(event.key==='Escape'&&currentOptions.length){event.preventDefault();event.stopPropagation();hideOptions();return;}
+  if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing){
+    event.preventDefault();
+    if(selectedOption>=0&&currentOptions.length)selectOption(selectedOption);else send.click();
+  }
+});
 render();
 status.textContent = '';
 
@@ -7612,17 +7813,14 @@ document.querySelector('#import').addEventListener('change', async event => {
 
 document.querySelector('#debug-view').addEventListener('change',event=>{debugView=event.target.checked;try{localStorage.setItem('between-lines-debug',String(debugView));}catch{}render();});
 function showPage(page) {
-  for(const name of ['settings','world','actions','chat'])document.querySelector('#'+name+'-page').hidden=name!==page;
-  const focus=page==='settings'?'#close-settings':page==='world'?'#close-world':page==='actions'?'#action-search':'#open-settings';document.querySelector(focus).focus();
+  for(const name of ['settings','world','chat'])document.querySelector('#'+name+'-page').hidden=name!==page;
+  const focus=page==='settings'?'#close-settings':page==='world'?'#close-world':'#open-settings';document.querySelector(focus).focus();
 }
 function showSettings(open) { showPage(open?'settings':'chat'); }
 document.querySelector('#open-settings').addEventListener('click', () => showSettings(true));
 document.querySelector('#close-settings').addEventListener('click', () => showSettings(false));
 document.querySelector('#open-world').addEventListener('click',()=>showPage('world'));
 document.querySelector('#close-world').addEventListener('click',()=>showPage('chat'));
-document.querySelector('#open-actions').addEventListener('click',()=>{renderCatalog();showPage('actions');});
-document.querySelector('#close-actions').addEventListener('click',()=>showPage('world'));
-document.querySelector('#action-search').addEventListener('input',renderCatalog);
 for(const preset of globalThis.StoryPresets){const option=document.createElement('option');option.value=preset.id;option.textContent=preset.name;document.querySelector('#story-preset').append(option);}
 document.querySelector('#apply-preset').addEventListener('click',()=>{const preset=globalThis.StoryPresets.find(p=>p.id===document.querySelector('#story-preset').value);if(!preset)return;for(const name of ['world','character','player','canon'])settings.elements.namedItem(name).value=preset[name];settings.elements.namedItem('world').focus();});
 document.addEventListener('keydown', event => { if (event.key === 'Escape') showPage('chat'); });
@@ -7637,9 +7835,9 @@ function renderWorld() {
   for(const exit of map.exits) {const b=document.createElement('button');b.type='button';b.textContent=exit.name+(exit.blocked?' · заперто':' →');b.disabled=exit.blocked;b.addEventListener('click',()=>issueCommand('Иду в '+exit.name));exits.append(b);}
   const people=document.querySelector('#nearby-people');people.replaceChildren();
   for(const person of Object.values(world.npcs).filter(n=>n.location===world.player.location&&!n.hidden&&n.agency?.activity!=='sleeping'&&n.dialogueState?.status!=='undiscovered')){const b=document.createElement('button');b.type='button';b.textContent=person.name;b.addEventListener('click',()=>issueCommand('Говорю с '+person.name));people.append(b);}
-  const interlocutor=world.npcs[world.activeNpcId],topicButtons=document.querySelector('#conversation-topics');topicButtons.replaceChildren();
+  const interlocutor=world.npcs[world.activeNpcId];
   const summary=document.querySelector('#conversation-summary');summary.textContent=interlocutor?`${interlocutor.name} · Тема: ${interlocutor.conversation.activeTopic?globalThis.ConversationTopics.topic(interlocutor.conversation.activeTopic).label:'знакомство'} · Обсуждено тем: ${Object.keys(interlocutor.conversation.discussedTopics).length}`:'Обратитесь к замеченному персонажу, чтобы начать разговор.';
-  if(interlocutor)for(const id of ['name','identity','place','occupation','hobbies','goal','trust'].filter(id=>!interlocutor.conversation.discussedTopics[id]).slice(0,4)){const topic=globalThis.ConversationTopics.topic(id),button=document.createElement('button');button.type='button';button.textContent=topic.questions[0];button.addEventListener('click',()=>issueCommand(topic.questions[0]));topicButtons.append(button);}
+
   const conversationRecords=document.querySelector('#conversation-records');conversationRecords.replaceChildren();
   for(const person of Object.values(world.npcs).filter(n=>n.dialogueState.status!=='undiscovered')){const m=person.conversation,row=document.createElement('li');row.textContent=`${person.name}: ${m.activeTopic?globalThis.ConversationTopics.topic(m.activeTopic).label:'тем пока нет'} · раскрыто сведений: ${m.disclosedFacts.length} · неотвеченных вопросов: ${m.unresolvedQuestions.length}${m.pendingNpcQuestion?' · вопрос герою: '+m.pendingNpcQuestion.text:''}`;conversationRecords.append(row);}
   const research=world.player.research;
@@ -7688,12 +7886,7 @@ function renderRpg(world,memory){
   rows('rpg-cases',r.cases.map(c=>c.name+' · '+label(c.status)+' · источников '+c.evidence.length+' · показаний '+c.testimony.length));
   rows('rpg-groups',(r.memberships.player||[]).map(m=>(r.factions.find(f=>f.id===m.factionId)?.name||'Организация')+' · '+m.title+' · '+label(m.status)));
   document.querySelector('#rpg-settlement').textContent='Инфраструктура '+r.settlement.infrastructure+' · Благополучие '+r.settlement.prosperity+' · Решений '+r.settlement.decisions.length+(r.ending?' · Финал истории достигнут':'');
-  const hints=document.querySelector('#suggested-actions');hints.replaceChildren();for(const command of engine.suggestions(memory)){const button=document.createElement('button');button.type='button';button.textContent=command;button.addEventListener('click',()=>issueCommand(command));hints.append(button);}
-}
-function renderCatalog(){
-  const query=document.querySelector('#action-search').value.toLowerCase().replace(/ё/g,'е'),entries=globalThis.ActionCatalog.entries.filter(e=>(e.id+' '+e.description+' '+(e.examples||[]).join(' ')).toLowerCase().replace(/ё/g,'е').includes(query)),ul=document.querySelector('#action-catalog');ul.replaceChildren();
-  document.querySelector('#action-count').textContent='Найдено '+entries.length+' из 325';
-  for(const e of entries){const li=document.createElement('li');li.value=e.id;const text=document.createElement('p');text.textContent=e.description;li.append(text);if(e.examples?.length){const details=document.createElement('details'),summary=document.createElement('summary');summary.textContent='Пример сценария';details.append(summary);for(const example of e.examples){const p=document.createElement('p');p.textContent=example;details.append(p);}const button=document.createElement('button');button.type='button';button.className='secondary';button.textContent='Вставить последнюю реплику';button.addEventListener('click',()=>{showPage('chat');field.value=e.examples.at(-1);field.focus();});details.append(button);li.append(details);}ul.append(li);}
+
 }
 function resizeViewport() {
   const viewport = window.visualViewport;
