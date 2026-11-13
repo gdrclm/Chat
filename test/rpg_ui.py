@@ -16,7 +16,11 @@ with sync_playwright() as p:
    assert page.locator('#send').is_enabled()
   page.locator('#open-settings').tap();page.locator('#story-preset').select_option('craft');page.locator('#apply-preset').tap();page.locator('#settings button[type=submit]').tap()
   page.locator('#open-settings').tap();page.locator('#reset').tap();page.locator('#close-settings').tap()
-  send('Осматриваюсь');page.locator('#open-world').tap();page.locator('#suggested-actions button').filter(has_text='Сажусь на табурет').tap()
+  send('Осматриваюсь');page.locator('#message').fill('табурет')
+  assert page.locator('#command-suggestions .command-option').count()>0
+  page.locator('#command-suggestions .command-option').filter(has_text='Сажусь на табурет').tap()
+  assert page.locator('#message').input_value()=='Сажусь на табурет'
+  page.locator('#send').tap()
   assert memory()['world']['player']['body']['posture']=='sitting'
   page.reload();assert memory()['world']['player']['body']['posture']=='sitting';send('Встаю')
   send('Ставлю цель: починить тележку');send('Начинаю собственную историю');send('Устраиваюсь на работу у Ильи');send('Ремонтирую тележку');send('Требую оплату услуги')
@@ -25,12 +29,13 @@ with sync_playwright() as p:
   send('Передаю часть палки 1 Илье');send('Передаю часть камня 1 Илье');send('Поручаю Илье изготовить рычаг');send('Пропускаю время 20')
   assert any(e['label']=='рычаг' and e['location']=='inventory' for e in memory()['entities'])
   send('Завершаю приключение');ending=memory()['world']['rpg']['ending']['id'];page.reload();assert memory()['world']['rpg']['ending']['id']==ending
-  page.locator('#open-world').tap();assert 'готово' in page.locator('#rpg-tasks').inner_text();assert 'завершено' in page.locator('#rpg-arcs').inner_text();page.locator('#open-actions').tap()
-  assert page.locator('#action-catalog > li').count()==325
-  page.locator('#action-search').fill('112');assert page.locator('#action-catalog > li').count()==1
-  assert 'слепку' in page.locator('#action-catalog').inner_text()
-  page.locator('#action-catalog summary').tap();assert page.locator('#action-catalog details p').count()>0
-  page.locator('#close-actions').tap();page.locator('#close-world').tap()
+  page.locator('#open-world').tap();assert 'готово' in page.locator('#rpg-tasks').inner_text();assert 'завершено' in page.locator('#rpg-arcs').inner_text()
+  assert page.locator('#open-actions').count()==0
+  page.locator('#close-world').tap()
+  page.locator('#message').fill('осмотр')
+  assert 0 < page.locator('#command-suggestions .command-option').count() <= 6
+  page.locator('#message').fill('несуществующийпредмет')
+  assert page.locator('#command-suggestions .command-option').count()==0
   assert page.evaluate('document.documentElement.scrollHeight <= innerHeight + 2')
   assert not errors,errors
   page.screenshot(path=f'/tmp/chat-60-mobile-{width}.png');context.close();print('6.0 mobile',width,height,'PASS',flush=True)
