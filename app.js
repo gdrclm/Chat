@@ -119,8 +119,8 @@ function revealContext(section,target){
   }
   section.append(panel);
 }
-function renderRichText(textNode,section,rowText){
-  const targets=contextTargets();let cursor=0,count=0;
+function renderRichText(textNode,section,rawText,targets){
+  const rowText=String(rawText||'');let cursor=0,count=0;
   for(const match of rowText.matchAll(/[a-zа-яё][a-zа-яё-]{2,}/giu)){
     if(count>=7)break;
     const token=match[0],word=normalizeWord(token),start=match.index;
@@ -146,6 +146,7 @@ function render() {
     const text = document.createElement('p'); text.textContent = 'Напишите «осмотреться» или название того, что заинтересовало. По мере ввода появляются подходящие действия; выделенные слова в ответах раскрывают контекст без игрового хода.';
     intro.append(title, text); list.append(intro);
   }
+  const mentionTargets=contextTargets();
   for (const message of state.messages) {
     const item = document.createElement('article'); item.className = message.role;
     const utterances=message.role==='assistant'&&Array.isArray(message.utterances)&&message.utterances.length?message.utterances:[{speaker:{type:message.role==='user'?'player':'narrator'},text:message.content}];
@@ -153,7 +154,7 @@ function render() {
       const type=['player','narrator','npc','developer'].includes(row.speaker?.type)?row.speaker.type:'narrator';
       const section=document.createElement('section');section.className='utterance speaker-'+type;section.dataset.speaker=type;section.dataset.trigger=row.trigger||'legacy';
       const label=document.createElement('small');label.textContent=type==='player'?'ВЫ':type==='npc'?(row.speaker.name||'ПЕРСОНАЖ'):type==='developer'?'РАЗРАБОТЧИК':'РАССКАЗЧИК';
-      const text=document.createElement('p');if(type==='narrator'||type==='npc')renderRichText(text,section,row.text);else text.textContent=row.text;section.append(label,text);item.append(section);
+      const text=document.createElement('p');if(type==='narrator'||type==='npc')renderRichText(text,section,row.text,mentionTargets);else text.textContent=row.text;section.append(label,text);item.append(section);
     }
     if(debugView&&message.outcome?.status) {
       const result = document.createElement('small');result.className='outcome-label';result.dataset.status=message.outcome.status;
