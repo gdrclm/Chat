@@ -49,6 +49,13 @@ test('a single location name selects a known route',()=>{
   assert.match(E.resolve(config,m,'город').steps[0].raw,/Иду в город/);
 });
 
+test('a single conversational keyword expands only when it identifies one topic',()=>{
+  let m=step(fresh(),'Осматриваюсь').memory;
+  m=step(m,'Мира').memory;
+  assert.equal(E.resolve(config,m,'кофе').steps[0].raw,'Что пьёте по утрам?');
+  assert.equal(E.resolve(config,m,'музыка').steps[0].raw,'Какая музыка вам нравится?');
+});
+
 test('work keyword is expanded but plans, questions and negations keep their meaning',()=>{
   const m=fresh();
   assert.equal(E.resolve(config,m,'работа').steps[0].raw,'Ищу работу');
