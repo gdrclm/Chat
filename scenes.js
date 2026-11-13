@@ -141,7 +141,8 @@
         .sort((a,b)=>a.id.localeCompare(b.id));
       const people=Object.values(s.world.npcs).filter(n=>n.location===where.id&&!n.hidden)
         .map(n=>({id:n.id,name:n.name})).sort((a,b)=>a.id.localeCompare(b.id));
-      return {objects,people};
+      const routes=(H.getExits?.(s)||[]).map(exit=>({id:exit.id,name:exit.name,blocked:Boolean(exit.blocked)})).sort((a,b)=>a.id.localeCompare(b.id));
+      return {objects,people,routes};
     }
     function fingerprint(s,where){return hash(JSON.stringify(sceneSnapshot(s,where)));}
     function visualChanges(previous,current,revealed=[]){
@@ -165,6 +166,15 @@
       const newPeople=new Map(current.people.map(n=>[n.id,n]));
       for(const [id,p] of oldPeople)if(!newPeople.has(id))lines.push('Рядом больше нет '+p.name);
       for(const [id,p] of newPeople)if(!oldPeople.has(id))lines.push('Рядом появился персонаж '+p.name);
+      if(Array.isArray(previous.routes)&&Array.isArray(current.routes)){
+        const oldRoutes=new Map(previous.routes.map(e=>[e.id,e]));
+        const nowRoutes=new Map(current.routes.map(e=>[e.id,e]));
+        for(const [id,e] of nowRoutes){const old=oldRoutes.get(id);
+          if(!old)lines.push('Появился путь в «'+e.name+'»');
+          else if(old.blocked!==e.blocked)lines.push(e.blocked?'Проход в «'+e.name+'» закрыт':'Проход в «'+e.name+'» теперь открыт');
+        }
+        for(const [id,e] of oldRoutes)if(!nowRoutes.has(id))lines.push('Путь в «'+e.name+'» больше недоступен');
+      }
       return lines.slice(0,6);
     }
     function entryBlocks(s,phase='observation'){
@@ -189,8 +199,8 @@
       const exits=H.getExits?.(s)||[];
       const labels=objects.map(e=>'«'+e.label+'»'+(e.kind==='barrier'?(e.locked&&!e.opened?' (заперт)':e.opened?' (открыт)':''):''));
       return [
-        {kind:'location',locationId:id,phase:'observation',text:'Вы находитесь в локации «'+where.name+'». '+description},
-        {kind:'visible',locationId:id,phase:'observation',text:labels.length?'Видно, можно осмотреть: '+labels.join(', ')+'.':'Видимых предметов для взаимодействия нет.'},
+        {kind:'location',locationId:id,phase:'observation',text:'Вы находитесь в локации «'+where.name+'».'+(description==='Вы осматриваете место «'+where.name+'».'?'':' '+description)},
+        {kind:'visible',locationId:id,phase:'observation',text:labels.length?'Видно: '+labels.join(', ')+'.':'Видимых предметов для взаимодействия нет.'},
         {kind:'people',locationId:id,phase:'observation',text:people.length?'Рядом: '+people.map(n=>'«'+n.name+'»').join(', ')+'.':'Рядом никого не видно.'},
         {kind:'exits',locationId:id,phase:'observation',text:exits.length?'Пути из локации: '+exits.map(n=>'«'+n.name+'»'+(n.blocked?' (проход закрыт)':'')).join(', ')+'.':'Известных переходов отсюда нет.'}
       ];
