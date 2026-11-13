@@ -10,7 +10,7 @@ const place=m=>m.world.locations.find(v=>v.id===m.world.player.location);
 
 test('initial inspection is anchored in the current place, not only world lore',()=>{
  const result=step(fresh(),'Осматриваюсь');
- assert.match(result.text,/место «лавка»/);
+ assert.match(result.text,/локации «лавка»/);
  assert.match(result.text,/запечатанное письмо/);
  assert.equal(result.results[0].code,'scene_observed');
  assert.equal(result.outcome.information.novel,true);
@@ -130,7 +130,7 @@ test('route changes are reflected in repeated overview without inventing exits',
  const blocked=step(first.memory,'Осматриваюсь');
  assert.match(blocked.text,/Пути из локации:.*проход закрыт/);
  assert.match(blocked.text,/После прошлого осмотра:.*закрыт/);
- gate.opened=true;
+ blocked.memory.entities.find(e=>e.id===gate.id).opened=true;
  const open=step(blocked.memory,'Осматриваюсь');
  assert.match(open.text,/Пути из локации:/);
  assert.match(open.text,/Проход в «.*» теперь открыт/);
