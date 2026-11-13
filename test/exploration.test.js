@@ -49,7 +49,7 @@ test('audit A3: inspect and explore share the same observation history',()=>{
 test('audit A4/A8: a repeated look does not create a new discovery or progress',()=>{
  const first=E.reply(config,city(),'Осмотреть город');let r=first;
  for(let i=0;i<10;i++)r=E.reply(config,r.memory,'Осматриваюсь');
- assert.equal(r.memory.clocks.discovery,first.memory.clocks.discovery);assert.equal(r.memory.world.loops.exploration.discoveries.length,first.memory.world.loops.exploration.discoveries.length);assert.ok(r.text.length<350);
+ assert.equal(r.memory.clocks.discovery,first.memory.clocks.discovery);assert.equal(r.memory.world.loops.exploration.discoveries.length,first.memory.world.loops.exploration.discoveries.length);assert.match(r.text,/Видно:/);assert.match(r.text,/Пути из локации:/);
 });
 test('audit A5: an empty room has no invented footprints, clues or mystery progress',()=>{
  const c={world:'Пустая комната. Здесь нет предметов.',character:'Лис — тихий гость',player:'Путник'};
