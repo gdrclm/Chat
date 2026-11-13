@@ -29,12 +29,121 @@ function save() {
   try { localStorage.setItem(key, JSON.stringify(state)); }
   catch { status.textContent = 'Браузер не смог сохранить игру. Текущий диалог доступен до закрытия страницы.'; }
 }
+
+const optionMenu=document.querySelector('#command-suggestions');
+let currentOptions=[],selectedOption=-1;
+const normalizeWord=value=>String(value||'').toLocaleLowerCase('ru').replace(/ё/g,'е');
+function hideOptions(){
+  currentOptions=[];selectedOption=-1;optionMenu.hidden=true;optionMenu.replaceChildren();
+  field.setAttribute('aria-expanded','false');
+}
+function showOptions(){
+  const query=field.value.trim();
+  if(busy||query.length<2||query.includes('\n')){hideOptions();return;}
+  currentOptions=engine.searchActions(state.memory,query,6);
+  selectedOption=-1;optionMenu.replaceChildren();
+  for(const [index,option]of currentOptions.entries()){
+    const button=document.createElement('button');button.type='button';button.className='command-option';
+    button.setAttribute('role','option');button.setAttribute('aria-selected','false');
+    button.textContent=option.label;
+    button.addEventListener('click',()=>selectOption(index));optionMenu.append(button);
+  }
+  optionMenu.hidden=!currentOptions.length;field.setAttribute('aria-expanded',String(Boolean(currentOptions.length)));
+}
+function updateOptionSelection(){
+  for(const [i,button]of [...optionMenu.children].entries()){
+    button.setAttribute('aria-selected',String(i===selectedOption));
+  }
+}
+function selectOption(index){
+  const option=currentOptions[index];if(!option)return;
+  field.value=option.command;hideOptions();field.focus();
+  field.setSelectionRange(field.value.length,field.value.length);
+}
+function describeMention(target){
+  const memory=state.memory,world=memory.world;
+  if(target.type==='entity'){
+    const item=memory.entities.find(e=>e.id===target.id);
+    if(!item||item.hidden||!item.known||item.destroyed)return 'Сейчас этот объект недоступен для непосредственного взаимодействия.';
+    const knowledge=Object.values(world.player?.research?.knowledge||{}).find(k=>k.sourceId===item.id);
+    const observed=(world.loops?.exploration?.observed||[]).includes(item.id);
+    return knowledge?.text||(observed&&item.description)
+      ||(item.location==='inventory'?'Этот предмет находится среди ваших вещей.':'Объект находится в текущем месте. Дополнительные сведения можно получить осмотром.');
+  }
+  if(target.type==='npc'){
+    const n=world.npcs[target.id];
+    return n&&n.location===world.player.location&&!n.hidden
+      ?'Персонаж находится рядом. Его ответы зависят от того, что он знает и как относится к герою.'
+      :'Сейчас этот персонаж не рядом.';
+  }
+  if(target.type==='exit')return 'В это место ведёт известный переход. Сам переход выполняется отдельным действием.';
+  return 'Это возможный способ взаимодействия, но результат зависит от цели, доступных предметов и условий сцены. Выбор из подсказки лишь заполняет поле ввода.';
+}
+function contextTargets(){
+  const memory=state.memory,world=memory.world,here=world.player.location,targets=[];
+  for(const e of memory.entities||[]){
+    if(!e.known||e.hidden||e.destroyed||![memory.place,'inventory'].includes(e.location))continue;
+    targets.push({key:'entity:'+e.id,type:'entity',id:e.id,label:e.label,forms:[e.label,...(e.aliases||[])]});
+  }
+  for(const n of Object.values(world.npcs||{})){
+    if(n.location!==here||n.hidden||n.dialogueState?.status==='undiscovered')continue;
+    targets.push({key:'npc:'+n.id,type:'npc',id:n.id,label:n.name,forms:[n.name]});
+  }
+  for(const exit of engine.map(memory).exits||[]){
+    if(exit.blocked)continue;
+    targets.push({key:'exit:'+exit.name,type:'exit',label:exit.name,forms:[exit.name]});
+  }
+  return targets;
+}
+function matchesMention(word,form){
+  const token=normalizeWord(word),parts=normalizeWord(form).split(/[^a-zа-я0-9]+/u).filter(Boolean);
+  return parts.some(part=>token===part||(part.length>=5&&token.length>=5&&token.slice(0,4)===part.slice(0,4)));
+}
+function revealContext(section,target){
+  const previous=section.querySelector('.context-panel');
+  if(previous){const same=previous.dataset.key===target.key;previous.remove();if(same)return;}
+  const panel=document.createElement('div');panel.className='context-panel';panel.dataset.key=target.key;
+  const heading=document.createElement('strong');heading.textContent=target.label;
+  const info=document.createElement('p');info.textContent=describeMention(target);
+  panel.append(heading,info);
+  let options=engine.searchActions(state.memory,target.label,10);
+  if(target.type==='npc')options=options.filter(v=>v.kind==='talk');
+  if(target.type==='exit')options=options.filter(v=>v.kind==='move');
+  if(target.type==='entity')options=options.filter(v=>['inspect','open','close','take','use'].includes(v.kind)&&normalizeWord(v.command).includes(normalizeWord(target.label)));
+  for(const option of options.slice(0,3)){
+    const button=document.createElement('button');button.type='button';button.className='context-draft';
+    button.textContent=option.label;button.addEventListener('click',()=>{
+      field.value=option.command;hideOptions();field.focus();
+      field.setSelectionRange(field.value.length,field.value.length);
+    });panel.append(button);
+  }
+  section.append(panel);
+}
+function renderRichText(textNode,section,rowText){
+  const targets=contextTargets();let cursor=0,count=0;
+  for(const match of rowText.matchAll(/[a-zа-яё][a-zа-яё-]{2,}/giu)){
+    if(count>=7)break;
+    const token=match[0],word=normalizeWord(token),start=match.index;
+    const matched=targets.filter(t=>t.forms.some(v=>matchesMention(word,v)));
+    const action=/^(?:откры|закры|осмотр|изуч|взят|взять|взгля|провер|спрос|поговор|приблиз|подой|поднять|приподня|прочит|использ|исслед|перейт)/u.test(word);
+    const target=matched.length===1?matched[0]:matched.length===0&&action
+      ?{key:'action:'+word,type:'action',label:token}:null;
+    if(!target)continue;
+    textNode.append(document.createTextNode(rowText.slice(cursor,start)));
+    const link=document.createElement('button');link.type='button';link.className='context-term';
+    link.textContent=token;link.setAttribute('aria-label','Подробнее: '+target.label);
+    link.addEventListener('click',()=>revealContext(section,target));
+    textNode.append(link);cursor=start+token.length;count++;
+  }
+  textNode.append(document.createTextNode(rowText.slice(cursor)));
+}
+
 function render() {
   list.replaceChildren();
   if (!state.messages.length) {
     const intro = document.createElement('div'); intro.className = 'intro';
     const title = document.createElement('h3'); title.textContent = 'Каждая история начинается со слова.';
-    const text = document.createElement('p'); text.textContent = 'Начните с «Осматриваюсь». В «Мире» есть карта, цели, поручения и подходящие действия. Можно поставить собственную цель, уйти от загадки, работать и путешествовать со спутниками. В настройках — пять готовых историй.';
+    const text = document.createElement('p'); text.textContent = 'Напишите «осмотреться» или название того, что заинтересовало. По мере ввода появляются подходящие действия; выделенные слова в ответах раскрывают контекст без игрового хода.';
     intro.append(title, text); list.append(intro);
   }
   for (const message of state.messages) {
@@ -44,7 +153,7 @@ function render() {
       const type=['player','narrator','npc','developer'].includes(row.speaker?.type)?row.speaker.type:'narrator';
       const section=document.createElement('section');section.className='utterance speaker-'+type;section.dataset.speaker=type;section.dataset.trigger=row.trigger||'legacy';
       const label=document.createElement('small');label.textContent=type==='player'?'ВЫ':type==='npc'?(row.speaker.name||'ПЕРСОНАЖ'):type==='developer'?'РАЗРАБОТЧИК':'РАССКАЗЧИК';
-      const text=document.createElement('p');text.textContent=row.text;section.append(label,text);item.append(section);
+      const text=document.createElement('p');if(type==='narrator'||type==='npc')renderRichText(text,section,row.text);else text.textContent=row.text;section.append(label,text);item.append(section);
     }
     if(debugView&&message.outcome?.status) {
       const result = document.createElement('small');result.className='outcome-label';result.dataset.status=message.outcome.status;
@@ -103,7 +212,7 @@ chat.addEventListener('submit', async event => {
   if (!text) { status.textContent = 'Напишите сообщение.'; return; }
   busy = true; send.disabled = true; settings.querySelector('button').disabled = true;
   try {
-    state.messages.push({ role: 'user', content: text }); field.value = '';
+    hideOptions();state.messages.push({ role: 'user', content: text }); field.value = '';
     status.textContent = 'История продолжается…';
     render();
     const result = engine.reply(state.config, state.memory, text);
@@ -114,7 +223,16 @@ chat.addEventListener('submit', async event => {
     state.messages.pop(); field.value = text; status.textContent = `${error.message} Сообщение возвращено в поле ввода — попробуйте снова.`; save();
   } finally { busy = false; send.disabled = false; settings.querySelector('button').disabled = false; render(); }
 });
-field.addEventListener('keydown', event => { if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) { event.preventDefault(); send.click(); } });
+field.addEventListener('input',showOptions);
+field.addEventListener('keydown',event=>{
+  if(event.key==='ArrowDown'&&currentOptions.length){event.preventDefault();selectedOption=Math.min(currentOptions.length-1,selectedOption+1);updateOptionSelection();return;}
+  if(event.key==='ArrowUp'&&currentOptions.length){event.preventDefault();selectedOption=Math.max(-1,selectedOption-1);updateOptionSelection();return;}
+  if(event.key==='Escape'&&currentOptions.length){event.preventDefault();event.stopPropagation();hideOptions();return;}
+  if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing){
+    event.preventDefault();
+    if(selectedOption>=0&&currentOptions.length)selectOption(selectedOption);else send.click();
+  }
+});
 render();
 status.textContent = '';
 
@@ -140,17 +258,14 @@ document.querySelector('#import').addEventListener('change', async event => {
 
 document.querySelector('#debug-view').addEventListener('change',event=>{debugView=event.target.checked;try{localStorage.setItem('between-lines-debug',String(debugView));}catch{}render();});
 function showPage(page) {
-  for(const name of ['settings','world','actions','chat'])document.querySelector('#'+name+'-page').hidden=name!==page;
-  const focus=page==='settings'?'#close-settings':page==='world'?'#close-world':page==='actions'?'#action-search':'#open-settings';document.querySelector(focus).focus();
+  for(const name of ['settings','world','chat'])document.querySelector('#'+name+'-page').hidden=name!==page;
+  const focus=page==='settings'?'#close-settings':page==='world'?'#close-world':'#open-settings';document.querySelector(focus).focus();
 }
 function showSettings(open) { showPage(open?'settings':'chat'); }
 document.querySelector('#open-settings').addEventListener('click', () => showSettings(true));
 document.querySelector('#close-settings').addEventListener('click', () => showSettings(false));
 document.querySelector('#open-world').addEventListener('click',()=>showPage('world'));
 document.querySelector('#close-world').addEventListener('click',()=>showPage('chat'));
-document.querySelector('#open-actions').addEventListener('click',()=>{renderCatalog();showPage('actions');});
-document.querySelector('#close-actions').addEventListener('click',()=>showPage('world'));
-document.querySelector('#action-search').addEventListener('input',renderCatalog);
 for(const preset of globalThis.StoryPresets){const option=document.createElement('option');option.value=preset.id;option.textContent=preset.name;document.querySelector('#story-preset').append(option);}
 document.querySelector('#apply-preset').addEventListener('click',()=>{const preset=globalThis.StoryPresets.find(p=>p.id===document.querySelector('#story-preset').value);if(!preset)return;for(const name of ['world','character','player','canon'])settings.elements.namedItem(name).value=preset[name];settings.elements.namedItem('world').focus();});
 document.addEventListener('keydown', event => { if (event.key === 'Escape') showPage('chat'); });
@@ -165,9 +280,9 @@ function renderWorld() {
   for(const exit of map.exits) {const b=document.createElement('button');b.type='button';b.textContent=exit.name+(exit.blocked?' · заперто':' →');b.disabled=exit.blocked;b.addEventListener('click',()=>issueCommand('Иду в '+exit.name));exits.append(b);}
   const people=document.querySelector('#nearby-people');people.replaceChildren();
   for(const person of Object.values(world.npcs).filter(n=>n.location===world.player.location&&!n.hidden&&n.agency?.activity!=='sleeping'&&n.dialogueState?.status!=='undiscovered')){const b=document.createElement('button');b.type='button';b.textContent=person.name;b.addEventListener('click',()=>issueCommand('Говорю с '+person.name));people.append(b);}
-  const interlocutor=world.npcs[world.activeNpcId],topicButtons=document.querySelector('#conversation-topics');topicButtons.replaceChildren();
+  const interlocutor=world.npcs[world.activeNpcId];
   const summary=document.querySelector('#conversation-summary');summary.textContent=interlocutor?`${interlocutor.name} · Тема: ${interlocutor.conversation.activeTopic?globalThis.ConversationTopics.topic(interlocutor.conversation.activeTopic).label:'знакомство'} · Обсуждено тем: ${Object.keys(interlocutor.conversation.discussedTopics).length}`:'Обратитесь к замеченному персонажу, чтобы начать разговор.';
-  if(interlocutor)for(const id of ['name','identity','place','occupation','hobbies','goal','trust'].filter(id=>!interlocutor.conversation.discussedTopics[id]).slice(0,4)){const topic=globalThis.ConversationTopics.topic(id),button=document.createElement('button');button.type='button';button.textContent=topic.questions[0];button.addEventListener('click',()=>issueCommand(topic.questions[0]));topicButtons.append(button);}
+
   const conversationRecords=document.querySelector('#conversation-records');conversationRecords.replaceChildren();
   for(const person of Object.values(world.npcs).filter(n=>n.dialogueState.status!=='undiscovered')){const m=person.conversation,row=document.createElement('li');row.textContent=`${person.name}: ${m.activeTopic?globalThis.ConversationTopics.topic(m.activeTopic).label:'тем пока нет'} · раскрыто сведений: ${m.disclosedFacts.length} · неотвеченных вопросов: ${m.unresolvedQuestions.length}${m.pendingNpcQuestion?' · вопрос герою: '+m.pendingNpcQuestion.text:''}`;conversationRecords.append(row);}
   const research=world.player.research;
@@ -216,12 +331,7 @@ function renderRpg(world,memory){
   rows('rpg-cases',r.cases.map(c=>c.name+' · '+label(c.status)+' · источников '+c.evidence.length+' · показаний '+c.testimony.length));
   rows('rpg-groups',(r.memberships.player||[]).map(m=>(r.factions.find(f=>f.id===m.factionId)?.name||'Организация')+' · '+m.title+' · '+label(m.status)));
   document.querySelector('#rpg-settlement').textContent='Инфраструктура '+r.settlement.infrastructure+' · Благополучие '+r.settlement.prosperity+' · Решений '+r.settlement.decisions.length+(r.ending?' · Финал истории достигнут':'');
-  const hints=document.querySelector('#suggested-actions');hints.replaceChildren();for(const command of engine.suggestions(memory)){const button=document.createElement('button');button.type='button';button.textContent=command;button.addEventListener('click',()=>issueCommand(command));hints.append(button);}
-}
-function renderCatalog(){
-  const query=document.querySelector('#action-search').value.toLowerCase().replace(/ё/g,'е'),entries=globalThis.ActionCatalog.entries.filter(e=>(e.id+' '+e.description+' '+(e.examples||[]).join(' ')).toLowerCase().replace(/ё/g,'е').includes(query)),ul=document.querySelector('#action-catalog');ul.replaceChildren();
-  document.querySelector('#action-count').textContent='Найдено '+entries.length+' из 325';
-  for(const e of entries){const li=document.createElement('li');li.value=e.id;const text=document.createElement('p');text.textContent=e.description;li.append(text);if(e.examples?.length){const details=document.createElement('details'),summary=document.createElement('summary');summary.textContent='Пример сценария';details.append(summary);for(const example of e.examples){const p=document.createElement('p');p.textContent=example;details.append(p);}const button=document.createElement('button');button.type='button';button.className='secondary';button.textContent='Вставить последнюю реплику';button.addEventListener('click',()=>{showPage('chat');field.value=e.examples.at(-1);field.focus();});details.append(button);li.append(details);}ul.append(li);}
+
 }
 function resizeViewport() {
   const viewport = window.visualViewport;
