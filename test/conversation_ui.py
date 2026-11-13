@@ -65,8 +65,10 @@ with sync_playwright() as p:
         assert person()['trust']==trust
         page.locator('#open-world').tap()
         assert 'Мира' in page.locator('#conversation-summary').inner_text()
-        assert page.locator('#conversation-topics button').count()>0
         page.locator('#close-world').tap()
+        page.locator('#message').fill('семья')
+        assert page.locator('#command-suggestions .command-option').filter(has_text='Спросить: Семья').count()>0
+        page.locator('#message').fill('')
         for command in ['Выхожу на улицу','Иду в город','Иду в мастерскую']:send(command)
         assert memory()['world']['activeNpcId'] is None
         assert 'Илья' in send('Как вас зовут?')
