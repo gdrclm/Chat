@@ -680,6 +680,11 @@
       if(topics.length===1)return topics[0].questions[0];
     }
     if(/^(?:работа|подработка|заработок)$/u.test(q))return 'Ищу работу';
+    // A distinctive keyword can identify one existing dialogue topic or
+    // situational option without a long command. Ambiguity stays unresolved.
+    const contextual=contextOptions(s,q,10);
+    const safe=contextual.filter(option=>['question','situation'].includes(option.kind));
+    if(contextual.length===1&&safe.length===1)return safe[0].command;
     return input;
   }
 
