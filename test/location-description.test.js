@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import '../story-presets.js';
 for(const file of ['spatial','narrator','messages','dialogue','developer','social','conversation-topics','npc-personality','conversation-memory','npc-biography','conversation-engine','action-catalog','rpg-core','physical-system','investigation-system','equipment-crafting','action-resolver','goals-story','npc-agency','economy-system','society-system','life-combat','genre-system','extended-actions','rpg-engine','semantic','scenes','simulation','engine']) await import('../'+file+'.js');
 
 const E=globalThis.StoryEngine;
@@ -27,7 +28,7 @@ test('nearby local scenes have distinct descriptions including the garden',()=>{
  const cityLook=go(city.memory,'Осматриваюсь');
  assert.match(cityLook.text,/У городского перекрёстка/);
  assert.doesNotMatch(cityLook.text,/Ночной город, где воспоминания/);
- const garden=go(go(cityLook.memory,'Иду в улицу').memory,'Иду в лавку'); // Return through actual street.
+ const garden=go(go(cityLook.memory,'Иду на улицу').memory,'Иду в лавку'); // Return through actual street.
  const gardenArrival=go(garden.memory,'Иду в сад');
  const gardenLook=go(gardenArrival.memory,'Осматриваюсь');
  assert.match(gardenLook.text,/Сад отделён от зданий/);
