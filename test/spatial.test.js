@@ -150,7 +150,7 @@ test('a repeat visit does not replay the author first-person introduction or cre
  const r=E.reply(config,first.memory,'Вернуться в лавку');assert.equal(r.memory.place,'лавка');assert.doesNotMatch(r.text,/Я прихожу|за своим прошлым/);assert.equal(r.memory.world.events.filter(e=>e.type==='knowledge_learned').length,before);assert.equal(r.memory.stage,first.memory.stage);
 });
 test('a physical destruction still refreshes the scene and is not hidden by narrative deduplication',()=>{
- const m=play(config,'Осмотреться').memory;const r=E.reply(config,m,'Ломаю ларец, затем осмотреться');assert.ok(r.memory.entities.find(e=>e.label==='ларец').destroyed);assert.match(r.text,/обстановка изменилась/);assert.match(r.text,/флакон/);assert.ok(r.narrative.some(b=>b.kind==='change'));
+ const m=play(config,'Осмотреться').memory;const r=E.reply(config,m,'Ломаю ларец, затем осмотреться');assert.ok(r.memory.entities.find(e=>e.label==='ларец').destroyed);assert.match(r.text,/После прошлого осмотра:/);assert.match(r.text,/флакон/);assert.ok(r.narrative.some(b=>b.kind==='change'));
 });
 test('two observations separated by a physical action retain their distinct results',()=>{
  const r=E.reply(config,fresh(),'Осмотреться, затем ломаю ларец, затем осмотреться');assert.equal(r.results.length,3);assert.equal(r.results[0].status,'success');assert.equal(r.results[1].status,'partial_success');assert.equal(r.results[1].completed,true);assert.equal(r.results[2].status,'success');assert.ok(r.narrative.some(b=>b.kind==='change'));assert.match(r.text,/флакон/);
