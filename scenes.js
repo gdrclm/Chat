@@ -177,6 +177,24 @@
       const description=repaired?'В мастерской на верстаке работает собранный механизм. Причина прежней поломки устранена; инструменты сложены рядом.':usesWorldOverview?'Вы осматриваете место «'+where.name+'».':where.scene.description;
       return [{kind:'location',locationId:where.id,phase,text:description},...(seen.length?[{kind:'visible',locationId:where.id,phase,text:'Видно: '+seen.map(e=>'«'+e.label+'»').slice(0,5).join(', ')+'.'}]:[])];
     }
+    // "Осмотреться" is a reusable scene overview, not a request for a delta.
+    // Every call must show the present location, visible interactables,
+    // nearby characters and actual outgoing routes.
+    function overviewBlocks(s){
+      const where=node(s),id=where.id;
+      const entry=entryBlocks(s,'observation');
+      const description=entry.find(block=>block.kind==='location')?.text||'';
+      const objects=s.entities.filter(e=>e.location===s.place&&isVisible(s,e));
+      const people=Object.values(s.world.npcs).filter(n=>n.location===id&&!n.hidden&&!['dead','incapacitated'].includes(n.status));
+      const exits=H.getExits?.(s)||[];
+      const labels=objects.map(e=>'«'+e.label+'»'+(e.kind==='barrier'?(e.locked&&!e.opened?' (заперт)':e.opened?' (открыт)':''):''));
+      return [
+        {kind:'location',locationId:id,phase:'observation',text:'Вы находитесь в локации «'+where.name+'». '+description},
+        {kind:'visible',locationId:id,phase:'observation',text:labels.length?'Видно, можно осмотреть: '+labels.join(', ')+'.':'Видимых предметов для взаимодействия нет.'},
+        {kind:'people',locationId:id,phase:'observation',text:people.length?'Рядом: '+people.map(n=>'«'+n.name+'»').join(', ')+'.':'Рядом никого не видно.'},
+        {kind:'exits',locationId:id,phase:'observation',text:exits.length?'Пути из локации: '+exits.map(n=>'«'+n.name+'»'+(n.blocked?' (проход закрыт)':'')).join(', ')+'.':'Известных переходов отсюда нет.'}
+      ];
+    }
     function entry(s){return entryBlocks(s).map(block=>block.text).join(' ');}
     function describe(s,e){
       if(e.localKey==='mechanism')return e.condition==='repaired'?'Механизм собран и работает ровно. Штифт удерживает шестерню; прежней поломки больше нет.':e.pinInstalled?'Штифт установлен. Осталось проверить ход механизма.':e.description;
@@ -214,19 +232,11 @@
         for(const e of s.entities.filter(e=>e.location===s.place&&!e.destroyed&&!e.known&&H.containerAccess(s,e))){
           if(canReveal(s,e,m)){e.known=true;e.hidden=false;revealed.push(e.label);}
         }
-        const currentVisual=sceneSnapshot(s,where);
-        const stamp=fingerprint(s,where);
+        const currentVisual=sceneSnapshot(s,where),stamp=fingerprint(s,where);
         const visible=s.entities.filter(e=>e.location===s.place&&isVisible(s,e));
-        // Comparing with the last visual survey also works if the player
-        // listened, talked or interacted with the scenery in between.
         const changes=m==='survey'?visualChanges(previousVisual,currentVisual,revealed):[];
-        const firstMethod=!previousMethod;
         if(m==='survey')scene.lastSurveySnapshot=currentVisual;
         scene.observed[m]=stamp;scene.lastObservedState=stamp;
-        const repeated=!firstSurvey&&!firstMethod&&!changes.length&&!revealed.length;
-        if(repeated)return ok('Вы осматриваетесь ещё раз. Заметных изменений нет. Чтобы узнать подробности, выберите конкретный предмет или место.','already_observed',{novel:false,locationId:where.id,discoveries:[]});
-        if(m==='survey'&&!firstSurvey&&!changes.length&&!revealed.length)
-          return ok('Новых заметных деталей нет. Для подробностей можно изучить конкретный объект.','already_observed',{novel:false,locationId:where.id,discoveries:[]});
         if(!s.world.loops.exploration.observed.includes(where.id))s.world.loops.exploration.observed.push(where.id);
         const opportunities=visible.slice(0,6).map(e=>'изучить '+e.label);
         for(const cap of opportunities)if(!r.capabilities.includes(cap))r.capabilities.push(cap);
@@ -237,18 +247,19 @@
         }
         const actors=Object.values(s.world.npcs).filter(n=>n.location===where.id);
         for(const person of actors)if(!s.world.loops.social.noticed.includes(person.id))s.world.loops.social.noticed.push(person.id);
-        const ambient=m==='listen'
-          ?s.entities.filter(e=>e.location===s.place&&e.sound&&!e.destroyed).map(e=>e.sound).join(' ')||'Вы прислушиваетесь. Новых звуков не обнаружено.'
-          :entry(s);
-        const narration=[];
-        if(m==='listen')narration.push({kind:'observation',locationId:where.id,text:ambient});
-        else if(firstSurvey)narration.push(...entryBlocks(s));
-        else if(changes.length)narration.push({kind:'change',locationId:where.id,text:'После прошлого осмотра: '+changes.join('; ')+'.'});
+        const ambient=s.entities.filter(e=>e.location===s.place&&e.sound&&!e.destroyed).map(e=>e.sound).join(' ')||'Вы прислушиваетесь. Новых звуков не обнаружено.';
+        const narration=m==='listen'
+          ?[{kind:'observation',locationId:where.id,text:ambient}]
+          :overviewBlocks(s);
+        if(changes.length)narration.push({kind:'change',locationId:where.id,text:'После прошлого осмотра: '+changes.join('; ')+'.'});
         if(revealed.length)narration.push({kind:'findings',locationId:where.id,text:'При осмотре заметно: '+revealed.map(label=>'«'+label+'»').join(', ')+'.'});
         const output=narration.map(block=>block.text).join('\n');
-        return {...ok(output||'Новых заметных деталей нет.','scene_observed',{
-          novel:Boolean(firstSurvey||changes.length||revealed.length||(m==='listen'&&ambient!=='Вы прислушиваетесь. Новых звуков не обнаружено.')),
-          locationId:where.id,discoveries:findings,opportunities}),narration};
+        const novel=m==='listen'
+          ? Boolean(revealed.length||(!previousMethod&&ambient!=='Вы прислушиваетесь. Новых звуков не обнаружено.'))
+          : Boolean(firstSurvey||changes.length||revealed.length);
+        return {...ok(output,novel?'scene_observed':'already_observed',{
+          novel,locationId:where.id,discoveries:findings,opportunities
+        }),narration};
       }
       const e=selection.entity;
       if(e.destroyed){
