@@ -35,13 +35,12 @@
 <aside id="world-page" hidden aria-label="Мир и персонажи">
   <div class="page-top"><span class="eyebrow">МИР И ПЕРСОНАЖИ</span><button id="close-world" type="button" class="secondary">К чату ✕</button></div>
   <p id="world-time" class="world-clock"></p><p id="world-body" class="hint"></p>
-  <h3>Что можно попробовать</h3><div id="suggested-actions" class="world-buttons"></div><button id="open-actions" type="button" class="secondary">Каталог · 325 возможностей</button>
   <h3>Мои цели и истории</h3><ul id="rpg-goals"></ul><ul id="rpg-arcs"></ul>
   <h3>Снаряжение и груз</h3><p id="rpg-load" class="hint"></p><ul id="rpg-equipment"></ul>
   <h3>Поручения и встречи</h3><ul id="rpg-tasks"></ul><ul id="rpg-appointments"></ul>
   <h2 id="map-title">Карта</h2><p class="hint">Переход выполняется отдельным ходом. Доступны только соединённые места.</p><div id="map-exits" class="world-buttons"></div>
   <h3>Рядом</h3><div id="nearby-people" class="world-buttons"></div>
-  <h3>Разговор</h3><p id="conversation-summary" class="hint"></p><div id="conversation-topics" class="world-buttons"></div>
+
   <details><summary>Память бесед · просмотр автора</summary><ul id="conversation-records"></ul></details>
   <h3>Исследование и знания</h3><p id="exploration-progress" class="hint"></p><ul id="learned-facts"></ul><details><summary>Изученные свойства предметов</summary><ul id="known-properties"></ul></details>
   <h3>Дела и деньги</h3><p id="world-work"></p><p class="hint">На рынке и в мастерской можно искать работу. Загадку лавки для этого решать не требуется.</p>
@@ -52,16 +51,11 @@
   <details><summary>Поступки и сведения · просмотр автора</summary><ul id="social-event-records"></ul><ul id="social-knowledge-records"></ul><p class="hint">Само событие, наблюдение свидетеля и пересказ хранятся отдельно. Пропажа сама по себе не раскрывает виновника.</p></details>
   <details><summary>Убеждения персонажей · просмотр автора</summary><ul id="belief-records"></ul><p class="hint">Убеждение персонажа может быть ошибочным. Истина мира задаётся автором и событиями, отдельно от этих версий.</p></details>
 </aside>
-<aside id="actions-page" hidden aria-label="Каталог действий">
-  <div class="page-top"><span class="eyebrow">325 ВОЗМОЖНОСТЕЙ</span><button id="close-actions" type="button" class="secondary">К миру ←</button></div>
-  <h2>Ваш следующий ход</h2><p class="hint">Возможности зависят от мира, доступных вещей и отношений. Вопрос, замысел и выполненное действие различаются. В готовых историях уже есть предметы для разных занятий.</p>
-  <label>Найти действие<input id="action-search" type="search" placeholder="Верёвка, работа, разговор, 112…" autocomplete="off"></label><p id="action-count" class="hint" aria-live="polite"></p><ol id="action-catalog"></ol>
-</aside>
 <main id="chat-page">
   <header><div><span class="eyebrow">МЕЖДУ СТРОК · 6.0</span><h2 id="story-title">Ваша история</h2></div><div class="header-actions"><span id="badge">● Офлайн</span><button id="open-world" type="button">Мир</button><button id="open-settings" type="button" aria-label="Открыть настройки">⚙</button></div></header>
   <p id="memory" class="hint" aria-live="polite"></p>
   <section id="messages" aria-label="Диалог" aria-live="polite"></section>
-  <div class="compose"><p id="status" role="status">Запуск… Если кнопки не отвечают, откройте файл в браузере, а не в предпросмотре мессенджера.</p><form id="chat"><textarea id="message" aria-label="Ваш ответ" placeholder="Что вы скажете или сделаете?" rows="2" maxlength="6000" required></textarea><button id="send" type="submit">Отправить</button></form><p class="hint">Enter — отправить · Shift + Enter — новая строка</p></div>
+  <div class="compose"><p id="status" role="status">Запуск… Если кнопки не отвечают, откройте файл в браузере, а не в предпросмотре мессенджера.</p><div id="command-suggestions" class="command-suggestions" role="listbox" aria-label="Подходящие действия" hidden></div><form id="chat"><textarea id="message" aria-label="Ваш ответ" placeholder="Слово, вопрос или действие…" aria-autocomplete="list" aria-controls="command-suggestions" aria-expanded="false" rows="2" maxlength="6000" required></textarea><button id="send" type="submit">Отправить</button></form><p class="hint">Enter — отправить · Shift + Enter — новая строка</p></div>
 </main>
 <noscript><div class="no-script">Для игры нужен JavaScript. Откройте файл в полноценном браузере: предпросмотр вложений может блокировать скрипты.</div></noscript>
 </body></html>
