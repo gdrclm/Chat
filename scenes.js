@@ -131,8 +131,41 @@
       if(d.requires&&!d.requires.every(k=>fact(s,k)))return false;
       return !d.method||d.method===m;
     }
-    function fingerprint(s,where){
-      return hash(JSON.stringify({description:where.scene.description,objects:s.entities.filter(e=>e.location===where.name).map(e=>[e.id,e.known,e.hidden,e.opened,e.openingDegree,e.containerId,e.supportId,e.destroyed,e.condition,e.moved,e.pinInstalled]),actors:Object.values(s.world.npcs).filter(n=>n.location===where.id).map(n=>n.id),revision:where.scene.revision}));
+    // Only observable features belong to the scene's visual history.
+    // Internal revisions, hidden items and unreachable container contents
+    // must not make a harmless repeat survey announce a mysterious change.
+    function sceneSnapshot(s,where){
+      const objects=s.entities.filter(e=>e.location===where.name&&isVisible(s,e))
+        .map(e=>({id:e.id,label:e.label,opened:Boolean(e.opened),openingDegree:e.openingDegree||'',
+          moved:Boolean(e.moved),condition:e.condition||'',pinInstalled:Boolean(e.pinInstalled)}))
+        .sort((a,b)=>a.id.localeCompare(b.id));
+      const people=Object.values(s.world.npcs).filter(n=>n.location===where.id&&!n.hidden)
+        .map(n=>({id:n.id,name:n.name})).sort((a,b)=>a.id.localeCompare(b.id));
+      return {objects,people};
+    }
+    function fingerprint(s,where){return hash(JSON.stringify(sceneSnapshot(s,where)));}
+    function visualChanges(previous,current,revealed=[]){
+      if(!previous||!Array.isArray(previous.objects)||!Array.isArray(previous.people))return [];
+      const before=new Map(previous.objects.map(e=>[e.id,e]));
+      const after=new Map(current.objects.map(e=>[e.id,e]));
+      const discovered=new Set(revealed),lines=[];
+      for(const [id,old] of before){
+        const e=after.get(id);
+        if(!e){lines.push('«'+old.label+'» больше не видно на прежнем месте');continue;}
+        if(old.label!==e.label)lines.push('«'+old.label+'» теперь выглядит как «'+e.label+'»');
+        if(old.opened!==e.opened||old.openingDegree!==e.openingDegree)
+          lines.push(e.opened?(e.openingDegree==='slightly'?'«'+e.label+'» приоткрыт':'Открыт доступ внутрь «'+e.label+'»'):'«'+e.label+'» снова закрыт');
+        if(old.moved!==e.moved)lines.push('Изменилось положение «'+e.label+'»');
+        if(old.condition!==e.condition||old.pinInstalled!==e.pinInstalled)
+          lines.push('Изменилось состояние «'+e.label+'»');
+      }
+      for(const [id,e] of after)if(!before.has(id)&&!discovered.includes(e.label))
+        lines.push('Теперь видно «'+e.label+'»');
+      const oldPeople=new Map(previous.people.map(n=>[n.id,n]));
+      const newPeople=new Map(current.people.map(n=>[n.id,n]));
+      for(const [id,p] of oldPeople)if(!newPeople.has(id))lines.push('Рядом больше нет '+p.name);
+      for(const [id,p] of newPeople)if(!oldPeople.has(id))lines.push('Рядом появился персонаж '+p.name);
+      return lines.slice(0,6);
     }
     function entryBlocks(s,phase='observation'){
       const where=node(s);const seen=s.entities.filter(e=>e.location===s.place&&e.known&&!e.hidden&&!e.destroyed&&H.containerAccess(s,e));
@@ -172,21 +205,48 @@
       if(selection.scene&&selection.scene.id!==where.id)return fail('refused','location_elsewhere','Для исследования места «'+selection.scene.name+'» сначала нужно туда перейти.');
       if(!selection.scene&&!selection.entity)return fail('clarification','unknown_research_target','Такого объекта здесь не установлено. Назовите существующую деталь или осмотритесь.');
       if(selection.scene){
-        const before=fingerprint(s,where);const previous=where.scene.observed[m];let revealed=[];
-        for(const e of s.entities.filter(e=>e.location===s.place&&!e.destroyed&&!e.known&&H.containerAccess(s,e)))if(canReveal(s,e,m)){e.known=true;e.hidden=false;revealed.push(e.label);}
+        const scene=where.scene,firstSurvey=m==='survey'&&!scene.observed.survey;
+        const previousVisual=scene.lastSurveySnapshot||null;
+        const previousMethod=scene.observed[m];
+        const revealed=[];
+        for(const e of s.entities.filter(e=>e.location===s.place&&!e.destroyed&&!e.known&&H.containerAccess(s,e))){
+          if(canReveal(s,e,m)){e.known=true;e.hidden=false;revealed.push(e.label);}
+        }
+        const currentVisual=sceneSnapshot(s,where);
         const stamp=fingerprint(s,where);
         const visible=s.entities.filter(e=>e.location===s.place&&isVisible(s,e));
-        if(previous===stamp&&!revealed.length)return ok('Обстановка не изменилась.'+(visible.length?' Можно сосредоточиться на '+visible.map(e=>'«'+e.label+'»').slice(0,4).join(', ')+'.':' Доступных объектов для изучения нет.'),'already_observed',{novel:false,locationId:where.id,discoveries:[]});
-        const first=!Object.keys(where.scene.observed).length;const changed=where.scene.lastObservedState&&where.scene.lastObservedState!==stamp;where.scene.observed[m]=stamp;where.scene.lastObservedState=stamp;
+        // Comparing with the last visual survey also works if the player
+        // listened, talked or interacted with the scenery in between.
+        const changes=m==='survey'?visualChanges(previousVisual,currentVisual,revealed):[];
+        const firstMethod=!previousMethod;
+        if(m==='survey')scene.lastSurveySnapshot=currentVisual;
+        scene.observed[m]=stamp;scene.lastObservedState=stamp;
+        const repeated=!firstSurvey&&!firstMethod&&!changes.length&&!revealed.length;
+        if(repeated)return ok('Вы осматриваетесь ещё раз. Заметных изменений нет. Чтобы узнать подробности, выберите конкретный предмет или место.','already_observed',{novel:false,locationId:where.id,discoveries:[]});
+        if(m==='survey'&&!firstSurvey&&!changes.length&&!revealed.length)
+          return ok('Новых заметных деталей нет. Для подробностей можно изучить конкретный объект.','already_observed',{novel:false,locationId:where.id,discoveries:[]});
         if(!s.world.loops.exploration.observed.includes(where.id))s.world.loops.exploration.observed.push(where.id);
         const opportunities=visible.slice(0,6).map(e=>'изучить '+e.label);
         for(const cap of opportunities)if(!r.capabilities.includes(cap))r.capabilities.push(cap);
         const findings=[];
-        for(const label of revealed){const e=s.entities.find(v=>v.label===label&&v.location===s.place);if(e&&know(s,{key:'noticed:'+e.id,text:'Замечен доступный предмет: '+e.label,unlocks:e.portable?['взять '+e.label]:[]},e,where.id))findings.push('noticed:'+e.id);}
-        const actors=Object.values(s.world.npcs).filter(n=>n.location===where.id);for(const person of actors)if(!s.world.loops.social.noticed.includes(person.id))s.world.loops.social.noticed.push(person.id);
-        const ambient=m==='listen'?s.entities.filter(e=>e.location===s.place&&e.sound&&!e.destroyed).map(e=>e.sound).join(' ')||'Вы прислушиваетесь. Новых звуков не обнаружено.':entry(s);
-        const result=ok((changed?'С прошлого осмотра обстановка изменилась. ':'')+ambient+(revealed.length?'\nПри осмотре заметно: '+revealed.join(', ')+'.':''),'scene_observed',{novel:first||before!==stamp||previous!==stamp,locationId:where.id,discoveries:findings,opportunities});
-        result.narration=[...(changed?[{kind:'change',locationId:where.id,text:'С прошлого осмотра обстановка изменилась.'}]:[]),...(m==='listen'?[{kind:'observation',locationId:where.id,text:ambient}]:entryBlocks(s)),...(revealed.length?[{kind:'findings',locationId:where.id,text:'При осмотре заметно: '+revealed.join(', ')+'.'}]:[])];return result;
+        for(const label of revealed){
+          const e=s.entities.find(v=>v.label===label&&v.location===s.place);
+          if(e&&know(s,{key:'noticed:'+e.id,text:'Замечен доступный предмет: '+e.label,unlocks:e.portable?['взять '+e.label]:[]},e,where.id))findings.push('noticed:'+e.id);
+        }
+        const actors=Object.values(s.world.npcs).filter(n=>n.location===where.id);
+        for(const person of actors)if(!s.world.loops.social.noticed.includes(person.id))s.world.loops.social.noticed.push(person.id);
+        const ambient=m==='listen'
+          ?s.entities.filter(e=>e.location===s.place&&e.sound&&!e.destroyed).map(e=>e.sound).join(' ')||'Вы прислушиваетесь. Новых звуков не обнаружено.'
+          :entry(s);
+        const narration=[];
+        if(m==='listen')narration.push({kind:'observation',locationId:where.id,text:ambient});
+        else if(firstSurvey)narration.push(...entryBlocks(s));
+        else if(changes.length)narration.push({kind:'change',locationId:where.id,text:'После прошлого осмотра: '+changes.join('; ')+'.'});
+        if(revealed.length)narration.push({kind:'findings',locationId:where.id,text:'При осмотре заметно: '+revealed.map(label=>'«'+label+'»').join(', ')+'.'});
+        const output=narration.map(block=>block.text).join('\n');
+        return {...ok(output||'Новых заметных деталей нет.','scene_observed',{
+          novel:Boolean(firstSurvey||changes.length||revealed.length||(m==='listen'&&ambient!=='Вы прислушиваетесь. Новых звуков не обнаружено.')),
+          locationId:where.id,discoveries:findings,opportunities}),narration};
       }
       const e=selection.entity;
       if(e.destroyed){
