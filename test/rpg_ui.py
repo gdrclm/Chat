@@ -16,7 +16,16 @@ with sync_playwright() as p:
    assert page.locator('#send').is_enabled()
   page.locator('#open-settings').tap();page.locator('#story-preset').select_option('craft');page.locator('#apply-preset').tap();page.locator('#settings button[type=submit]').tap()
   page.locator('#open-settings').tap();page.locator('#reset').tap();page.locator('#close-settings').tap()
-  send('Осматриваюсь');page.locator('#message').fill('табурет')
+  send('Осматриваюсь')
+  before_context_turn=memory()['turn']
+  target=page.locator('article.assistant').last.locator('.context-term').filter(has_text='тележка').first
+  assert target.count()==1
+  target.tap()
+  assert page.locator('article.assistant').last.locator('.context-panel').count()==1
+  assert memory()['turn']==before_context_turn,'opening context must not consume a turn'
+  target.tap()
+  assert page.locator('article.assistant').last.locator('.context-panel').count()==0
+  page.locator('#message').fill('табурет')
   assert page.locator('#command-suggestions .command-option').count()>0
   page.locator('#command-suggestions .command-option').filter(has_text='Сажусь на табурет').tap()
   assert page.locator('#message').input_value()=='Сажусь на табурет'
