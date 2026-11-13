@@ -159,7 +159,7 @@
         if(old.condition!==e.condition||old.pinInstalled!==e.pinInstalled)
           lines.push('Изменилось состояние «'+e.label+'»');
       }
-      for(const [id,e] of after)if(!before.has(id)&&!discovered.includes(e.label))
+      for(const [id,e] of after)if(!before.has(id)&&!discovered.has(e.label))
         lines.push('Теперь заметен объект «'+e.label+'»');
       const oldPeople=new Map(previous.people.map(n=>[n.id,n]));
       const newPeople=new Map(current.people.map(n=>[n.id,n]));
