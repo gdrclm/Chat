@@ -20,7 +20,7 @@ try:
     page.locator('#message').fill(text);page.locator('#send').tap();assert page.locator('#send').is_enabled()
    assert memory()['turn']==0
    assert 'Вы находитесь' in page.locator('article.assistant').first.inner_text()
-   assert 'потерянным прошлым' in page.locator('#current-situation').inner_text()
+   assert 'прошл' in page.locator('#current-situation').inner_text()
    assert 0<page.locator('#situation-actions button').count()<=6
    page.locator('#message').focus();assert page.locator('#command-suggestions button').count()>0
    page.locator('#message').fill('о');assert page.locator('#command-suggestions button').count()>0

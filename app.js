@@ -14,6 +14,7 @@ let debugView=false;
 try {debugView=localStorage.getItem('between-lines-debug')==='true';}catch{}
 document.querySelector('#debug-view').checked=debugView;
 let busy = false;
+let selectedAction=null;
 let state = { config: Object.fromEntries(new FormData(settings)), messages: [], memory: engine.fresh() };
 try {
   const saved = JSON.parse(localStorage.getItem(key));
@@ -57,7 +58,7 @@ function updateOptionSelection(){
 }
 function selectOption(index,execute=false){
   const option=currentOptions[index];if(!option)return;
-  field.value=option.command;hideOptions();field.focus();
+  field.value=option.command;selectedAction=option;hideOptions();field.focus();
   field.setSelectionRange(field.value.length,field.value.length);
   if(execute)chat.requestSubmit();
 }
@@ -115,7 +116,7 @@ function revealContext(section,target){
   for(const option of options.slice(0,3)){
     const button=document.createElement('button');button.type='button';button.className='context-draft';
     button.textContent=option.label;button.addEventListener('click',()=>{
-      field.value=option.command;hideOptions();field.focus();
+      field.value=option.command;selectedAction=option;hideOptions();field.focus();
       field.setSelectionRange(field.value.length,field.value.length);
     });panel.append(button);
   }
@@ -158,11 +159,12 @@ function render() {
     const mentionTargets=Array.isArray(message.mentions)?message.mentions:[];
     const item = document.createElement('article'); item.className = message.role;
     const utterances=message.role==='assistant'&&Array.isArray(message.utterances)&&message.utterances.length?message.utterances:[{speaker:{type:message.role==='user'?'player':'narrator'},text:message.content}];
+    let previousSpeaker=null;
     for(const row of utterances){
       const type=['player','narrator','npc','developer'].includes(row.speaker?.type)?row.speaker.type:'narrator';
       const section=document.createElement('section');section.className='utterance speaker-'+type;section.dataset.speaker=type;section.dataset.trigger=row.trigger||'legacy';
       const label=document.createElement('small');label.textContent=type==='player'?'ВЫ':type==='npc'?(row.speaker.name||'ПЕРСОНАЖ'):type==='developer'?'РАЗРАБОТЧИК':'РАССКАЗЧИК';
-      const text=document.createElement('p');if(type==='narrator'||type==='npc')renderRichText(text,section,row.text,mentionTargets);else text.textContent=row.text;section.append(label,text);item.append(section);
+      const text=document.createElement('p');if(type==='narrator'||type==='npc')renderRichText(text,section,row.text,mentionTargets);else text.textContent=row.text;if(previousSpeaker!==type+':'+(row.speaker?.id||''))section.append(label);section.append(text);item.append(section);previousSpeaker=type+':'+(row.speaker?.id||'');
     }
     if(debugView&&message.outcome?.status) {
       const result = document.createElement('small');result.className='outcome-label';result.dataset.status=message.outcome.status;
@@ -180,7 +182,7 @@ function render() {
   }
   renderedMessages=state.messages.slice();
   const profile = engine.profile(state.config);
-  document.querySelector('#badge').textContent = '● Локально · 6.0';
+  document.querySelector('#badge').textContent = '● Локально · 6.1';
   const currentNpc=state.memory.world.npcs[state.memory.world.activeNpcId];
   const title = state.memory.place || profile.title || 'Ваша история';
   document.querySelector('#story-title').textContent = title[0].toUpperCase() + title.slice(1);
@@ -226,7 +228,7 @@ chat.addEventListener('submit', async event => {
     hideOptions();state.messages.push({ role: 'user', content: text }); field.value = '';
     status.textContent = 'История продолжается…';
     render();
-    const result = engine.reply(state.config, state.memory, text);
+    const result = engine.reply(state.config, state.memory, text,selectedAction);selectedAction=null;
     state.memory = result.memory;
     const answer = result.text;
     state.messages.push({ role: 'assistant', content: answer, utterances:result.messages, mentions:contextTargets(), outcome: { status:result.outcome.status, information:result.outcome.information, steps:result.results.map(r=>({status:r.status,intent:r.action.intent,target:r.action.targetLabel,goal:r.action.goal,method:r.action.method,expectedEffect:r.action.expectedEffect})) } }); status.textContent = ''; save();
@@ -234,7 +236,7 @@ chat.addEventListener('submit', async event => {
     state.messages.pop(); field.value = text; status.textContent = `${error.message} Сообщение возвращено в поле ввода — попробуйте снова.`; save();
   } finally { busy = false; send.disabled = false; settings.querySelector('button').disabled = false; render(); }
 });
-field.addEventListener('input',showOptions);
+field.addEventListener('input',()=>{selectedAction=null;showOptions();});
 field.addEventListener('focus',showOptions);
 field.addEventListener('keydown',event=>{
   if(event.key==='ArrowDown'&&currentOptions.length){event.preventDefault();selectedOption=Math.min(currentOptions.length-1,selectedOption+1);updateOptionSelection();return;}
@@ -288,7 +290,8 @@ document.querySelector('#start-preset').addEventListener('click',()=>{
 });
 document.querySelector('#apply-preset').addEventListener('click',()=>{const preset=globalThis.StoryPresets.find(p=>p.id===document.querySelector('#story-preset').value);if(!preset)return;for(const name of ['world','character','player','canon'])settings.elements.namedItem(name).value=preset[name];settings.elements.namedItem('world').focus();});
 document.addEventListener('keydown', event => { if (event.key === 'Escape') showPage('chat'); });
-function issueCommand(command) {
+function issueCommand(command,option=null) {
+  selectedAction=option;
   const draft=field.value;showPage('chat');field.value=command;send.click();field.value=draft;
 }
 function renderSituation(){
@@ -297,7 +300,8 @@ function renderSituation(){
   const work=w.loops.work;
   const pending=w.player.pendingAction;
   const completed=[...r.goals].reverse().find(g=>g.status==='completed');
-  const purpose=goal?.text||(completed?'Вы достигли цели: '+completed.text+'. Можно выбрать новый замысел.':m.facts.goal||state.config.world);
+  const storySituation=engine.story(m).situation;
+  const purpose=goal?.text||(completed?'Вы достигли цели: '+completed.text+'. '+(storySituation||'Можно выбрать новый замысел.'):storySituation||m.facts.goal||state.config.world);
   document.querySelector('#current-situation').textContent=purpose+(pending?' · Осталось уточнить незавершённое действие.':work.status==='accepted'?' · Вы приняли работу.':work.status==='completed'?' · Работа готова: можно получить плату.':'');
   const box=document.querySelector('#situation-actions');box.replaceChildren();
   const latest=state.messages.filter(msg=>msg.role==='assistant').at(-1);
@@ -307,13 +311,14 @@ function renderSituation(){
     const focused=terms?engine.searchActions(m,terms,3):[];
     options=[...focused,...options].filter((v,i,a)=>a.findIndex(o=>o.command===v.command)===i).slice(0,6);
   }
-  for(const option of options){const b=document.createElement('button');b.type='button';b.textContent=option.label;b.addEventListener('click',()=>issueCommand(option.command));box.append(b);}
+  for(const option of options){const b=document.createElement('button');b.type='button';b.textContent=option.label;b.addEventListener('click',()=>issueCommand(option.command,option));box.append(b);}
   const events=m.journal.filter(e=>e.kind!=='turn').slice(-3);
   document.querySelector('#recent-events').textContent=events.map(e=>e.text).join(' · ');
 }
 function renderWorld() {
   const memory=state.memory,world=memory.world,map=engine.map(memory);
   renderRpg(world,memory);
+  const causalThreads=document.querySelector('#causal-threads');causalThreads.replaceChildren();for(const thread of engine.story(memory).threads.slice(-8)){const li=document.createElement('li');li.textContent=thread.text+' · '+({open:'можно продолжить',completed:'последствие состоялось',blocked:'условия изменились'}[thread.status]||thread.status);causalThreads.append(li);}
   document.querySelector('#map-title').textContent='Место: '+memory.place;
   const exits=document.querySelector('#map-exits');exits.replaceChildren();
   for(const exit of map.exits) {const b=document.createElement('button');b.type='button';b.textContent=exit.name+(exit.blocked?' · заперто':' →');b.disabled=exit.blocked;b.addEventListener('click',()=>issueCommand('Иду в '+exit.name));exits.append(b);}

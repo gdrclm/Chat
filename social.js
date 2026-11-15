@@ -135,6 +135,7 @@
         e.loan={ownerId:owner.id,borrowerId:'player',turn:s.turn,returned:false,...(rent?{rental:true,fee,deadline:s.turn+5}:{})};e.location='inventory';e.hidden=false;e.known=true;if(!s.inventory.includes(e.label))s.inventory.push(e.label);s.focus=e.id;
         emit(s,'loan_granted',e.id,null,e.loan,a.id);return {status:'success',code:rent?'rental_granted':'loan_granted',text:say(s,owner,rent?'Аренда «'+e.label+'» оплачена на пять ходов. После этого нужно вернуть вещь.':'Одолжу «'+e.label+'». Владельцем остаюсь я; верните после работы.','permission_request'),effects:[]};
       }
+      if(a.intent==='give'&&e?.location==='inventory'&&e.ownerId===a.recipientId&&(e.loan||openGrievances(s.world.npcs[e.ownerId]).some(g=>g.requiredItemId===e.id)))return handle(s,p,c,{...a,intent:'return_property'});
       if(a.intent==='return_property'){
         if(!e||e.location!=='inventory'||!e.ownerId||e.ownerId==='player')return {status:'refused',code:'nothing_to_return',text:'При вас нет названной чужой вещи.',effects:[]};
         const owner=s.world.npcs[e.ownerId],quiet=/незаметно|тайно/.test(norm(c.originalText||c.text));const expected=owner.social.expected[e.id];

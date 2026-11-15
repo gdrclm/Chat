@@ -10,7 +10,7 @@
         {key:'wire',label:'моток проволоки',aliases:['проволока'],kind:'tool',portable:true,visibility:'hidden',description:'Под решёткой зацепился короткий, но целый моток проволоки.',discovery:{flag:'grate-moved'}}
       ]},
       city:{description:'У городского перекрёстка сходятся дороги к рынку, мастерской и площади. На доске объявлений висят заказы; рядом на стене вырезан знак.',features:[
-        {key:'board',label:'доска объявлений',aliases:['объявления','объявление'],description:'На доске два предложения: мастер ищет помощь с механизмом, на рынке нужен доставщик. Ни одно не требует заниматься тайной лавки.',fact:{key:'city.jobs',text:'В мастерской предлагают ремонт, на рынке — доставку. Можно обратиться к нанимателям.',unlocks:['спросить о ремонте','спросить о доставке']}},
+        {key:'board',label:'доска объявлений',aliases:['объявления','объявление'],description:'На доске два предложения: мастер ищет помощь с механизмом, на рынке нужен доставщик. Условия можно узнать у нанимателей.',fact:{key:'city.jobs',text:'В мастерской предлагают ремонт, на рынке — доставку. Можно обратиться к нанимателям.',unlocks:['спросить о ремонте','спросить о доставке']}},
         {key:'mark',label:'знак гильдии',aliases:['знак','символ','метка'],description:'На стене вырезан знак шестерни с разомкнутым зубцом. Его назначение пока непонятно.',fact:{key:'city.mark',text:'На городской стене замечена метка шестерни с разомкнутым зубцом.',topics:['знак','шестерня','гильдия'],unlocks:['спросить мастера о знаке']}},
         {key:'sheet',label:'чистый лист бумаги',aliases:['бумага','лист'],kind:'prop',portable:true,visibility:'survey',description:'Чистый лист лежит под доской для копирования заказов.'}
       ]},
@@ -27,13 +27,14 @@
         {key:'scales',label:'торговые весы',aliases:['весы'],description:'Пустые чаши весов стоят на одном уровне. Пока нет основания считать их неисправными.',fact:{key:'market.scales',text:'Проверка пустых весов не выявила перекоса.'}},
         {key:'parcels',label:'мешок посылок',aliases:['посылки','мешок','бирки','бирка'],description:'Бирки на мешке помечены номерами маршрутов. Проще узнать условия доставки у Ники, чем трогать чужие отправления.',private:true,fact:{key:'market.delivery',text:'Ника передаёт посылку только после согласования доставки.',unlocks:['попросить доставку']}}
       ]},
+      garden:{description:'Сад отделён от зданий участками зелени. Здесь тихо. За зарослями идёт та же дорожка к лавке; у скамьи можно спокойно обдумать находки.',features:[{key:'hedge',label:'садовые заросли',aliases:['заросли','кусты'],description:'За кустами виден изгиб знакомой дорожки. Здесь нет скрытого прохода, зато можно укрыться от шума улицы и отдохнуть.'},{key:'garden-bench',label:'садовая скамья',aliases:['скамья'],description:'Скамья свободна. На ней можно присесть, отдохнуть и перечитать свои записи.',kind:'fixed',movable:false,physical:{material:'wood',mass:40,volume:2,size:2,height:.5,width:2,length:.5,temperature:20,durability:100,maxDurability:100,quality:1,wear:0,friction:.5,flammability:.7,wetness:0,hollow:false,capacity:0,functions:['seat'],parts:[],anchored:true,position:{x:2,y:0,z:0}}}]},
       square:{description:'На площади стоят скамья, городская схема и архивная доска. Здесь собирают местные истории и принимают почту.',features:[
         {key:'map',label:'городская схема',aliases:['схема','карта города','маршруты'],description:'На схеме отмечены выходы к рынку и мастерской через городской перекрёсток. Сам рисунок не создаёт новых проходов.',fact:{key:'square.routes',text:'Рынок и мастерская связаны с площадью через город.',unlocks:['планировать обратный маршрут']}},
         {key:'archive',label:'архивная доска',aliases:['архивная доска','архив'],description:'В местной записи объясняется, что знак разомкнутой шестерни ставят у служебных проходов мастеров. Сведения пригодятся, если вы сами нашли такой знак.',fact:{key:'square.guild',text:'Разомкнутая шестерня обозначает служебный проход гильдии мастеров.',topics:['гильдия','знак'],requires:['city.mark']}},
         {key:'bench',label:'скамья',description:'Скамья стоит свободно. Её можно отодвинуть, но не стоит ожидать тайник без каких-либо оснований.',movable:true}
       ]}
     };
-    const roleAliases={street:['улица'],city:['город'],workshop:['мастерская'],market:['рынок'],square:['площадь']};
+    const roleAliases={street:['улица'],city:['город'],workshop:['мастерская'],market:['рынок'],square:['площадь'],garden:['сад']};
     const ok=(text,code,information)=>({status:'success',code,text,information,effects:[]});
     const fail=(status,code,text)=>({status,code,text,effects:[]});
     function role(node){return node.role||Object.keys(roleAliases).find(key=>roleAliases[key].some(v=>norm(node.name)===v))||'custom';}
@@ -117,6 +118,7 @@
     function init(s,p,config){
       research(s);
       if(s.world.sceneVersion===1){
+        for(const place of s.world.locations.filter(l=>role(l)==='garden'&&!l.scene?.gardenUpgrade&&!['space','survival','sea'].includes(p.genre))){place.scene||={description:defaultDescription(place,config),features:[],observed:{},discoveries:{},events:[],revision:0};for(const spec of packs.garden.features){const id=place.id+':'+spec.key;if(!s.entities.some(e=>e.id===id)){const e=addEntity(s,spec.label,{id,source:'local-scene',location:place.name,kind:spec.kind||'fixed',known:true,hidden:false,portable:false,localKey:spec.key,localRole:'garden',aliases:spec.aliases||[],description:spec.description,...(spec.physical?{physical:clone(spec.physical)}:{})});e.localFacts=[];place.scene.features.push(e.id);}}place.scene.gardenUpgrade=true;}
         upgradeLocalDescriptions(s,config);
         for(const place of s.world.locations.filter(l=>role(l)==='workshop'&&l.scene?.features?.length)){
           const owner=Object.values(s.world.npcs).find(n=>n.location===place.id);
@@ -138,9 +140,10 @@
           node.scene.description=template.description;
           const owner=Object.values(s.world.npcs).find(n=>n.location===node.id);
           for(const spec of template.features){
-            const e=addEntity(s,spec.label,{id:node.id+':'+spec.key,source:'local-scene',location:node.name,kind:spec.kind||'fixed',portable:Boolean(spec.portable),known:!['hidden','survey'].includes(spec.visibility),hidden:spec.visibility==='hidden',description:spec.description,localKey:spec.key,localRole:role(node),aliases:spec.aliases||[],ownerId:owner?.id||null,private:Boolean(spec.private),movable:Boolean(spec.movable),condition:spec.condition||null,sound:spec.sound||null,discovery:spec.discovery||{method:spec.visibility==='survey'?'survey':'examine'}});
+            const e=addEntity(s,spec.label,{id:node.id+':'+spec.key,source:'local-scene',location:node.name,kind:spec.kind||'fixed',portable:Boolean(spec.portable),known:!['hidden','survey'].includes(spec.visibility),hidden:spec.visibility==='hidden',description:spec.description,localKey:spec.key,localRole:role(node),aliases:spec.aliases||[],ownerId:owner?.id||null,private:Boolean(spec.private),movable:Boolean(spec.movable),...(spec.physical?{physical:clone(spec.physical)}:{}),condition:spec.condition||null,sound:spec.sound||null,discovery:spec.discovery||{method:spec.visibility==='survey'?'survey':'examine'}});
             e.localFacts=spec.fact?[clone(spec.fact)]:[];node.scene.features.push(e.id);
           }
+          if(role(node)==='garden')node.scene.gardenUpgrade=true;
           if(owner){owner.expertise||={};if(role(node)==='workshop'){
             owner.expertise['guild.sign']={text:'Разомкнутая шестерня отмечает служебный проход. У фонаря можно найти короткую дорогу к мастерской.',requires:['city.mark','street.mark'],unlocks:['проверить служебный проход']};
             owner.expertise['repair.pin']={text:'Штифт можно сделать из проволоки на верстаке плоскогубцами и напильником.',unlocks:['изготовить штифт']};
@@ -260,14 +263,17 @@
       if(e.localKey==='bench'&&s.entities.some(v=>v.localKey==='mechanism'&&v.location===s.place&&v.condition==='repaired'))return 'На верстаке лежат следы завершённой работы; механизм уже собран. Здесь можно выполнять обслуживание.';
       if(e.localKey==='drain'&&s.world.sceneFlags['grate-moved'])return 'Решётка сдвинута. Участок водостока под ней доступен.';
       if(e.destroyed)return 'Предмет разрушен.';
+      if(e.localKey==='counter'){const seller=Object.values(s.world.npcs).find(n=>n.location===s.world.player.location&&s.entities.some(v=>v.stockOwner===n.id));const stock=s.entities.filter(v=>v.stockOwner===seller?.id&&v.location===seller?.id&&!v.destroyed);return stock.length?'Сейчас на прилавке: '+stock.map(v=>v.label+' — '+Math.max(1,v.price-(s.world.player.discounts?.[seller.id]||0))+' монет').join('; ')+'.'+(s.world.player.discounts?.[seller?.id]?' Рекомендация уже учтена в ценах.':' Можно осмотреть товар и спросить продавца об условиях.'): 'На прилавке сейчас нет товаров для продажи.';}
       if(e.writtenText)return 'На записи: «'+e.writtenText+'».';
       if(e.evidence)return 'На носителе записано: '+e.evidence.proposition.text+'. Это содержание улики, а не доказанная истина.';
       if(e.kind==='barrier')return '«'+e.label+'» '+(e.openingDegree==='slightly'?'приоткрыт':e.opened?'открыт':e.locked?'заперт':'закрыт, но не заперт')+'.'+(e.opened&&e.openingDegree!=='slightly'?' '+H.containerText(s,e):'');
-      return e.description||'«'+e.label+'»: '+(e.portable?'предмет можно переносить':'объект используется на месте')+'.';
+      if(e.description)return e.description;
+      const owned=s.world.npcs[e.ownerId];
+      return (owned?'Владелец — '+owned.name+'. Разрешение взять нужно получить отдельно. ':'')+'«'+e.label+'»: '+(e.portable?'предмет можно переносить':'объект используется на месте')+'.';
     }
     function sourceFacts(s,e){
       if(e.evidence)return [{key:'text:'+e.id+':'+hash(e.evidence.proposition.text),text:'На «'+e.label+'» записано: '+e.evidence.proposition.text,topics:['содержание']}];
-      if(e.writtenText)return [{key:'text:'+e.id+':'+hash(e.writtenText),text:'В записи: '+e.writtenText,topics:['запись']}];
+      if(e.writtenText)return [...(e.localFacts||[]),{key:'text:'+e.id+':'+hash(e.writtenText),text:'В записи: '+e.writtenText,topics:['запись']}];
       if(e.kind==='barrier'&&e.opened&&e.openingDegree!=='slightly'&&e.revelationText)return [{key:'revelation:'+e.id,text:e.contentsDefined?H.containerText(s,e):e.revelationText}];
       if(e.localKey==='mechanism'&&e.condition==='repaired')return [{key:'repair.working',text:'Механизм исправен: установленный штифт удерживает шестерню.'}];
       return e.localFacts||[];
@@ -347,7 +353,7 @@
       if(discoveries.includes('square.guild'))unlockGuildKnowledge(s,e,where);
       const shortcut=e.localKey==='lamp'?openShortcut(s,e):'';
       const extra=discoveries.length?'\nТеперь можно: '+[...new Set(discoveries.flatMap(id=>r.knowledge[id]?.unlocks||[]))].join('; '):'';
-      return ok((m==='listen'?e.sound:describe(s,e))+(details.length?'\n'+[...new Set(details)].filter(d=>!describe(s,e).includes(d)).join('\n'):'')+(extra.endsWith(': ')?'':extra)+shortcut,'object_studied',{novel:true,sourceId:e.id,locationId:where.id,discoveries,opportunities:r.capabilities.slice(-6)});
+      return ok((m==='listen'?e.sound:describe(s,e))+(details.length?'\n'+[...new Set(details)].filter(d=>!describe(s,e).includes(d)&&!d.startsWith('В записи:')&&!(e.source==='local-scene'&&(e.localFacts||[]).some(f=>f.text===d))).join('\n'):'')+(extra.endsWith(': ')?'':extra)+shortcut,'object_studied',{novel:true,sourceId:e.id,locationId:where.id,discoveries,opportunities:r.capabilities.slice(-6)});
     }
     function permission(s,e,type='tools'){
       return !e.ownerId||s.world.player.permissions?.[e.ownerId]?.[type]===true;
@@ -385,7 +391,7 @@
         e.moved=true;s.world.sceneFlags['grate-moved']=true;
         const wire=s.entities.find(v=>v.localKey==='wire'&&v.location===s.place);if(wire){wire.known=true;wire.hidden=false;}
         const fresh=wire&&know(s,{key:'street.wire-found',text:'Под сдвинутой решёткой найден моток проволоки.',unlocks:['взять проволоку']},wire,node(s).id);
-        return ok('Решётка поддаётся. Под ней виден существовавший там моток проволоки; теперь его можно взять.','environment_changed',{novel:true,discoveries:fresh?['street.wire-found']:[]});
+        return ok('Решётка поддаётся. Под ней зацепился моток проволоки; теперь его можно взять.','environment_changed',{novel:true,discoveries:fresh?['street.wire-found']:[]});
       }
       if(e.movable){if(e.moved)return ok('«'+e.label+'» уже отодвинута; новых деталей нет.','already_changed',{novel:false,discoveries:[]});e.moved=true;return ok('Вы отодвигаете «'+e.label+'». Под ней нет заданных предметов или тайника.','environment_changed',{novel:true,discoveries:[]});}
       return fail('refused','not_movable','«'+e.label+'» не сдвинуть таким способом. Можно изучить крепление или выбрать другой подход.');
@@ -434,6 +440,7 @@
       }
       if((c.intent==='show'||a.intent==='show')&&e?.recommendation){
         if(!local(s,e))return fail('refused','target_elsewhere','Рекомендация находится не здесь.');
+        n.memory.confirmedRecommendation=e.id;
         if(!s.entities.some(item=>item.stockOwner===n.id))return ok(H.sayNpc(s,n,'Вижу подпись мастера. Торговую скидку нужно обсуждать с продавцом на рынке','dialogue'),'recommendation_seen',{novel:false,discoveries:[]});
         s.world.player.discounts||={};const first=!s.world.player.discounts[n.id];s.world.player.discounts[n.id]=1;
         if(first){s.trust=Math.min(5,s.trust+1);emit(s,'trade_discount',n.id,0,1);}

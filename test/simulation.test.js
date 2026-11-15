@@ -28,6 +28,7 @@ import '../rpg-engine.js';
 import '../semantic.js';
 import '../scenes.js';
 import '../simulation.js';
+import '../causal-story.js';
 import '../engine.js';
 const E=globalThis.StoryEngine;
 const config={world:'Магическая лавка.',character:'Мира — хозяйка лавки. Хочет вернуть компас.',player:'Путник с компасом',canon:'Истина: виновник = Антон\nЦенный предмет: компас'};

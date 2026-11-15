@@ -45,7 +45,7 @@
     function canSpeak(s,n,trigger){return here(s,n)&&(active(s,n)||reactions.has(trigger));}
     function say(s,n,text,trigger='dialogue',options={}){
       if(!canSpeak(s,n,trigger))return '';
-      if(/[ая]$/iu.test(n.name)&&!/^(?:Никита|Илья|Кузьма|Савва|Лука)$/iu.test(n.name)){const endings={видел:'видела',заметил:'заметила',услышал:'услышала',готов:'готова',получил:'получила',запомнил:'запомнила'};text=text.replace(/[А-Яа-яЁё]+/gu,word=>endings[norm(word)]||word);}
+      if(/[ая]$/iu.test(n.name)&&!/^(?:Никита|Илья|Кузьма|Савва|Лука)$/iu.test(n.name)){const endings={видел:'видела',заметил:'заметила',услышал:'услышала',готов:'готова',принял:'приняла',получил:'получила',запомнил:'запомнила'};text=text.replace(/[А-Яа-яЁё]+/gu,word=>endings[norm(word)]||word);}
       notice(s,n);
       if(reactions.has(trigger)&&!active(s,n)){
         n.dialogueState.initiatives.push({turn:s.turn,trigger});n.dialogueState.initiatives=n.dialogueState.initiatives.slice(-20);s.world.lastInitiatorId=n.id;

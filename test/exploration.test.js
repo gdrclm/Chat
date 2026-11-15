@@ -28,6 +28,7 @@ import '../rpg-engine.js';
 import '../semantic.js';
 import '../scenes.js';
 import '../simulation.js';
+import '../causal-story.js';
 import '../engine.js';
 const E=globalThis.StoryEngine;
 const config={world:'Магическая лавка воспоминаний.',character:'Мира — хозяйка лавки.',player:'Путник с компасом'};

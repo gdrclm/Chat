@@ -134,6 +134,7 @@
       const parent=byId[last?.split('.')[0]]||byId[last]||null;
       return {topicId:last||null,parentId:parent?.id||null,followUp,confidence:1,raw:input,contextRequired:!last};
     }
+    if(/как.*стал[аи]?.*(?:мастер|ремеслен|торгов|врач|учител)|как.*пришел.*(?:професс|ремесл)/u.test(q))return {topicId:'occupation.motivation',parentId:'occupation',confidence:1,raw:input};
     if(/(?:почему|зачем).*выбра.*(?:работ|дело|профес)|почему.*(?:торгу|ремонт|лечишь)/u.test(q))return {topicId:'occupation.motivation',parentId:'occupation',facet:'motivation',confidence:1,raw:input};
     if(/(?:давно|сколько лет).*(?:жив|откры|работа)/u.test(q))return {topicId:'tenure',parentId:/жив/.test(q)?'home':'place.history',confidence:1,raw:input};
     if(/(?:кто|кто нибудь).*(?:тебе|ты|вам).*(?:помог|помога)|(?:ты|тебе|вам).*сам.*помог/u.test(base))return {topicId:'occupation.personal_experience',parentId:'occupation',facet:'personal_experience',confidence:1,raw:input};

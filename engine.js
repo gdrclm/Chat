@@ -171,7 +171,7 @@
       }
       s.configSig = signature(config);
     }
-    containment(s,p,config);simulation.init(s,p,config);
+    containment(s,p,config);simulation.init(s,p,config);causality.init(s,config,p);
     return s;
   }
   function reframe(previous, oldConfig, newConfig) {
@@ -569,14 +569,7 @@
         if(lock && /откры|отпер|замок|ларец|двер|снять/.test(c.lower))return `Заклинание снимает преграду; его след можно обнаружить.\n${resolveBarrier(s,p,lock,'магия')}`;
         return verdict(s,'clarification','missing_effect','Уточните цель и ожидаемый эффект заклинания. До уточнения физический эффект не наступил.');
       }
-      case 'decision': {
-        if(s.stage<3)return verdict(s,'refused','missing_memory','Это решение пока не к чему применить: воспоминание ещё не получено.');
-        const release=/отпус/.test(c.lower);s.facts.decision=release?'отпустить':'сохранить';
-        log(s,'decision','Решение о воспоминании: '+s.facts.decision);
-        for(const t of s.threads)if(t.id==='aftermath')t.status='resolved';
-        thread(s,release?'Разобраться, что останется после отказа от прошлого':'Понять, как жить с открывшейся правдой','next-chapter');
-        return release?'Вы выбираете отпустить воспоминание. Оно больше не определяет ваше решение; цена — прежние ответы останутся недоступны. Новая зацепка: кем вы хотите стать теперь?':'Вы сохраняете воспоминание. Теперь найденную правду можно обсуждать и проверять; она остаётся частью вашей истории.';
-      }
+      case 'decision': return verdict(s,'clarification','memory_not_experienced','Сначала нужен доступный источник и само воспоминание. Одной общей стадии истории для такого решения недостаточно.');
       case 'move': case 'return': return move(s,p,c,false);
       case 'perform': if(count<2)s.trust++;danger(s,s.clocks.danger>2?1:0);s.facts.performance=c.text.slice(0,180);log(s,'performance',c.text);return voice(s,p,choose(s,'performance',[p.ironic?'План неожиданен. Но пока вы выступали, я перестал ждать подвоха. Это уже достижение.':'Неожиданное выступление меняет настроение. Я отвлёкся от своих подозрений. Вы хотите развеселить меня или выиграть время?', 'Внимание теперь на вас. Если вы кого-то отвлекаете, это подходящий момент для следующего шага.', 'Это придаёт нашей встрече совсем другой ритм. Расскажите, почему вы выбрали именно это.']));
       case 'rest': danger(s,s.clocks.danger>0?1:0);s.tension=Math.max(0,s.tension-1);return 'Вы даёте себе передышку. Напряжение спадает; незавершённые дела остаются. В безопасной обстановке можно поговорить без спешки.';
@@ -607,7 +600,7 @@
     return event.text;
   }
   const semantic=root.StorySemantic;
-  const semanticIntents={MOVE:'move',APPROACH:'approach',GREET:'greet',INSPECT:'inspect',SEARCH:'inspect',TAKE:'take',OPEN:'open',CLOSE:'close',USE:'use',GIVE:'give',DROP:'drop',SHOW:'show',TALK:'talk',REPAIR:'repair'};
+  const semanticIntents={MOVE:'move',APPROACH:'approach',GREET:'greet',INSPECT:'inspect',SEARCH:'inspect',TAKE:'take',OPEN:'open',CLOSE:'close',USE:'use',GIVE:'give',RETURN:'return_property',DROP:'drop',SHOW:'show',TALK:'talk',REPAIR:'repair'};
   function legacyStarts(text) {
     const head=normalizedInput(text).replace(/^(?:(?:я|мы|не|осторожно|быстро|медленно|теперь|сейчас)\s+)+/u,'');
     const delegated=/^(?:разреши|разрешите|оскорбляю|сообщаю|утверждаю|заявляю|арендую|оплачиваю|прикрываю|отхожу|отойти|отступаю|заканчиваю|прекращаю|одолжи|прошу одолжить|беру в долг|возмещаю|компенсирую|плачу|признаюсь|сознаюсь|обещаю|клянусь|верну|вернуть|приподнима|отодвига|сдвига|передвига|изгот[оа]в|устан[оа]в|делаю|сделать|вытач|согну|очища|чищу|смазыва|калибру|подбрасыва|подделыва|фабрикую|выношу|переношу|уношу|тащу|несу|покупаю|куплю|знакомлюсь)/u;
@@ -618,10 +611,12 @@
   // authoring catalog. Listing suggestions never executes a move.
   function contextOptions(s, query='', limit=6) {
     const items=[],used=new Set(),world=s.world||{},location=world.player?.location;
-    const add=(command,label,kind,tags=[],rank=0)=>{
-      if(!command||used.has(command))return;
-      used.add(command);items.push({command,label,kind,tags,rank});
+    const add=(command,label,kind,tags=[],rank=0,binding={})=>{
+      const identity=command+'|'+(binding.targetId||'');
+      if(!command||used.has(identity))return;
+      used.add(identity);items.push({command,label,kind,tags,rank,...binding});
     };
+    for(const option of causality.options(s))add(option.command,option.label,option.kind,[],option.rank,{targetId:option.targetId,reason:option.reason});
     add('Осматриваюсь','Осмотреться','inspect',['осмотр','вокруг','место','обстановка'],1);
     for(const exit of simulation.map(s).exits||[]){
       if(exit.blocked)continue;
@@ -634,13 +629,13 @@
     for(const e of s.entities||[]){
       if(!e.known||e.hidden||e.destroyed||![s.place,'inventory'].includes(e.location)||!simulation.containerAccess(s,e))continue;
       const tags=[e.label,...(e.aliases||[])];
-      add('Осматриваю '+e.label,'Осмотреть: '+e.label,'inspect',[...tags,'осмотреть','изучить','рассмотреть'],5);
+      add('Осматриваю '+e.label,'Осмотреть: '+e.label,'inspect',[...tags,'осмотреть','изучить','рассмотреть'],5,{targetId:e.id});
       if(e.kind==='barrier'){
         const verb=e.opened?'Закрываю':'Открываю';
-        add(verb+' '+e.label,(e.opened?'Закрыть: ':'Открыть: ')+e.label,e.opened?'close':'open',[...tags,e.opened?'закрыть':'открыть','дверь','контейнер'],5);
+        add(verb+' '+e.label,(e.opened?'Закрыть: ':'Открыть: ')+e.label,e.opened?'close':'open',[...tags,e.opened?'закрыть':'открыть','дверь','контейнер'],5,{targetId:e.id});
       }
-      if(e.portable&&e.location===s.place)add('Беру '+e.label,'Взять: '+e.label,'take',[...tags,'взять','забрать','подобрать'],3);
-      if(e.location==='inventory')add('Использую '+e.label,'Использовать: '+e.label,'use',[...tags,'использовать','применить','предмет'],2);
+      if(e.portable&&e.location===s.place)add('Беру '+e.label,'Взять: '+e.label,'take',[...tags,'взять','забрать','подобрать'],3,{targetId:e.id});
+      if(e.location==='inventory'&&e.navigation)add('Использую '+e.label,'Использовать: '+e.label,'use',[...tags,'использовать','применить','предмет'],2,{targetId:e.id});
     }
     const partner=world.npcs?.[world.activeNpcId];
     if(partner&&partner.location===location&&!partner.hidden){
@@ -652,13 +647,7 @@
     for(const command of simulation.rpg.suggestions(s)||[])add(command,command,'situation',[command,'ситуация','предложение'],3);
     if(/мастерск|рынок|лавк/u.test(norm(s.place||'')))add('Ищу работу','Найти работу','work',['работа','подработка','заработок','задание'],2);
     const q=norm(query).trim(),parts=q.split(/\s+/u).filter(Boolean);
-    if(!parts.length){
-      const chosen=[];
-      const pick=predicate=>{const item=items.find(v=>predicate(v)&&!chosen.includes(v));if(item)chosen.push(item);};
-      pick(v=>v.kind==='inspect');pick(v=>v.kind==='talk');pick(v=>v.kind==='question');pick(v=>v.kind==='situation');
-      pick(v=>v.kind==='inspect'&&v.command!=='Осматриваюсь');pick(v=>v.kind==='move');pick(v=>v.kind==='work');
-      return [...chosen,...items.filter(v=>!chosen.includes(v))].slice(0,limit);
-    }
+    if(!parts.length){const sorted=items.sort((a,b)=>b.rank-a.rank),chosen=sorted.slice(0,limit);for(const kind of ['talk','move']){const option=sorted.find(v=>v.kind===kind);if(option&&!chosen.some(v=>v.kind===kind)&&chosen.length>=limit)chosen.splice(chosen.length-1-(kind==='talk'?1:0),1,option);}return chosen;}
     return items.map((item,index)=>{
       const name=norm(item.label),body=norm(item.command),tags=norm(item.tags.join(' '));
       if(!parts.every(part=>name.includes(part)||body.includes(part)||tags.includes(part)))return null;
@@ -695,6 +684,8 @@
   }
 
   function resolveInput(s,text) {
+    const storyPlan=/^я (?:уже )?(?:прочитал|прочитала|видел|видела).*?[.!]\s/iu.test(text)?null:causality.resolve(s,text);if(storyPlan)return storyPlan;
+    if(s.pending?.kind==='job-offer'&&/^(?:да(?:,?\s*(?:берусь|помогу|согласен|согласна))?|согласен(?: помочь с ремонтом)?|согласна(?: помочь с ремонтом)?|берусь)[.! ]*$/iu.test(text))return semantic.resolve('Да',{...semantic.context(s),legacyStarts});
     if(/^(?:что (?:здесь )?(?:нового|изменилось)|изменения вокруг)[?.!]*$/iu.test(text.trim())){const p=semantic.resolve('Осматриваюсь',{...semantic.context(s),legacyStarts});p.steps[0].concise=true;return p;}
     const plan=semantic.resolve(text,{...semantic.context(s),legacyStarts});
     const pending=s.world.player.pendingAction;
@@ -716,6 +707,7 @@
     const bound=semantic.bind(step,s);
     if(!step.recognized){
       const c=parse(step.raw);c.negated=step.mode==='negated'||c.negated;
+      if(step.discourse==='amnesia'){c.intent='talk';c.negated=false;c.speech=true;}
       // Legacy narrative acts still need a real predicate, never a keyword in a description.
       if(['move','open','close','take','drop','give','use','destroy','burn','magic','attack'].includes(c.intent)&&!legacyStarts(step.raw)&&!/^приподнима/.test(c.lower))c.intent='custom';
       if(['intention','question','hypothetical','speech','report'].includes(step.mode)&&step.dependsOnPrevious){c.hypothetical=true;c.intent=step.mode==='intention'?'goal':'talk';}
@@ -796,14 +788,16 @@
     }
     return null;
   }
-  function reply(config, previous, input) {
+  function reply(config, previous, input, selection=null) {
     let s=init(config,previous);
     if(s.configSig!==signature(config)) {
       s=init(config,{...fresh(),turn:s.turn,facts:s.facts,journal:s.journal,inventory:s.inventory,world:s.world});
       log(s,'canon','Сцена согласована с авторскими вводными.');
     }
     const text=clean(input).slice(0,6000);s.turn++;
-    const semanticPlan=resolveInput(s,text);delete s.world.player.pendingAction;
+    const semanticPlan=resolveInput(s,text);
+    if(selection?.targetId&&semanticPlan.steps.length===1){const target=s.entities.find(e=>e.id===selection.targetId);const trusted=contextOptions(s,'',1000).some(v=>v.command===text&&v.targetId===selection.targetId);if(selection.command===text&&target&&target.known&&!target.hidden&&!target.destroyed&&simulation.containerAccess(s,target)&&trusted){semanticPlan.steps[0].targetId=target.id;}else semanticPlan.steps[0].invalidOption=true;}
+    delete s.world.player.pendingAction;
     const results=[];const intents=[];let pendingAction=null;
     for(const step of semanticPlan.steps) {
       simulation.presence(s);
@@ -811,8 +805,9 @@
       let p=simulation.npcProfile(s,config,profile(config));
       const action=simulation.analyze(s,config,c,text);s.currentActionId=action.id;
       action.text=step.raw;action.semantic=c.semantic;action.dependsOnPrevious=step.dependsOnPrevious;
-      simulation.rpg.prepare(s,c,action);
-      if(!action.rpg)simulation.conversation.prepare(s,c,action);
+      causality.prepare(s,c,action);
+      if(!action.story)simulation.rpg.prepare(s,c,action);
+      if(!action.rpg&&!action.story)simulation.conversation.prepare(s,c,action);
       const previousResult=results.at(-1);
       if(step.dependsOnPrevious&&previousResult&&((previousResult.status!=='success'&&!(previousResult.status==='partial_success'&&previousResult.completed))||previousResult.performed===false&&['execute','attempt','request'].includes(step.mode))){
         results.push({status:'refused',code:'dependency_failed',reason:'dependency_failed',skipped:true,performed:false,text:'Шаг «'+step.raw+'» не выполнен: предыдущее действие не завершено.',action,effects:[]});continue;
@@ -822,7 +817,7 @@
       if(view&&view.id!==s.world.boundNpcId){simulation.flush(s);simulation.bind(s,view.id);p=simulation.npcProfile(s,config,profile(config));}
       const before=simulation.snapshot(s);s.currentResolution={status:'success',code:'completed'};
       root.StoryMessages.begin(s);simulation.dialogue.before(s,c,action);
-      let r=semanticMode(s,c,action)||semanticAccess(s,c)||simulation.rpg.guard(s,c,action)||simulation.social.handle(s,p,c,action);
+      let r=step.invalidOption?{status:'clarification',code:'option_expired',performed:false,text:'Обстановка изменилась. Выберите доступное действие снова.',effects:[]}:causality.handle(s,p,c,action)||semanticMode(s,c,action)||semanticAccess(s,c)||simulation.rpg.guard(s,c,action)||simulation.social.handle(s,p,c,action);
       c.allowTakingHeld=action.allowTakingHeld;
       if(!r)r=simulation.rpg.handle(s,c,action);
       if(!r)r=simulation.handle(s,p,c,config,action);
@@ -842,6 +837,7 @@
       simulation.conversation.observe(s,before,c,action,r);
       simulation.rpg.after(s,before,c,action,r);
       r.action=action;r.effects=simulation.effects(s,before,action);
+      causality.observe(s,before,action,r);
       root.StoryMessages.finish(s,r);
       results.push(r);intents.push(action.intent);s.lastIntent=c.negated?'refuse':action.intent;
       if(c.semantic?.mode==='negated')s.lastIntent='refuse';
@@ -872,8 +868,9 @@
     const failed=results.filter(r=>['refused','clarification'].includes(r.status)&&!r.skipped);
     const recovery=failed.length?contextOptions(s,failed[0].action.targetLabel||'',6):[];
     if(failed.length){
-      const alternatives=[...recovery,...contextOptions(s,'',6)].filter((v,i,a)=>a.findIndex(o=>o.command===v.command)===i).slice(0,3);
-      const help='Можно попробовать: '+alternatives.map(v=>'«'+v.command+'»').join('; ')+'. Если это другой замысел, назовите предмет и желаемое изменение.';
+      const failedCommands=failed.map(v=>norm(v.action.text));
+      const alternatives=[...recovery,...contextOptions(s,'',10)].filter((v,i,a)=>!failedCommands.includes(norm(v.command))&&a.findIndex(o=>o.command===v.command)===i).slice(0,3);
+      const help=(failed[0].code==='unsupported_method'?'Назовите цель воздействия: что должно измениться и какой предмет это изменит. ':'')+'Можно попробовать: '+alternatives.map(v=>'«'+v.command+'»').join('; ')+'. Если это другой замысел, назовите предмет и желаемое изменение.';
       narration.blocks.push({speaker:{type:'narrator'},trigger:'recovery',text:help,effects:[]});output+='\n\n'+help;
     }
     const outcome={status,goalAssessment,information,recovery,semanticPlan,results:results.map(r=>({status:r.status,code:r.code,reason:r.text,information:r.information||null,conversation:r.conversation||null,rpg:r.rpg||null,skipped:Boolean(r.skipped),performed:r.performed!==false,completed:Boolean(r.completed),action:r.action,effects:r.effects})),effects};
@@ -886,8 +883,10 @@
     return {text:output,messages:narration.blocks,narrative:narration.blocks,memory:s,outcome,semantic:semanticPlan,results:outcome.results,analysis:outcome.results.map(r=>r.action)};
   }
   const simulation=root.StorySimulation.create({clean,norm,normalizedInput,words,stem,hash,clone,profile,matchEntity,addEntity,log,voice,resolveBarrier,containerText});
-  root.StoryEngine={version:VERSION,release:'6.0',fresh,reply,profile,restore:init,reframe,parse,clauses,
+  const causality=root.StoryCausality.create({clean,norm,hash,clone,log,words,stem,matchEntity,addEntity,simulation});
+  root.StoryEngine={version:VERSION,release:'6.1',fresh,reply,profile,restore:init,reframe,parse,clauses,
     opening(config,memory){const s=init(config,memory);const text=simulation.opening(s);s.openingShown=true;return {memory:s,text};},
+    story(memory){return {situation:causality.situation(memory),options:causality.options(memory),threads:clone(memory.world.causality.threads),nodes:clone(memory.world.causality.nodes)};},
     suggestions(memory){return simulation.rpg.suggestions(memory);},
     resolve(config,memory,text){const s=init(config,memory);return resolveInput(s,text);},
     searchActions(memory,query,limit=6){return memory?.world?contextOptions(memory,query,limit):[];},

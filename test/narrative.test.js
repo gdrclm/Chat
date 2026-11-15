@@ -28,6 +28,7 @@ import '../rpg-engine.js';
 import '../semantic.js';
 import '../scenes.js';
 import '../simulation.js';
+import '../causal-story.js';
 import '../engine.js';
 const E=globalThis.StoryEngine;
 const base={world:'Магическая лавка воспоминаний.',character:'Мира — сдержанная, с сухим юмором. Хочет защитить сестру.',player:'Путник с компасом'};
@@ -163,7 +164,9 @@ test('an unfamiliar subject becomes a persistent thread, not a forced quest rese
  const r=play(base,'Ананас управляет вероятностью');assert.ok(r.memory.threads.some(t=>t.text.includes('Ананас')));assert.equal(r.memory.stage,0);assert.doesNotMatch(r.text,/сначала осмотритесь/i);
 });
 test('the player can decide what to do with the discovered memory',()=>{
- const r=play(base,'Ломаю ларец','Отпускаю воспоминание');assert.equal(r.memory.facts.decision,'отпустить');assert.ok(r.memory.threads.some(t=>t.id==='next-chapter'));
+ const early=play(base,'Ломаю ларец','Отпускаю воспоминание');assert.equal(early.results[0].code,'memory_not_experienced');
+ const memoryConfig={...base,character:'Мира — хозяйка лавки.'};
+ const r=play(memoryConfig,'Мира, открой ларец','Смотрю воспоминание','Отпускаю воспоминание');assert.equal(r.memory.facts.decision,'отпустить');assert.ok(r.memory.threads.some(t=>t.id==='next-chapter'));
 });
 test('editing the world updates the scene while preserving player facts',()=>{
  const before=play(base,'Меня зовут Алекс','Хочу найти брата','Осматриваюсь').memory;

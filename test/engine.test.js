@@ -28,6 +28,7 @@ import '../rpg-engine.js';
 import '../semantic.js';
 import '../scenes.js';
 import '../simulation.js';
+import '../causal-story.js';
 import '../engine.js';
 const {fresh,reply}=globalThis.StoryEngine;
 const config={world:'Космическая станция',character:'Лея — добрая механик',player:'Пилот'};

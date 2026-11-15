@@ -131,7 +131,7 @@
         if(e&&payload.length)e.evidence={proposition:proposition(s,payload.join('|').trim()),authenticity:'genuine',witnessedBy:[]};
       }
       const market=findLocation(s,'рынок');const merchant=market&&Object.values(w.npcs).find(n=>n.location===market.id);
-      if(merchant)for(const [label,price]of [['молоток',3],['цепочка',2],['книга',2]]) {
+      if(merchant)for(const [label,price]of [['молоток',3],['цепочка',2],['книга',2],['моток проволоки',1]]) {
         addEntity(s,label,{id:'stock:'+hash(label),location:merchant.id,source:'stock',kind:'tool',portable:true,price,stockOwner:merchant.id});
       }
       for(const e of s.entities){annotate(s,e,p);syncEntityTruth(s,e,'canon');}
@@ -451,7 +451,7 @@
       const sceneResult=scenes.handle(s,p,c,config,a);if(sceneResult)return sceneResult;
       if(a.intent==='select_npc') {
         const target=findNpc(s,c.text,true);if(!target)return no('Здесь нет персонажа с таким именем.','npc_absent');
-        flush(s);bind(s,target.id);return ok('Вы обращаетесь к '+target.name+'.','npc_selected');
+        flush(s);bind(s,target.id);return ok('Вы обращаетесь к персонажу «'+target.name+'».','npc_selected');
       }
       if(a.intent==='move'||a.intent==='return') {
         if(/телепорт/.test(c.lower)&&!p.magic)return no('В этом мире магия не установлена.','magic_forbidden');
@@ -580,11 +580,12 @@
       if(a.intent==='buy') {
         if(!n||!here(s,n))return no('Здесь нет продавца.','no_seller');
         const item=s.entities.find(v=>v.stockOwner===n.id&&v.location===n.id&&namesMatch(v.label,c.text));
+        if(!item&& !s.entities.some(v=>v.stockOwner===n.id&&v.location===n.id))return ask('Здесь нет вещей, выставленных на продажу. Можно спросить владельца о другом способе получить доступ.','no_stock');
         if(!item)return ask('В продаже: '+s.entities.filter(v=>v.stockOwner===n.id&&v.location===n.id).map(v=>v.label+' — '+v.price).join(', ')+'.','unknown_product');
         const discount=s.world.player.discounts?.[n.id]||0;const price=Math.max(1,item.price-discount);
         if(s.world.player.money<price)return no('Не хватает монет. Цена: '+item.price+'.','insufficient_money');
         s.world.player.money-=price;item.location='inventory';if(!s.inventory.includes(item.label))s.inventory.push(item.label);
-        truth(s,'player:money',s.world.player.money);return ok('Вы покупаете «'+item.label+'» за '+price+' монеты.','purchased');
+        truth(s,'player:money',s.world.player.money);return ok('Вы покупаете предмет «'+item.label+'» за '+price+' монеты.','purchased');
       }
       if(a.intent==='find_job') {
         if(!n||!here(s,n)||!['рынок','мастерская','площадь'].some(v=>norm(s.place).includes(v)))return no('Работу предлагают на рынке, в мастерской или на площади. До них нужно дойти по карте.','no_employer_here');
@@ -619,7 +620,7 @@
         const w=s.world.loops.work;
         if(w.status!=='completed'||w.paid)return no('Неоплаченной завершённой работы нет.','nothing_to_pay');
         if(!here(s,s.world.npcs[w.employer]))return no('За оплатой нужно вернуться к нанимателю.','employer_absent');
-        w.paid=true;w.status='paid';s.world.player.money+=w.reward;truth(s,'player:money',s.world.player.money);return ok('Вы получаете '+w.reward+' монеты. Оплата этого договора выдана один раз.','job_paid');
+        w.paid=true;w.status='paid';s.world.player.money+=w.reward;truth(s,'player:money',s.world.player.money);return ok('Вы получаете '+w.reward+' монеты. Условия договора выполнены.','job_paid');
       }
       return null;
     }
@@ -664,6 +665,6 @@
     const rpg=root.StoryRpg.create({...H,emit,truth,findNpc,findLocation,makeNpc,moveActor,containerAccess,dialogue,social,conversation,npc,here,flush,bind,hear,proposition});
     const spatial=root.StorySpatial.create({...H,emit,containerAccess});
     const scenes=root.StoryScenes.create({...H,npc,here,findLocation,openGrievances,emit,truth,containerAccess,spatial,dialogue,getExits:exits,sayNpc:(s,n,text,trigger)=>dialogue.say(s,n,text,trigger)});
-    return {dialogue,developer,social,conversation,rpg,containerAccess,opening:s=>scenes.overviewBlocks(s).map(b=>b.text).join("\n"),inspectScene:scenes.inspect,openedText:scenes.openedText,init,analyze,handle,after,flush,bind,presence,npc,npcProfile,openGrievances,snapshot,effects,runDue,map,assessGoal,proposition,emit,truth,annotate,statuses,result};
+    return {dialogue,developer,social,conversation,rpg,containerAccess,opening:s=>scenes.overviewBlocks(s).map(b=>b.text).join("\n"),inspectScene:scenes.inspect,openedText:scenes.openedText,init,analyze,handle,after,flush,bind,presence,npc,npcProfile,openGrievances,reconcile,snapshot,effects,runDue,map,assessGoal,proposition,emit,truth,annotate,statuses,result};
   }};
 })(globalThis);

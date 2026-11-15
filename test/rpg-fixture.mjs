@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-for(const f of ['spatial','narrator','messages','dialogue','developer','social','conversation-topics','npc-personality','conversation-memory','npc-biography','conversation-engine','action-catalog','rpg-core','physical-system','investigation-system','equipment-crafting','action-resolver','goals-story','npc-agency','economy-system','society-system','life-combat','genre-system','extended-actions','rpg-engine','semantic','scenes','simulation','engine'])await import('../'+f+'.js');
+for(const f of ['spatial','narrator','messages','dialogue','developer','social','conversation-topics','npc-personality','conversation-memory','npc-biography','conversation-engine','action-catalog','rpg-core','physical-system','investigation-system','equipment-crafting','action-resolver','goals-story','npc-agency','economy-system','society-system','life-combat','genre-system','extended-actions','rpg-engine','semantic','scenes','simulation','causal-story','engine'])await import('../'+f+'.js');
 export const E=globalThis.StoryEngine;
 export function fixture(extra={}){
   const config={world:'Город. Лавка, мастерская и рынок.',character:'Мира — хозяйка лавки.',player:'Путник',canon:'',...extra};

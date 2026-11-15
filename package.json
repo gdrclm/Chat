@@ -7,7 +7,8 @@
     "test": "node --test --test-isolation=none",
     "build": "node scripts/build.js",
     "build:pages": "node scripts/pages.js",
-    "test:gameplay": "python3 test/gameplay_audit_ui.py"
+    "test:gameplay": "python3 test/gameplay_audit_ui.py",
+    "test:story": "python3 test/causal_story_ui.py"
   },
   "engines": {
     "node": ">=22.8"

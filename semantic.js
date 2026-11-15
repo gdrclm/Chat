@@ -40,6 +40,7 @@
   verbs('TALK', 'Говорю', 'поговорить говорю поговорю поговорил поговорила побеседовать беседую побеседую побеседовал побеседовала пообщаться общаюсь пообщаюсь поболтать болтаю поболтаю');
   verbs('TALK', 'Обращаюсь к', 'обратиться обращаюсь обращусь обратился обратилась');
   verbs('TALK', 'Спрашиваю', 'спросить спрашиваю спрошу спросил спросила расспросить расспрашиваю расспрошу', { variant: 'ask' });
+  verbs('RETURN','Возвращаю','возвращаю верну вернуть');
   verbs('GIVE', 'Отдаю', 'отдать отдаю отдам отдал отдала передать передаю передам передал передала вручить вручаю вручу вручил вручила подарить дарю подарю подарил подарила дать даю дам дал дала', { variant: 'transfer' });
   verbs('REPAIR', 'Чиню', 'починить чиню починю починил починила чинить отремонтировать ремонтирую отремонтирую отремонтировал отремонтировала ремонтировать исправить исправляю исправлю исправил исправила восстановить восстанавливаю восстановлю восстановил восстановила');
   verbs('CLOSE', 'Закрываю', 'закрыть закрываю закрою закрой закрыл закрыла захлопнуть захлопываю захлопну запереть запираю запру');
@@ -105,6 +106,7 @@
   }
   function mode(text, h, inherited, context={}) {
     const q = visible(text);
+    if(/^я (?:уже )?(?:прочитал|прочитала|видел|видела|вернул|вернула)\s/u.test(q)&&!/(?:^|\s)(?:бы|если)(?:\s|$)/u.test(q))return 'report';
     if (/^(?:я\s+)?(?:говорю|сказал|скажу|шепчу|кричу|рассказываю)\s*[:«“"]/.test(norm(text))) return 'speech';
     const addressed=q.match(/^([а-я-]+)\s*[:,]\s*(?:открой|выйди|возьми|осмотри)/);
     if (/^(?:я\s+)?(?:попрошу|прошу|попросить|попроси|попросил|попросила)\s/.test(q) || addressed&&!modifiers.has(addressed[1])) return 'request';
@@ -181,15 +183,16 @@
         recipient = topic?null:candidate?.name || (explicit?tidy(args.split(/[,?:]/)[0]):null);
         target = recipient || null;
       } else {
-        const rel = relation(args);
+        const exact=(context.entities||[]).some(e=>[e.label,...(e.aliases||[])].some(label=>root.StorySpatial.same(args,label)));
+        const rel = exact?{direct:args,source:null}:relation(args);
         target = rel.direct; source = rel.source;
         if (prefix && /^(?:с|со|из|у)\s/.test(prefix)) source = prefix.replace(/^(?:с|со|из|у)\s+/u, '');
         else if (prefix && !target && !tokens(prefix).every(t => modifiers.has(t))) {const before=relation(prefix);target=before.direct;source=before.source||source;}
-        if (['GIVE','SHOW'].includes(h.intent)) {
+        if (['GIVE','SHOW','RETURN'].includes(h.intent)) {
           const receiver = (context.people || []).find(n => matches(target, n.name));
           if (receiver) {
             recipient = receiver.name;
-            target = tidy(target.split(/\s+/).filter(t => !tokens(receiver.name).map(stem).includes(stem(t))).join(' '));
+            target = tidy(target.split(/\s+/).filter(t => !tokens(receiver.name).map(stem).includes(stem(t))&&norm(t)!=='обратно').join(' '));
           }
         }
         target = tidy(target.replace(/^\s*(?:в|на|под|за|к|ко|до)\s+/u, '').replace(/\s+(?:возле|около|рядом с)\s+.*$/u, ''));
@@ -210,6 +213,7 @@
   }
   function step(text, context, inherited) {
     const raw = String(text || '').trim();
+    if(/^(?:я )?(?:не помню|забыл|забыла|не знаю)(?: своего)? (?:имени|свое имя|имя|свое прошлое|прошлого)/u.test(norm(raw)))return {raw,intent:'LEGACY',recognized:false,mode:'speech',actor:'player',discourse:'amnesia'};
     // Idioms and existing specialised plans retain their handlers, never a physical keyword inside them.
     const idiom = /(?:откры(?:ть|ваю)\s+(?:рот|душу|сердце)|поднима(?:ю|ть)\s+бров|выйти\s+из\s+себя|взять\s+слово)/u.test(norm(raw));
     const request = /^(?:я\s+)?(?:прошу|попрошу|попросить|договариваюсь|предлагаю)\s/u.test(norm(raw));
@@ -241,7 +245,7 @@
       if(lead&&/(?:ться|ть|ти|юсь|ю)$/u.test(lead)){result.intent='UNKNOWN';result.unsupportedVerb=lead;}
     }
     if(result.mode==='speech'&&result.intent==='TALK'){result.recipient=null;result.target=null;result.utterance=raw;}
-    if(result.mode==='report')result.actor=tidy(h.prefix)||tokens(raw).find(w=>['он','она','они','ты','вы'].includes(w))||'unknown';
+    if(result.mode==='report')result.actor=tidy(h?.prefix)||tokens(raw).find(w=>['он','она','они','ты','вы'].includes(w))||'unknown';
     if (h) {result.verb=h.word;result.canonical=h.canonical;result.variant=h.variant || null;if(h.correction)result.correction=h.correction;}
     const spatial=root.StorySpatial;
     if(result.intent==='MOVE'&&result.destination&&!['outside','previous_location'].includes(result.destination)){
@@ -316,7 +320,7 @@
     const result=clone(original),ctx=context(memory);
     const candidates=(query,values)=>{
       const q=tokens(query).map(stem);
-      return values.map(e=>{const labels=[e.label||e.name,...(e.aliases||[])];let score=0;for(const label of labels){const words=tokens(label).map(stem);const common=q.filter(w=>w.length>=3&&words.includes(w)).length;score=Math.max(score,common*3+(norm(label)===norm(query)?20:0));}return {e,score};}).filter(v=>v.score>0).sort((a,b)=>b.score-a.score);
+      return values.map(e=>{const labels=[e.label||e.name,...(e.aliases||[])];let score=0;for(const label of labels){const words=tokens(label).map(stem);const common=q.filter(w=>w.length>=3&&words.includes(w)).length;score=Math.max(score,common*3+(root.StorySpatial.same(label,query)?20:0));}return {e,score};}).filter(v=>v.score>0).sort((a,b)=>b.score-a.score);
     };
     if(result.actor!=='player')result.actorId=candidates(result.actor,ctx.people)[0]?.e.id || null;
     if(result.recipient)result.recipientId=result.recipient==='player'?'player':candidates(result.recipient,ctx.people)[0]?.e.id || null;
@@ -362,7 +366,7 @@
     }
     if(result.target==='current_location')result.locationId=memory.world?.player.location;
     if(result.destination){
-      if(result.destination==='outside')result.destinationId=memory.world?.outdoorId;
+      if(result.destination==='outside'){result.destinationId=memory.world?.outdoorId;const outgoing=memory.world.edges.filter(e=>e.from===memory.world.player.location);const ids=[...new Set(outgoing.map(e=>e.to))];if(!outgoing.some(e=>e.to===result.destinationId)&&ids.length===1)result.destinationId=ids[0];}
       else if(result.destination==='previous_location')result.destinationId=memory.world?.player.previousLocation;
       else result.destinationId=root.StorySpatial.location(memory,result.destination)?.id || null;
     }
@@ -379,7 +383,7 @@
     if(step.intent==='GREET')return 'Приветствую'+(step.recipient&&step.recipient!=='player'?' '+step.recipient:'');
     if(['INSPECT','SEARCH'].includes(step.intent)){const detail=step.method==='check'&&/(?:^|\s)(?:ход|работу)(?:\s|$)/.test(step.target || '')?step.target:target;return (({survey:'Осматриваюсь',listen:'Слушаю',check:'Проверяю',read:'Читаю',search:'Обыскиваю'})[step.method] || 'Осматриваю')+(detail?' '+detail:'');}
     if(step.intent==='TALK')return step.variant==='ask'||step.mode==='speech'||step.utterance?step.raw:step.recipient?'Говорю с '+step.recipient:'Поговорим';
-    const verb=({TAKE:'Беру',OPEN:'Открываю',CLOSE:'Закрываю',USE:'Использую',GIVE:'Отдаю',DROP:'Кладу',SHOW:'Показываю',REPAIR:'Чиню'})[step.intent];
+    const verb=({TAKE:'Беру',OPEN:'Открываю',CLOSE:'Закрываю',USE:'Использую',RETURN:'Возвращаю',GIVE:'Отдаю',DROP:'Кладу',SHOW:'Показываю',REPAIR:'Чиню'})[step.intent];
     return (verb || step.canonical || '')+(target?' '+target:'')+(step.placement?' '+step.placement:'')+(step.tool?' с помощью '+step.tool:'')+(step.expectedEffect?' чтобы '+step.expectedEffect:'');
   }
   root.StorySemantic={resolve,bind,command,context};

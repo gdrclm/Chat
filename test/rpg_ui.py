@@ -47,5 +47,5 @@ with sync_playwright() as p:
   assert page.evaluate('document.documentElement.scrollHeight <= innerHeight + 2')
   assert not errors,errors
   (Path(__file__).resolve().parents[1]/'work').mkdir(exist_ok=True)
-  page.screenshot(path=str(Path(__file__).resolve().parents[1]/'work'/f'chat-60-mobile-{width}.png'));context.close();print('6.0 mobile',width,height,'PASS',flush=True)
+  page.screenshot(path=str(Path(__file__).resolve().parents[1]/'work'/f'chat-60-mobile-{width}.png'));context.close();print('6.1 mobile',width,height,'PASS',flush=True)
  browser.close()

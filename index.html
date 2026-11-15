@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ru" data-version="6.0">
+<html lang="ru" data-version="6.1">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content"><title>Между строк — локальная история</title><link rel="stylesheet" href="style.css"><script defer src="spatial.js"></script><script defer src="narrator.js"></script><script defer src="messages.js"></script><script defer src="dialogue.js"></script><script defer src="developer.js"></script><script defer src="social.js"></script><script defer src="conversation-topics.js"></script><script defer src="npc-personality.js"></script><script defer src="conversation-memory.js"></script><script defer src="npc-biography.js"></script><script defer src="conversation-engine.js"></script><script defer src="action-catalog.js"></script><script defer src="rpg-core.js"></script><script defer src="physical-system.js"></script><script defer src="investigation-system.js"></script><script defer src="equipment-crafting.js"></script><script defer src="action-resolver.js"></script><script defer src="goals-story.js"></script>
 <script defer src="npc-agency.js"></script>
 <script defer src="economy-system.js"></script>
@@ -7,7 +7,7 @@
 <script defer src="life-combat.js"></script>
 <script defer src="genre-system.js"></script>
 <script defer src="extended-actions.js"></script>
-<script defer src="rpg-engine.js"></script><script defer src="semantic.js"></script><script defer src="scenes.js"></script><script defer src="simulation.js"></script><script defer src="engine.js"></script><script defer src="story-presets.js"></script><script defer src="app.js"></script></head>
+<script defer src="rpg-engine.js"></script><script defer src="semantic.js"></script><script defer src="scenes.js"></script><script defer src="simulation.js"></script><script defer src="causal-story.js"></script><script defer src="engine.js"></script><script defer src="story-presets.js"></script><script defer src="app.js"></script></head>
 <body>
 <aside id="settings-page" hidden aria-label="Настройки истории">
   <div class="page-top"><span class="eyebrow">НАСТРОЙКИ АВТОРА</span><button id="close-settings" type="button" class="secondary">К чату ✕</button></div>
@@ -38,6 +38,7 @@
   <div class="page-top"><span class="eyebrow">МИР И ПЕРСОНАЖИ</span><button id="close-world" type="button" class="secondary">К чату ✕</button></div>
   <p id="world-time" class="world-clock"></p><p id="world-body" class="hint"></p>
   <h3>Мои цели и истории</h3><ul id="rpg-goals"></ul><ul id="rpg-arcs"></ul>
+  <h3>Нити моей истории</h3><ul id="causal-threads"></ul>
   <h3>Снаряжение и груз</h3><p id="rpg-load" class="hint"></p><ul id="rpg-equipment"></ul>
   <h3>Поручения и встречи</h3><ul id="rpg-tasks"></ul><ul id="rpg-appointments"></ul>
   <h2 id="map-title">Карта</h2><p class="hint">Переход выполняется отдельным ходом. Доступны только соединённые места.</p><div id="map-exits" class="world-buttons"></div>
@@ -54,7 +55,7 @@
   <details><summary>Убеждения персонажей · просмотр автора</summary><ul id="belief-records"></ul><p class="hint">Убеждение персонажа может быть ошибочным. Истина мира задаётся автором и событиями, отдельно от этих версий.</p></details>
 </aside>
 <main id="chat-page">
-  <header><div><span class="eyebrow">МЕЖДУ СТРОК · 6.0</span><h2 id="story-title">Ваша история</h2></div><div class="header-actions"><span id="badge">● Офлайн</span><button id="open-world" type="button">Мир</button><button id="open-settings" type="button" aria-label="Открыть настройки">⚙</button></div></header>
+  <header><div><span class="eyebrow">МЕЖДУ СТРОК · 6.1</span><h2 id="story-title">Ваша история</h2></div><div class="header-actions"><span id="badge">● Офлайн</span><button id="open-world" type="button">Мир</button><button id="open-settings" type="button" aria-label="Открыть настройки">⚙</button></div></header>
   <p id="memory" class="hint" aria-live="polite"></p>
   <details id="situation" open><summary>Сейчас в истории</summary><p id="current-situation"></p><div id="situation-actions"></div><p id="recent-events"></p></details>
   <section id="messages" aria-label="Диалог" aria-live="polite"></section>
