@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ru" data-version="6.0">
+<html lang="ru" data-version="6.1">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content"><title>Между строк — локальная история</title><style>:root{color-scheme:dark;font-family:system-ui,-apple-system,sans-serif;color:#e8e5dd;background:#151917;font-size:14px;--app-height:100dvh;--app-top:0px}*{box-sizing:border-box}[hidden]{display:none!important}html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:none}body{position:fixed;top:var(--app-top);height:var(--app-height);left:0}button,input,textarea{font:inherit}button{cursor:pointer;touch-action:manipulation;border:0;border-radius:12px;padding:12px 16px;min-height:44px;background:#c4d5a5;color:#20291c}button:disabled{opacity:.5}button:focus-visible{outline:2px solid #fff;outline-offset:3px}main{width:100%;max-width:900px;margin:auto;height:100%;display:flex;flex-direction:column;min-height:0;padding-top:env(safe-area-inset-top)}header{flex-shrink:0;padding:18px 24px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #30372e;gap:12px}.eyebrow{font-size:10px;letter-spacing:2px;color:#a6b992}h2{font:24px Georgia,serif;margin:6px 0 0}.header-actions{display:flex;align-items:center;gap:12px}#badge{font-size:11px;color:#bacc9d;white-space:nowrap}#open-settings,.secondary{background:#303d2c;color:#d8e5cb}.hint{font-size:11px;line-height:1.5;color:#929d91}#memory{margin:0;padding:10px 24px;border-bottom:1px solid #30372e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0}#messages{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:24px;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}.intro{max-width:440px;margin:6vh auto;line-height:1.8;color:#929d91}.intro h3{font:28px Georgia,serif;color:#e1e5d8}article{margin-bottom:18px;max-width:92%;padding:16px 20px;background:#222a22;border:1px solid #333e30;border-radius:3px 16px 16px}article.user{margin-left:auto;background:#2f3829;border-color:#45503a;border-radius:16px 3px 16px 16px}article small{font-size:9px;letter-spacing:2px;color:#b6c89c}article p{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.7;margin:8px 0 0}.compose{flex-shrink:0;padding:0 20px max(10px,env(safe-area-inset-bottom));background:#151917}#status{color:#d8c899;font-size:12px;margin:6px 0;line-height:1.4}#status:empty{display:none}#chat{display:flex;align-items:end;gap:8px;background:#20271f;padding:8px;border:1px solid #46513c;border-radius:16px}#message{min-width:0;flex:1;color:#e8e5dd;font-size:16px;background:transparent;border:0;outline:none;margin:0;padding:10px;resize:none;max-height:100px}#send{flex-shrink:0}.compose>.hint{margin:6px 0 0;text-align:center}aside{height:100%;max-width:640px;margin:auto;overflow-y:auto;padding:24px 24px max(24px,env(safe-area-inset-bottom));padding-top:max(20px,env(safe-area-inset-top));background:#1d231f;overscroll-behavior:contain}.page-top{display:flex;align-items:center;justify-content:space-between;gap:12px}h1{font:38px Georgia,serif;margin:22px 0 12px}h1 br{display:none}h1 span{color:#c4d5a5;margin-left:16px}.muted{color:#929d91}label{display:block;font-size:13px;color:#bac5b5;margin:18px 0}input,textarea{width:100%;background:#151b17;border:1px solid #394336;border-radius:10px;padding:12px;color:#e8e5dd;font-size:16px;margin-top:8px}input:focus,textarea:focus{outline:1px solid #c4d5a5}#settings .secondary{width:100%}.text-button{background:transparent;color:#c4d5a5}.no-script{position:fixed;inset:20px;background:#222a22;padding:24px;z-index:20}@media(max-width:600px){header{padding:12px 16px}h2{font-size:20px}.eyebrow{font-size:9px}.header-actions{gap:8px}#badge{display:none}#open-settings{font-size:12px;padding:10px}#messages{padding:16px}#memory{padding:8px 16px;font-size:10px}.compose{padding-left:10px;padding-right:10px}#send{font-size:12px;padding:12px}article{padding:14px;max-width:95%}.compose>.hint{display:none}.intro{margin:4vh auto}.intro h3{font-size:25px}}@media(max-height:450px){header{padding:6px 12px}header .eyebrow,#memory{display:none}h2{font-size:18px;margin:0}.intro{margin:0 auto}.compose>.hint{display:none}}
 
 .memory-panel{border-top:1px solid #394336;margin-top:24px;padding-top:20px}.memory-panel h3{font-size:13px;color:#c4d5a5;margin-top:20px}.memory-panel ul{padding-left:20px;line-height:1.7;color:#bac5b5;font-size:12px}.memory-panel li{margin:8px 0;overflow-wrap:anywhere}header>div:first-child{min-width:0}#story-title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -63,6 +63,7 @@ select{width:100%;background:#151b17;border:1px solid #394336;border-radius:10px
   <div class="page-top"><span class="eyebrow">МИР И ПЕРСОНАЖИ</span><button id="close-world" type="button" class="secondary">К чату ✕</button></div>
   <p id="world-time" class="world-clock"></p><p id="world-body" class="hint"></p>
   <h3>Мои цели и истории</h3><ul id="rpg-goals"></ul><ul id="rpg-arcs"></ul>
+  <h3>Нити моей истории</h3><ul id="causal-threads"></ul>
   <h3>Снаряжение и груз</h3><p id="rpg-load" class="hint"></p><ul id="rpg-equipment"></ul>
   <h3>Поручения и встречи</h3><ul id="rpg-tasks"></ul><ul id="rpg-appointments"></ul>
   <h2 id="map-title">Карта</h2><p class="hint">Переход выполняется отдельным ходом. Доступны только соединённые места.</p><div id="map-exits" class="world-buttons"></div>
@@ -79,7 +80,7 @@ select{width:100%;background:#151b17;border:1px solid #394336;border-radius:10px
   <details><summary>Убеждения персонажей · просмотр автора</summary><ul id="belief-records"></ul><p class="hint">Убеждение персонажа может быть ошибочным. Истина мира задаётся автором и событиями, отдельно от этих версий.</p></details>
 </aside>
 <main id="chat-page">
-  <header><div><span class="eyebrow">МЕЖДУ СТРОК · 6.0</span><h2 id="story-title">Ваша история</h2></div><div class="header-actions"><span id="badge">● Офлайн</span><button id="open-world" type="button">Мир</button><button id="open-settings" type="button" aria-label="Открыть настройки">⚙</button></div></header>
+  <header><div><span class="eyebrow">МЕЖДУ СТРОК · 6.1</span><h2 id="story-title">Ваша история</h2></div><div class="header-actions"><span id="badge">● Офлайн</span><button id="open-world" type="button">Мир</button><button id="open-settings" type="button" aria-label="Открыть настройки">⚙</button></div></header>
   <p id="memory" class="hint" aria-live="polite"></p>
   <details id="situation" open><summary>Сейчас в истории</summary><p id="current-situation"></p><div id="situation-actions"></div><p id="recent-events"></p></details>
   <section id="messages" aria-label="Диалог" aria-live="polite"></section>
@@ -305,7 +306,7 @@ select{width:100%;background:#151b17;border:1px solid #394336;border-radius:10px
     function canSpeak(s,n,trigger){return here(s,n)&&(active(s,n)||reactions.has(trigger));}
     function say(s,n,text,trigger='dialogue',options={}){
       if(!canSpeak(s,n,trigger))return '';
-      if(/[ая]$/iu.test(n.name)&&!/^(?:Никита|Илья|Кузьма|Савва|Лука)$/iu.test(n.name)){const endings={видел:'видела',заметил:'заметила',услышал:'услышала',готов:'готова',получил:'получила',запомнил:'запомнила'};text=text.replace(/[А-Яа-яЁё]+/gu,word=>endings[norm(word)]||word);}
+      if(/[ая]$/iu.test(n.name)&&!/^(?:Никита|Илья|Кузьма|Савва|Лука)$/iu.test(n.name)){const endings={видел:'видела',заметил:'заметила',услышал:'услышала',готов:'готова',принял:'приняла',получил:'получила',запомнил:'запомнила'};text=text.replace(/[А-Яа-яЁё]+/gu,word=>endings[norm(word)]||word);}
       notice(s,n);
       if(reactions.has(trigger)&&!active(s,n)){
         n.dialogueState.initiatives.push({turn:s.turn,trigger});n.dialogueState.initiatives=n.dialogueState.initiatives.slice(-20);s.world.lastInitiatorId=n.id;
@@ -500,6 +501,7 @@ select{width:100%;background:#151b17;border:1px solid #394336;border-radius:10px
         e.loan={ownerId:owner.id,borrowerId:'player',turn:s.turn,returned:false,...(rent?{rental:true,fee,deadline:s.turn+5}:{})};e.location='inventory';e.hidden=false;e.known=true;if(!s.inventory.includes(e.label))s.inventory.push(e.label);s.focus=e.id;
         emit(s,'loan_granted',e.id,null,e.loan,a.id);return {status:'success',code:rent?'rental_granted':'loan_granted',text:say(s,owner,rent?'Аренда «'+e.label+'» оплачена на пять ходов. После этого нужно вернуть вещь.':'Одолжу «'+e.label+'». Владельцем остаюсь я; верните после работы.','permission_request'),effects:[]};
       }
+      if(a.intent==='give'&&e?.location==='inventory'&&e.ownerId===a.recipientId&&(e.loan||openGrievances(s.world.npcs[e.ownerId]).some(g=>g.requiredItemId===e.id)))return handle(s,p,c,{...a,intent:'return_property'});
       if(a.intent==='return_property'){
         if(!e||e.location!=='inventory'||!e.ownerId||e.ownerId==='player')return {status:'refused',code:'nothing_to_return',text:'При вас нет названной чужой вещи.',effects:[]};
         const owner=s.world.npcs[e.ownerId],quiet=/незаметно|тайно/.test(norm(c.originalText||c.text));const expected=owner.social.expected[e.id];
@@ -791,6 +793,7 @@ select{width:100%;background:#151b17;border:1px solid #394336;border-radius:10px
       const parent=byId[last?.split('.')[0]]||byId[last]||null;
       return {topicId:last||null,parentId:parent?.id||null,followUp,confidence:1,raw:input,contextRequired:!last};
     }
+    if(/как.*стал[аи]?.*(?:мастер|ремеслен|торгов|врач|учител)|как.*пришел.*(?:професс|ремесл)/u.test(q))return {topicId:'occupation.motivation',parentId:'occupation',confidence:1,raw:input};
     if(/(?:почему|зачем).*выбра.*(?:работ|дело|профес)|почему.*(?:торгу|ремонт|лечишь)/u.test(q))return {topicId:'occupation.motivation',parentId:'occupation',facet:'motivation',confidence:1,raw:input};
     if(/(?:давно|сколько лет).*(?:жив|откры|работа)/u.test(q))return {topicId:'tenure',parentId:/жив/.test(q)?'home':'place.history',confidence:1,raw:input};
     if(/(?:кто|кто нибудь).*(?:тебе|ты|вам).*(?:помог|помога)|(?:ты|тебе|вам).*сам.*помог/u.test(base))return {topicId:'occupation.personal_experience',parentId:'occupation',facet:'personal_experience',confidence:1,raw:input};
@@ -5139,6 +5142,7 @@ select{width:100%;background:#151b17;border:1px solid #394336;border-radius:10px
   verbs('TALK', 'Говорю', 'поговорить говорю поговорю поговорил поговорила побеседовать беседую побеседую побеседовал побеседовала пообщаться общаюсь пообщаюсь поболтать болтаю поболтаю');
   verbs('TALK', 'Обращаюсь к', 'обратиться обращаюсь обращусь обратился обратилась');
   verbs('TALK', 'Спрашиваю', 'спросить спрашиваю спрошу спросил спросила расспросить расспрашиваю расспрошу', { variant: 'ask' });
+  verbs('RETURN','Возвращаю','возвращаю верну вернуть');
   verbs('GIVE', 'Отдаю', 'отдать отдаю отдам отдал отдала передать передаю передам передал передала вручить вручаю вручу вручил вручила подарить дарю подарю подарил подарила дать даю дам дал дала', { variant: 'transfer' });
   verbs('REPAIR', 'Чиню', 'починить чиню починю починил починила чинить отремонтировать ремонтирую отремонтирую отремонтировал отремонтировала ремонтировать исправить исправляю исправлю исправил исправила восстановить восстанавливаю восстановлю восстановил восстановила');
   verbs('CLOSE', 'Закрываю', 'закрыть закрываю закрою закрой закрыл закрыла захлопнуть захлопываю захлопну запереть запираю запру');
@@ -5204,6 +5208,7 @@ select{width:100%;background:#151b17;border:1px solid #394336;border-radius:10px
   }
   function mode(text, h, inherited, context={}) {
     const q = visible(text);
+    if(/^я (?:уже )?(?:прочитал|прочитала|видел|видела|вернул|вернула)\s/u.test(q)&&!/(?:^|\s)(?:бы|если)(?:\s|$)/u.test(q))return 'report';
     if (/^(?:я\s+)?(?:говорю|сказал|скажу|шепчу|кричу|рассказываю)\s*[:«“"]/.test(norm(text))) return 'speech';
     const addressed=q.match(/^([а-я-]+)\s*[:,]\s*(?:открой|выйди|возьми|осмотри)/);
     if (/^(?:я\s+)?(?:попрошу|прошу|попросить|попроси|попросил|попросила)\s/.test(q) || addressed&&!modifiers.has(addressed[1])) return 'request';
@@ -5280,15 +5285,16 @@ select{width:100%;background:#151b17;border:1px solid #394336;border-radius:10px
         recipient = topic?null:candidate?.name || (explicit?tidy(args.split(/[,?:]/)[0]):null);
         target = recipient || null;
       } else {
-        const rel = relation(args);
+        const exact=(context.entities||[]).some(e=>[e.label,...(e.aliases||[])].some(label=>root.StorySpatial.same(args,label)));
+        const rel = exact?{direct:args,source:null}:relation(args);
         target = rel.direct; source = rel.source;
         if (prefix && /^(?:с|со|из|у)\s/.test(prefix)) source = prefix.replace(/^(?:с|со|из|у)\s+/u, '');
         else if (prefix && !target && !tokens(prefix).every(t => modifiers.has(t))) {const before=relation(prefix);target=before.direct;source=before.source||source;}
-        if (['GIVE','SHOW'].includes(h.intent)) {
+        if (['GIVE','SHOW','RETURN'].includes(h.intent)) {
           const receiver = (context.people || []).find(n => matches(target, n.name));
           if (receiver) {
             recipient = receiver.name;
-            target = tidy(target.split(/\s+/).filter(t => !tokens(receiver.name).map(stem).includes(stem(t))).join(' '));
+            target = tidy(target.split(/\s+/).filter(t => !tokens(receiver.name).map(stem).includes(stem(t))&&norm(t)!=='обратно').join(' '));
           }
         }
         target = tidy(target.replace(/^\s*(?:в|на|под|за|к|ко|до)\s+/u, '').replace(/\s+(?:возле|около|рядом с)\s+.*$/u, ''));
@@ -5309,6 +5315,7 @@ select{width:100%;background:#151b17;border:1px solid #394336;border-radius:10px
   }
   function step(text, context, inherited) {
     const raw = String(text || '').trim();
+    if(/^(?:я )?(?:не помню|забыл|забыла|не знаю)(?: своего)? (?:имени|свое имя|имя|свое прошлое|прошлого)/u.test(norm(raw)))return {raw,intent:'LEGACY',recognized:false,mode:'speech',actor:'player',discourse:'amnesia'};
     // Idioms and existing specialised plans retain their handlers, never a physical keyword inside them.
     const idiom = /(?:откры(?:ть|ваю)\s+(?:рот|душу|сердце)|поднима(?:ю|ть)\s+бров|выйти\s+из\s+себя|взять\s+слово)/u.test(norm(raw));
     const request = /^(?:я\s+)?(?:прошу|попрошу|попросить|договариваюсь|предлагаю)\s/u.test(norm(raw));
@@ -5340,7 +5347,7 @@ select{width:100%;background:#151b17;border:1px solid #394336;border-radius:10px
       if(lead&&/(?:ться|ть|ти|юсь|ю)$/u.test(lead)){result.intent='UNKNOWN';result.unsupportedVerb=lead;}
     }
     if(result.mode==='speech'&&result.intent==='TALK'){result.recipient=null;result.target=null;result.utterance=raw;}
-    if(result.mode==='report')result.actor=tidy(h.prefix)||tokens(raw).find(w=>['он','она','они','ты','вы'].includes(w))||'unknown';
+    if(result.mode==='report')result.actor=tidy(h?.prefix)||tokens(raw).find(w=>['он','она','они','ты','вы'].includes(w))||'unknown';
     if (h) {result.verb=h.word;result.canonical=h.canonical;result.variant=h.variant || null;if(h.correction)result.correction=h.correction;}
     const spatial=root.StorySpatial;
     if(result.intent==='MOVE'&&result.destination&&!['outside','previous_location'].includes(result.destination)){
@@ -5415,7 +5422,7 @@ select{width:100%;background:#151b17;border:1px solid #394336;border-radius:10px
     const result=clone(original),ctx=context(memory);
     const candidates=(query,values)=>{
       const q=tokens(query).map(stem);
-      return values.map(e=>{const labels=[e.label||e.name,...(e.aliases||[])];let score=0;for(const label of labels){const words=tokens(label).map(stem);const common=q.filter(w=>w.length>=3&&words.includes(w)).length;score=Math.max(score,common*3+(norm(label)===norm(query)?20:0));}return {e,score};}).filter(v=>v.score>0).sort((a,b)=>b.score-a.score);
+      return values.map(e=>{const labels=[e.label||e.name,...(e.aliases||[])];let score=0;for(const label of labels){const words=tokens(label).map(stem);const common=q.filter(w=>w.length>=3&&words.includes(w)).length;score=Math.max(score,common*3+(root.StorySpatial.same(label,query)?20:0));}return {e,score};}).filter(v=>v.score>0).sort((a,b)=>b.score-a.score);
     };
     if(result.actor!=='player')result.actorId=candidates(result.actor,ctx.people)[0]?.e.id || null;
     if(result.recipient)result.recipientId=result.recipient==='player'?'player':candidates(result.recipient,ctx.people)[0]?.e.id || null;
@@ -5461,7 +5468,7 @@ select{width:100%;background:#151b17;border:1px solid #394336;border-radius:10px
     }
     if(result.target==='current_location')result.locationId=memory.world?.player.location;
     if(result.destination){
-      if(result.destination==='outside')result.destinationId=memory.world?.outdoorId;
+      if(result.destination==='outside'){result.destinationId=memory.world?.outdoorId;const outgoing=memory.world.edges.filter(e=>e.from===memory.world.player.location);const ids=[...new Set(outgoing.map(e=>e.to))];if(!outgoing.some(e=>e.to===result.destinationId)&&ids.length===1)result.destinationId=ids[0];}
       else if(result.destination==='previous_location')result.destinationId=memory.world?.player.previousLocation;
       else result.destinationId=root.StorySpatial.location(memory,result.destination)?.id || null;
     }
@@ -5478,7 +5485,7 @@ select{width:100%;background:#151b17;border:1px solid #394336;border-radius:10px
     if(step.intent==='GREET')return 'Приветствую'+(step.recipient&&step.recipient!=='player'?' '+step.recipient:'');
     if(['INSPECT','SEARCH'].includes(step.intent)){const detail=step.method==='check'&&/(?:^|\s)(?:ход|работу)(?:\s|$)/.test(step.target || '')?step.target:target;return (({survey:'Осматриваюсь',listen:'Слушаю',check:'Проверяю',read:'Читаю',search:'Обыскиваю'})[step.method] || 'Осматриваю')+(detail?' '+detail:'');}
     if(step.intent==='TALK')return step.variant==='ask'||step.mode==='speech'||step.utterance?step.raw:step.recipient?'Говорю с '+step.recipient:'Поговорим';
-    const verb=({TAKE:'Беру',OPEN:'Открываю',CLOSE:'Закрываю',USE:'Использую',GIVE:'Отдаю',DROP:'Кладу',SHOW:'Показываю',REPAIR:'Чиню'})[step.intent];
+    const verb=({TAKE:'Беру',OPEN:'Открываю',CLOSE:'Закрываю',USE:'Использую',RETURN:'Возвращаю',GIVE:'Отдаю',DROP:'Кладу',SHOW:'Показываю',REPAIR:'Чиню'})[step.intent];
     return (verb || step.canonical || '')+(target?' '+target:'')+(step.placement?' '+step.placement:'')+(step.tool?' с помощью '+step.tool:'')+(step.expectedEffect?' чтобы '+step.expectedEffect:'');
   }
   root.StorySemantic={resolve,bind,command,context};
@@ -5496,7 +5503,7 @@ select{width:100%;background:#151b17;border:1px solid #394336;border-radius:10px
         {key:'wire',label:'моток проволоки',aliases:['проволока'],kind:'tool',portable:true,visibility:'hidden',description:'Под решёткой зацепился короткий, но целый моток проволоки.',discovery:{flag:'grate-moved'}}
       ]},
       city:{description:'У городского перекрёстка сходятся дороги к рынку, мастерской и площади. На доске объявлений висят заказы; рядом на стене вырезан знак.',features:[
-        {key:'board',label:'доска объявлений',aliases:['объявления','объявление'],description:'На доске два предложения: мастер ищет помощь с механизмом, на рынке нужен доставщик. Ни одно не требует заниматься тайной лавки.',fact:{key:'city.jobs',text:'В мастерской предлагают ремонт, на рынке — доставку. Можно обратиться к нанимателям.',unlocks:['спросить о ремонте','спросить о доставке']}},
+        {key:'board',label:'доска объявлений',aliases:['объявления','объявление'],description:'На доске два предложения: мастер ищет помощь с механизмом, на рынке нужен доставщик. Условия можно узнать у нанимателей.',fact:{key:'city.jobs',text:'В мастерской предлагают ремонт, на рынке — доставку. Можно обратиться к нанимателям.',unlocks:['спросить о ремонте','спросить о доставке']}},
         {key:'mark',label:'знак гильдии',aliases:['знак','символ','метка'],description:'На стене вырезан знак шестерни с разомкнутым зубцом. Его назначение пока непонятно.',fact:{key:'city.mark',text:'На городской стене замечена метка шестерни с разомкнутым зубцом.',topics:['знак','шестерня','гильдия'],unlocks:['спросить мастера о знаке']}},
         {key:'sheet',label:'чистый лист бумаги',aliases:['бумага','лист'],kind:'prop',portable:true,visibility:'survey',description:'Чистый лист лежит под доской для копирования заказов.'}
       ]},
@@ -5513,13 +5520,14 @@ select{width:100%;background:#151b17;border:1px solid #394336;border-radius:10px
         {key:'scales',label:'торговые весы',aliases:['весы'],description:'Пустые чаши весов стоят на одном уровне. Пока нет основания считать их неисправными.',fact:{key:'market.scales',text:'Проверка пустых весов не выявила перекоса.'}},
         {key:'parcels',label:'мешок посылок',aliases:['посылки','мешок','бирки','бирка'],description:'Бирки на мешке помечены номерами маршрутов. Проще узнать условия доставки у Ники, чем трогать чужие отправления.',private:true,fact:{key:'market.delivery',text:'Ника передаёт посылку только после согласования доставки.',unlocks:['попросить доставку']}}
       ]},
+      garden:{description:'Сад отделён от зданий участками зелени. Здесь тихо. За зарослями идёт та же дорожка к лавке; у скамьи можно спокойно обдумать находки.',features:[{key:'hedge',label:'садовые заросли',aliases:['заросли','кусты'],description:'За кустами виден изгиб знакомой дорожки. Здесь нет скрытого прохода, зато можно укрыться от шума улицы и отдохнуть.'},{key:'garden-bench',label:'садовая скамья',aliases:['скамья'],description:'Скамья свободна. На ней можно присесть, отдохнуть и перечитать свои записи.',kind:'fixed',movable:false,physical:{material:'wood',mass:40,volume:2,size:2,height:.5,width:2,length:.5,temperature:20,durability:100,maxDurability:100,quality:1,wear:0,friction:.5,flammability:.7,wetness:0,hollow:false,capacity:0,functions:['seat'],parts:[],anchored:true,position:{x:2,y:0,z:0}}}]},
       square:{description:'На площади стоят скамья, городская схема и архивная доска. Здесь собирают местные истории и принимают почту.',features:[
         {key:'map',label:'городская схема',aliases:['схема','карта города','маршруты'],description:'На схеме отмечены выходы к рынку и мастерской через городской перекрёсток. Сам рисунок не создаёт новых проходов.',fact:{key:'square.routes',text:'Рынок и мастерская связаны с площадью через город.',unlocks:['планировать обратный маршрут']}},
         {key:'archive',label:'архивная доска',aliases:['архивная доска','архив'],description:'В местной записи объясняется, что знак разомкнутой шестерни ставят у служебных проходов мастеров. Сведения пригодятся, если вы сами нашли такой знак.',fact:{key:'square.guild',text:'Разомкнутая шестерня обозначает служебный проход гильдии мастеров.',topics:['гильдия','знак'],requires:['city.mark']}},
         {key:'bench',label:'скамья',description:'Скамья стоит свободно. Её можно отодвинуть, но не стоит ожидать тайник без каких-либо оснований.',movable:true}
       ]}
     };
-    const roleAliases={street:['улица'],city:['город'],workshop:['мастерская'],market:['рынок'],square:['площадь']};
+    const roleAliases={street:['улица'],city:['город'],workshop:['мастерская'],market:['рынок'],square:['площадь'],garden:['сад']};
     const ok=(text,code,information)=>({status:'success',code,text,information,effects:[]});
     const fail=(status,code,text)=>({status,code,text,effects:[]});
     function role(node){return node.role||Object.keys(roleAliases).find(key=>roleAliases[key].some(v=>norm(node.name)===v))||'custom';}
@@ -5603,6 +5611,7 @@ select{width:100%;background:#151b17;border:1px solid #394336;border-radius:10px
     function init(s,p,config){
       research(s);
       if(s.world.sceneVersion===1){
+        for(const place of s.world.locations.filter(l=>role(l)==='garden'&&!l.scene?.gardenUpgrade&&!['space','survival','sea'].includes(p.genre))){place.scene||={description:defaultDescription(place,config),features:[],observed:{},discoveries:{},events:[],revision:0};for(const spec of packs.garden.features){const id=place.id+':'+spec.key;if(!s.entities.some(e=>e.id===id)){const e=addEntity(s,spec.label,{id,source:'local-scene',location:place.name,kind:spec.kind||'fixed',known:true,hidden:false,portable:false,localKey:spec.key,localRole:'garden',aliases:spec.aliases||[],description:spec.description,...(spec.physical?{physical:clone(spec.physical)}:{})});e.localFacts=[];place.scene.features.push(e.id);}}place.scene.gardenUpgrade=true;}
         upgradeLocalDescriptions(s,config);
         for(const place of s.world.locations.filter(l=>role(l)==='workshop'&&l.scene?.features?.length)){
           const owner=Object.values(s.world.npcs).find(n=>n.location===place.id);
@@ -5624,9 +5633,10 @@ select{width:100%;background:#151b17;border:1px solid #394336;border-radius:10px
           node.scene.description=template.description;
           const owner=Object.values(s.world.npcs).find(n=>n.location===node.id);
           for(const spec of template.features){
-            const e=addEntity(s,spec.label,{id:node.id+':'+spec.key,source:'local-scene',location:node.name,kind:spec.kind||'fixed',portable:Boolean(spec.portable),known:!['hidden','survey'].includes(spec.visibility),hidden:spec.visibility==='hidden',description:spec.description,localKey:spec.key,localRole:role(node),aliases:spec.aliases||[],ownerId:owner?.id||null,private:Boolean(spec.private),movable:Boolean(spec.movable),condition:spec.condition||null,sound:spec.sound||null,discovery:spec.discovery||{method:spec.visibility==='survey'?'survey':'examine'}});
+            const e=addEntity(s,spec.label,{id:node.id+':'+spec.key,source:'local-scene',location:node.name,kind:spec.kind||'fixed',portable:Boolean(spec.portable),known:!['hidden','survey'].includes(spec.visibility),hidden:spec.visibility==='hidden',description:spec.description,localKey:spec.key,localRole:role(node),aliases:spec.aliases||[],ownerId:owner?.id||null,private:Boolean(spec.private),movable:Boolean(spec.movable),...(spec.physical?{physical:clone(spec.physical)}:{}),condition:spec.condition||null,sound:spec.sound||null,discovery:spec.discovery||{method:spec.visibility==='survey'?'survey':'examine'}});
             e.localFacts=spec.fact?[clone(spec.fact)]:[];node.scene.features.push(e.id);
           }
+          if(role(node)==='garden')node.scene.gardenUpgrade=true;
           if(owner){owner.expertise||={};if(role(node)==='workshop'){
             owner.expertise['guild.sign']={text:'Разомкнутая шестерня отмечает служебный проход. У фонаря можно найти короткую дорогу к мастерской.',requires:['city.mark','street.mark'],unlocks:['проверить служебный проход']};
             owner.expertise['repair.pin']={text:'Штифт можно сделать из проволоки на верстаке плоскогубцами и напильником.',unlocks:['изготовить штифт']};
@@ -5746,14 +5756,17 @@ select{width:100%;background:#151b17;border:1px solid #394336;border-radius:10px
       if(e.localKey==='bench'&&s.entities.some(v=>v.localKey==='mechanism'&&v.location===s.place&&v.condition==='repaired'))return 'На верстаке лежат следы завершённой работы; механизм уже собран. Здесь можно выполнять обслуживание.';
       if(e.localKey==='drain'&&s.world.sceneFlags['grate-moved'])return 'Решётка сдвинута. Участок водостока под ней доступен.';
       if(e.destroyed)return 'Предмет разрушен.';
+      if(e.localKey==='counter'){const seller=Object.values(s.world.npcs).find(n=>n.location===s.world.player.location&&s.entities.some(v=>v.stockOwner===n.id));const stock=s.entities.filter(v=>v.stockOwner===seller?.id&&v.location===seller?.id&&!v.destroyed);return stock.length?'Сейчас на прилавке: '+stock.map(v=>v.label+' — '+Math.max(1,v.price-(s.world.player.discounts?.[seller.id]||0))+' монет').join('; ')+'.'+(s.world.player.discounts?.[seller?.id]?' Рекомендация уже учтена в ценах.':' Можно осмотреть товар и спросить продавца об условиях.'): 'На прилавке сейчас нет товаров для продажи.';}
       if(e.writtenText)return 'На записи: «'+e.writtenText+'».';
       if(e.evidence)return 'На носителе записано: '+e.evidence.proposition.text+'. Это содержание улики, а не доказанная истина.';
       if(e.kind==='barrier')return '«'+e.label+'» '+(e.openingDegree==='slightly'?'приоткрыт':e.opened?'открыт':e.locked?'заперт':'закрыт, но не заперт')+'.'+(e.opened&&e.openingDegree!=='slightly'?' '+H.containerText(s,e):'');
-      return e.description||'«'+e.label+'»: '+(e.portable?'предмет можно переносить':'объект используется на месте')+'.';
+      if(e.description)return e.description;
+      const owned=s.world.npcs[e.ownerId];
+      return (owned?'Владелец — '+owned.name+'. Разрешение взять нужно получить отдельно. ':'')+'«'+e.label+'»: '+(e.portable?'предмет можно переносить':'объект используется на месте')+'.';
     }
     function sourceFacts(s,e){
       if(e.evidence)return [{key:'text:'+e.id+':'+hash(e.evidence.proposition.text),text:'На «'+e.label+'» записано: '+e.evidence.proposition.text,topics:['содержание']}];
-      if(e.writtenText)return [{key:'text:'+e.id+':'+hash(e.writtenText),text:'В записи: '+e.writtenText,topics:['запись']}];
+      if(e.writtenText)return [...(e.localFacts||[]),{key:'text:'+e.id+':'+hash(e.writtenText),text:'В записи: '+e.writtenText,topics:['запись']}];
       if(e.kind==='barrier'&&e.opened&&e.openingDegree!=='slightly'&&e.revelationText)return [{key:'revelation:'+e.id,text:e.contentsDefined?H.containerText(s,e):e.revelationText}];
       if(e.localKey==='mechanism'&&e.condition==='repaired')return [{key:'repair.working',text:'Механизм исправен: установленный штифт удерживает шестерню.'}];
       return e.localFacts||[];
@@ -5833,7 +5846,7 @@ select{width:100%;background:#151b17;border:1px solid #394336;border-radius:10px
       if(discoveries.includes('square.guild'))unlockGuildKnowledge(s,e,where);
       const shortcut=e.localKey==='lamp'?openShortcut(s,e):'';
       const extra=discoveries.length?'\nТеперь можно: '+[...new Set(discoveries.flatMap(id=>r.knowledge[id]?.unlocks||[]))].join('; '):'';
-      return ok((m==='listen'?e.sound:describe(s,e))+(details.length?'\n'+[...new Set(details)].filter(d=>!describe(s,e).includes(d)).join('\n'):'')+(extra.endsWith(': ')?'':extra)+shortcut,'object_studied',{novel:true,sourceId:e.id,locationId:where.id,discoveries,opportunities:r.capabilities.slice(-6)});
+      return ok((m==='listen'?e.sound:describe(s,e))+(details.length?'\n'+[...new Set(details)].filter(d=>!describe(s,e).includes(d)&&!d.startsWith('В записи:')&&!(e.source==='local-scene'&&(e.localFacts||[]).some(f=>f.text===d))).join('\n'):'')+(extra.endsWith(': ')?'':extra)+shortcut,'object_studied',{novel:true,sourceId:e.id,locationId:where.id,discoveries,opportunities:r.capabilities.slice(-6)});
     }
     function permission(s,e,type='tools'){
       return !e.ownerId||s.world.player.permissions?.[e.ownerId]?.[type]===true;
@@ -5871,7 +5884,7 @@ select{width:100%;background:#151b17;border:1px solid #394336;border-radius:10px
         e.moved=true;s.world.sceneFlags['grate-moved']=true;
         const wire=s.entities.find(v=>v.localKey==='wire'&&v.location===s.place);if(wire){wire.known=true;wire.hidden=false;}
         const fresh=wire&&know(s,{key:'street.wire-found',text:'Под сдвинутой решёткой найден моток проволоки.',unlocks:['взять проволоку']},wire,node(s).id);
-        return ok('Решётка поддаётся. Под ней виден существовавший там моток проволоки; теперь его можно взять.','environment_changed',{novel:true,discoveries:fresh?['street.wire-found']:[]});
+        return ok('Решётка поддаётся. Под ней зацепился моток проволоки; теперь его можно взять.','environment_changed',{novel:true,discoveries:fresh?['street.wire-found']:[]});
       }
       if(e.movable){if(e.moved)return ok('«'+e.label+'» уже отодвинута; новых деталей нет.','already_changed',{novel:false,discoveries:[]});e.moved=true;return ok('Вы отодвигаете «'+e.label+'». Под ней нет заданных предметов или тайника.','environment_changed',{novel:true,discoveries:[]});}
       return fail('refused','not_movable','«'+e.label+'» не сдвинуть таким способом. Можно изучить крепление или выбрать другой подход.');
@@ -5920,6 +5933,7 @@ select{width:100%;background:#151b17;border:1px solid #394336;border-radius:10px
       }
       if((c.intent==='show'||a.intent==='show')&&e?.recommendation){
         if(!local(s,e))return fail('refused','target_elsewhere','Рекомендация находится не здесь.');
+        n.memory.confirmedRecommendation=e.id;
         if(!s.entities.some(item=>item.stockOwner===n.id))return ok(H.sayNpc(s,n,'Вижу подпись мастера. Торговую скидку нужно обсуждать с продавцом на рынке','dialogue'),'recommendation_seen',{novel:false,discoveries:[]});
         s.world.player.discounts||={};const first=!s.world.player.discounts[n.id];s.world.player.discounts[n.id]=1;
         if(first){s.trust=Math.min(5,s.trust+1);emit(s,'trade_discount',n.id,0,1);}
@@ -6181,7 +6195,7 @@ select{width:100%;background:#151b17;border:1px solid #394336;border-radius:10px
         if(e&&payload.length)e.evidence={proposition:proposition(s,payload.join('|').trim()),authenticity:'genuine',witnessedBy:[]};
       }
       const market=findLocation(s,'рынок');const merchant=market&&Object.values(w.npcs).find(n=>n.location===market.id);
-      if(merchant)for(const [label,price]of [['молоток',3],['цепочка',2],['книга',2]]) {
+      if(merchant)for(const [label,price]of [['молоток',3],['цепочка',2],['книга',2],['моток проволоки',1]]) {
         addEntity(s,label,{id:'stock:'+hash(label),location:merchant.id,source:'stock',kind:'tool',portable:true,price,stockOwner:merchant.id});
       }
       for(const e of s.entities){annotate(s,e,p);syncEntityTruth(s,e,'canon');}
@@ -6501,7 +6515,7 @@ select{width:100%;background:#151b17;border:1px solid #394336;border-radius:10px
       const sceneResult=scenes.handle(s,p,c,config,a);if(sceneResult)return sceneResult;
       if(a.intent==='select_npc') {
         const target=findNpc(s,c.text,true);if(!target)return no('Здесь нет персонажа с таким именем.','npc_absent');
-        flush(s);bind(s,target.id);return ok('Вы обращаетесь к '+target.name+'.','npc_selected');
+        flush(s);bind(s,target.id);return ok('Вы обращаетесь к персонажу «'+target.name+'».','npc_selected');
       }
       if(a.intent==='move'||a.intent==='return') {
         if(/телепорт/.test(c.lower)&&!p.magic)return no('В этом мире магия не установлена.','magic_forbidden');
@@ -6630,11 +6644,12 @@ select{width:100%;background:#151b17;border:1px solid #394336;border-radius:10px
       if(a.intent==='buy') {
         if(!n||!here(s,n))return no('Здесь нет продавца.','no_seller');
         const item=s.entities.find(v=>v.stockOwner===n.id&&v.location===n.id&&namesMatch(v.label,c.text));
+        if(!item&& !s.entities.some(v=>v.stockOwner===n.id&&v.location===n.id))return ask('Здесь нет вещей, выставленных на продажу. Можно спросить владельца о другом способе получить доступ.','no_stock');
         if(!item)return ask('В продаже: '+s.entities.filter(v=>v.stockOwner===n.id&&v.location===n.id).map(v=>v.label+' — '+v.price).join(', ')+'.','unknown_product');
         const discount=s.world.player.discounts?.[n.id]||0;const price=Math.max(1,item.price-discount);
         if(s.world.player.money<price)return no('Не хватает монет. Цена: '+item.price+'.','insufficient_money');
         s.world.player.money-=price;item.location='inventory';if(!s.inventory.includes(item.label))s.inventory.push(item.label);
-        truth(s,'player:money',s.world.player.money);return ok('Вы покупаете «'+item.label+'» за '+price+' монеты.','purchased');
+        truth(s,'player:money',s.world.player.money);return ok('Вы покупаете предмет «'+item.label+'» за '+price+' монеты.','purchased');
       }
       if(a.intent==='find_job') {
         if(!n||!here(s,n)||!['рынок','мастерская','площадь'].some(v=>norm(s.place).includes(v)))return no('Работу предлагают на рынке, в мастерской или на площади. До них нужно дойти по карте.','no_employer_here');
@@ -6669,7 +6684,7 @@ select{width:100%;background:#151b17;border:1px solid #394336;border-radius:10px
         const w=s.world.loops.work;
         if(w.status!=='completed'||w.paid)return no('Неоплаченной завершённой работы нет.','nothing_to_pay');
         if(!here(s,s.world.npcs[w.employer]))return no('За оплатой нужно вернуться к нанимателю.','employer_absent');
-        w.paid=true;w.status='paid';s.world.player.money+=w.reward;truth(s,'player:money',s.world.player.money);return ok('Вы получаете '+w.reward+' монеты. Оплата этого договора выдана один раз.','job_paid');
+        w.paid=true;w.status='paid';s.world.player.money+=w.reward;truth(s,'player:money',s.world.player.money);return ok('Вы получаете '+w.reward+' монеты. Условия договора выполнены.','job_paid');
       }
       return null;
     }
@@ -6714,8 +6729,260 @@ select{width:100%;background:#151b17;border:1px solid #394336;border-radius:10px
     const rpg=root.StoryRpg.create({...H,emit,truth,findNpc,findLocation,makeNpc,moveActor,containerAccess,dialogue,social,conversation,npc,here,flush,bind,hear,proposition});
     const spatial=root.StorySpatial.create({...H,emit,containerAccess});
     const scenes=root.StoryScenes.create({...H,npc,here,findLocation,openGrievances,emit,truth,containerAccess,spatial,dialogue,getExits:exits,sayNpc:(s,n,text,trigger)=>dialogue.say(s,n,text,trigger)});
-    return {dialogue,developer,social,conversation,rpg,containerAccess,opening:s=>scenes.overviewBlocks(s).map(b=>b.text).join("\n"),inspectScene:scenes.inspect,openedText:scenes.openedText,init,analyze,handle,after,flush,bind,presence,npc,npcProfile,openGrievances,snapshot,effects,runDue,map,assessGoal,proposition,emit,truth,annotate,statuses,result};
+    return {dialogue,developer,social,conversation,rpg,containerAccess,opening:s=>scenes.overviewBlocks(s).map(b=>b.text).join("\n"),inspectScene:scenes.inspect,openedText:scenes.openedText,init,analyze,handle,after,flush,bind,presence,npc,npcProfile,openGrievances,reconcile,snapshot,effects,runDue,map,assessGoal,proposition,emit,truth,annotate,statuses,result};
   }};
+})(globalThis);
+</script>
+<script>/* Grounded story opportunities: rules join actual needs, knowledge and consequences.
+   The director never performs the proposed action or reveals an unobserved source. */
+(function(root){'use strict';
+  function create(H){
+    const {norm,hash,clone,log,simulation:S}=H;
+    const here=(s,n)=>S.dialogue.here(s,n);
+    const entity=(s,id)=>s.entities.find(e=>e.id===id);
+    const local=(s,e)=>Boolean(e&&!e.destroyed&&!e.hidden&&e.known&&S.containerAccess(s,e)&&([s.place,'inventory'].includes(e.location)||here(s,s.world.npcs[e.location])));
+    const person=(s,text)=>Object.values(s.world.npcs).find(n=>H.words(text).map(H.stem).includes(H.stem(n.name)));
+    const nearby=s=>s.world.npcs[s.world.activeNpcId]||Object.values(s.world.npcs).find(n=>here(s,n));
+    const owner=(s,e)=>s.world.npcs[e?.ownerId];
+    const known=(s,e)=>local(s,e)||e?.location==='inventory'&&!e.destroyed;
+    const ok=(text,code,extra={})=>({status:'success',code,text,effects:[],...extra});
+    const fail=(text,code,status='clarification')=>({status,code,text,effects:[],performed:false});
+    function record(s,key,rule,causes,data={}){
+      const graph=s.world.causality;
+      let node=graph.nodes.find(n=>n.key===key);if(node)return node;
+      node={id:'story:'+hash(key),key,rule,turn:s.turn,causes:[...new Set(causes)].filter(id=>graph.nodes.some(n=>n.id===id)),...clone(data)};
+      graph.nodes.push(node);if(!['player_action','world_event','observed_information'].includes(rule)&&node.summary)log(s,'story',node.summary);return node;
+    }
+    function rootCause(s){return s.world.causality.nodes[0].id;}
+    function memoryItem(s){return s.entities.find(e=>e.memoryStory);}
+    function initiative(s){return s.world.causality;}
+    function init(s,config,p){
+      s.world.causality||={version:1,nodes:[],threads:[],seen:{},notified:{}};
+      const graph=initiative(s);
+      if(!graph.nodes.length)graph.nodes.push({id:'story:origin:'+hash(s.configSig),key:'origin',rule:'world_setup',causes:[],turn:s.turn,summary:'Исходные места, люди и предметы',subjects:[s.world.startId]});
+      if(!graph.contentVersion){const seller=Object.values(s.world.npcs).find(n=>s.entities.some(e=>e.stockOwner===n.id));const id='stock:'+hash('моток проволоки');if(seller&&!entity(s,id))H.addEntity(s,'моток проволоки',{id,location:seller.id,source:'stock',kind:'tool',portable:true,known:true,hidden:false,price:1,stockOwner:seller.id,ownerId:seller.id,description:'Короткий моток мягкой проволоки; подходит для мелких деталей.'});if(seller&&!entity(s,id)?.physical){S.init(s,p,config);seller.social.expected[id]=seller.id;}graph.contentVersion=1;}
+      // Only the default memory premise supplies a backstory. Author-defined content wins.
+      const flask=s.entities.find(e=>e.source==='container-content'&&/флакон.*воспомин/u.test(norm(e.label)));
+      if(flask&&/воспомин|потерян.*прошл|памят/u.test(norm(config.world+' '+config.player))){
+        if(!flask.memoryStory){
+          const witnesses=Object.values(s.world.npcs).filter(n=>n.id!==flask.ownerId);
+          const witness=witnesses[parseInt(hash(s.configSig),36)%Math.max(1,witnesses.length)]||s.world.npcs[flask.ownerId];
+          const place=s.world.locations.find(l=>l.id===witness?.location)||s.world.locations[0];
+          const motives=['уберечь близкого человека от опасного воспоминания','сдержать обещание и вернуться за правдой','перестать скрываться от собственного решения'];
+          const motive=motives[parseInt(hash(config.player),36)%motives.length];
+          flask.memoryStory={id:'memory:'+flask.id,witnessId:witness?.id,placeId:place.id,motive,active:s.facts.decision!=='отпустить',previewed:false,decision:s.facts.decision==='сохранить'?'keep':s.facts.decision==='отпустить'?'release':null,
+            text:'Вы видите себя в месте «'+place.name+'». '+(witness?witness.name+' принимает у вас запечатанное письмо. ':'')+'Вы сами просите сохранить этот эпизод отдельно: вы хотели '+motive+'. Перед тем как уйти, вы обещаете вернуться. Это ваш поступок, а не чужой рассказ.',
+            stakes:'Сохранить — принять своё прежнее обещание и получить возможность расспросить свидетеля. Отпустить — опустошить флакон и начать новую историю; восстановить эту запись уже не получится.'};
+        }
+        flask.memoryStory.proofSourceId||=s.entities.find(v=>v.source==='scene'&&/письм/u.test(norm(v.label)))?.id||null;
+        flask.description||='В стекле движется тусклый свет. Воспоминание принадлежит вашей истории, но сам флакон хранит '+(owner(s,flask)?.name||'его владелец')+'. Сначала договоритесь о доступе; затем можно посмотреть воспоминание.';
+        flask.price??=2;
+        for(const e of s.entities){
+          if(e.source==='scene'&&e.kind==='clue'&&/письм/u.test(norm(e.label))&&!e.writtenText)e.writtenText='Если вы читаете это письмо, значит, всё-таки решили вернуться. Не пытайтесь угадать прошлое по чужим словам. Попросите хранителя показать запись во флаконе; решение о ней должно остаться вашим. Под печатью — знак разомкнутой шестерни.';
+          if(e.source==='player'&&/компас/u.test(norm(e.label))){e.description||='Треснувший компас всё ещё держит север. На корпусе выцарапан знак разомкнутой шестерни. Можно сверить его с найденными метками или спросить о знаке местного мастера.';e.navigation=true;}
+        }
+      }
+      for(const e of s.entities)if(e.source==='stock'&&/книг/u.test(norm(e.label))&&!e.writtenText){e.kind='clue';e.description='Небольшая книга городских ремёсел: на обложке изображена разомкнутая шестерня.';e.writtenText='Разомкнутой шестернёй мастера отмечают служебные проходы. Вход ищут у основания уличного фонаря, но чужой знак без объяснения легко принять за украшение. В книге оставлены поля для собственных наблюдений.';}
+      // A saved physical restitution must not remain an impossible demand.
+      for(const n of Object.values(s.world.npcs))for(const g of n.grievances||[]){const e=entity(s,g.requiredItemId);if(!g.resolved&&g.kind==='theft'&&e?.location===n.id&&e.history?.some(v=>v.from==='inventory'&&v.to===n.id)&&here(s,n)){g.reparation=true;if(g.apology){S.flush(s);S.bind(s,n.id);S.reconcile(s,n);}}}
+    }
+    function resolve(s,text){
+      const q=norm(text).replace(/[«»"]/g,''),e=memoryItem(s),receiver=person(s,text),n=receiver||nearby(s);
+      let op=null,id=null;
+      const body=q.replace(/^([^,:]+)\s*[:,]\s*/u,(full,name)=>person(s,name)?'':full);
+      if(/^(?:отмена|отменить уточнение|отменяю уточнение|другое действие)[.! ]*$/u.test(q))op='cancel';
+      else if(/^(?:я )?(?:не помню|не знаю|забыл|забыла).*(?:имя|имени|прошл)/u.test(q))op='amnesia';
+      else if(/^(?:да|согласен|согласна)(?:,?\s*(?:берусь|помогу|помочь с ремонтом))?[.! ]*$/u.test(q)&&s.pending?.kind==='job-offer')return null;
+      else if(/взаимн.*помощ|ответн.*помощ/u.test(q))op='reciprocity';
+      else if(/кто.*(?:вскр|откр|запечат).*письм/u.test(q))op='seal';
+      else if(/[?]|^(?:покажи|покажите|расскажи)/u.test(q)&&/ассортимент|что.*(?:купить|прода|товар)|покажи.*товар/u.test(q))op='shop';
+      else if(/(?:нужна|нужна ли).*помощь.*(?:ремонт|работ)|(?:спросить|спрашиваю).*(?:о ремонте|о доставке)/u.test(q))op='job';
+      else if(e&&/^(?:я )?(?:сохраняю|сохранить|отпускаю|отпустить) воспомин/u.test(body))op=/отпус/u.test(q)?'release':'keep';
+      else if(e&&/(?:флакон|воспомин)/u.test(q)&&/^(?:я )?(?:покупаю|куплю|купить у)/u.test(body))op='buy_memory';
+      else if(e&&/(?:разреш|можно|позвол).*(?:взять|забрать|посмотреть|воспомин)|(?:прошу|попросить).*доступ.*воспомин/u.test(q))op='permission';
+      else if(e&&/как.*(?:воспольз|использ|примен).*флакон/u.test(q)){op='method';id=e.id;}
+      else if(e&&/^(?:я )?(?:посмотреть|смотрю|просматриваю|переживаю|использую|покажи|покажите|вспоминаю).*(?:воспомин|флакон|прошл)/u.test(body))op='experience';
+      else if(e&&/(?:памят|воспомин|прошл)/u.test(q)&&/(?:мою|мои|мое|свою|свои|свое|вернуть|восстанов|утрачен|потерян|что.*делать|пришел|пришла)/u.test(q))op='premise';
+      else if(/[?]|^(?:покажи|расскажи)/u.test(q)){
+        const item=H.matchEntity(s,text,true);if(item&&known(s,item)){
+          if(/чье|чей|кому.*принадлеж|владелец/u.test(q))op='owner';
+          else if(/сколько.*(?:стоит|цен)|какая.*цена|цена/u.test(q))op='price';
+          else if(/о чем|содержим|что.*(?:написано|внутри)/u.test(q))op='contents';
+          else if(/как.*(?:использ|воспольз|примен)/u.test(q))op='method';
+          if(op)id=item.id;
+        }
+      }
+      if(!op&&/^(?:использую|проверяю направление по|смотрю куда указывает).*компас/u.test(q))op='compass';
+      if(!op&&/где.*(?:проволок|материал)|(?:найти|поискать) проволоку/u.test(q)&&s.world.loops.work.status==='accepted')op='material';
+      if(!op&&e?.memoryStory.previewed&&/где.*свидетел|как.*найти.*свидетел/u.test(q))op='witness_where';
+      if(!op&&e?.memoryStory.previewed&&/что.*(?:обещ|тогда)|расспрашиваю.*свидетел|обещание|что.*(?:помнишь|помните).*прошл/u.test(q)&&n?.id===e.memoryStory.witnessId)op='witness';
+      if(!op)return null;
+      if(['experience','keep','release','buy_memory'].includes(op)&&/^(?:я )?(?:не |хочу |если |предполож|я бы)/u.test(q))return null;
+      return {mode:'execute',steps:[{raw:text,intent:'LEGACY',recognized:false,mode:'execute',actor:'player',index:0,dependsOnPrevious:false,story:{op,targetId:id,recipientId:receiver?.id}}]};
+    }
+    function prepare(s,c,a){const proposed=c.semantic?.story||(!['report','negated','hypothetical','intention'].includes(c.semantic?.mode)&&resolve(s,c.originalText||c.text)?.steps[0].story);if(proposed){a.story=proposed;a.intent='story';a.recipientId=a.story.recipientId||a.recipientId;c.negated=false;c.hypothetical=false;}}
+    function speech(s,n,text){if(!n||!here(s,n))return text;if(s.world.boundNpcId!==n.id){S.flush(s);S.bind(s,n.id);}S.dialogue.start(s,n,'player_addressed');return S.dialogue.say(s,n,text,'dialogue');}
+    function access(s,e,n){return Boolean(e&&!e.destroyed&&!e.hidden&&S.containerAccess(s,e)&&([s.place,'inventory'].includes(e.location)||here(s,owner(s,e)))&&(!n||here(s,n)));}
+    function authorize(s,e,n){if(!n||!here(s,n))return fail('Нужно встретиться с хранителем флакона и договориться о доступе.','memory_owner_absent','refused');if(S.openGrievances(n).length)return fail(speech(s,n,'Сначала уладим нашу ссору. Если вещь возвращена, я это признаю; осталось обсудить причину.'),'memory_conflict','refused');e.permissions||={};e.permissions.player=[...new Set([...(e.permissions.player||[]),'take','memory_view','memory_choice'])];e.memoryStory.accessGranted=true;return null;}
+    function handle(s,p,c,a){
+      if(!a.story)return null;
+      const op=a.story.op,e=a.story.targetId?entity(s,a.story.targetId):memoryItem(s),n=s.world.npcs[a.story.recipientId]||owner(s,e)||nearby(s),graph=initiative(s);
+      const tell=text=>speech(s,here(s,n)?n:null,text);
+      if(op==='cancel'){delete s.world.player.pendingAction;return ok('Уточнение отменено. Можно выбрать другой замысел.','clarification_cancelled',{performed:false});}
+      if(op==='amnesia'){s.facts.amnesia=true;if(n){n.memory.playerNameUnknown=true;n.conversation.pendingNpcQuestion=null;}return ok(tell('Тогда пока обойдёмся без имени. Я запомню, что вы его не знаете. '+(e?'Покажите письмо или попросите посмотреть воспоминание — начнём с того, что можно проверить.':'Можно начать с того, что вы помните о своём пути.')),'amnesia_acknowledged');}
+      if(op==='job')return S.handle(s,p,{...c,text:'Ищу работу',lower:'ищу работу',semantic:null,intent:'find_job',question:false,speech:true},s.world.authorCanon,{...a,intent:'find_job',semantic:null,story:null});
+      if(op==='seal')return ok(tell('След на печати говорит о повторном вскрытии, но сам по себе не называет человека. Можно сравнить знак с городской меткой или показать письмо тому, кто разбирается в печатях.'),'seal_explained',{performed:false});
+      if(op==='reciprocity'){
+        const helper=person(s,a.text)||nearby(s),favor=graph.threads.find(t=>t.kind==='reciprocity'&&t.ownerId===helper?.id&&t.status==='open');
+        if(!helper||!here(s,helper)||!favor)return fail('Для взаимной помощи сначала нужно общее дело и человек, который знает о вашем результате.','no_shared_experience');
+        if(S.openGrievances(helper).length)return fail(speech(s,helper,'Наш общий результат я помню, но сначала нужно уладить новую ссору.'),'favor_conflict','refused');
+        const tool=s.entities.find(v=>v.ownerId===helper.id&&v.kind==='tool'&&v.portable&&!v.destroyed&&!v.stockOwner&&[s.place,helper.id].includes(v.location));
+        return ok(speech(s,helper,'Я помню ваш поступок: '+favor.achievement+'. '+(tool?'Могу одолжить «'+tool.label+'» для следующего дела. Попросите об этом; после использования вещь нужно вернуть.':'Можно обсудить следующий совместный замысел или попросить совета о доступных мне вещах.')),'reciprocity_offered',{performed:false});
+      }
+      if(op==='shop'){
+        const seller=person(s,a.text)||nearby(s),stock=s.entities.filter(v=>!v.destroyed&&v.stockOwner===seller?.id&&v.location===seller?.id);
+        if(!seller||!here(s,seller))return fail('Рядом нет продавца. Можно найти торговца в известном месте.','seller_absent','refused');
+        return ok(speech(s,seller,stock.length?'Сейчас в продаже: '+stock.map(v=>v.label+' — '+Math.max(1,v.price-(s.world.player.discounts?.[seller.id]||0))+' монет').join('; ')+'. Можно осмотреть товар до покупки.':'Сейчас у меня нет выставленных на продажу вещей.'),'stock_explained',{performed:false});
+      }
+      if(op==='compass'){const compass=s.entities.find(v=>/компас/u.test(norm(v.label))&&local(s,v));if(!compass)return fail('Компас должен быть при вас или рядом.','compass_absent','refused');const exits=S.map(s).exits.filter(v=>!v.blocked);return ok('Стрелка держит север; трещина мешает читать мелкую шкалу. '+(compass.description||'')+' Известные пути отсюда: '+(exits.map(v=>v.name).join(', ')||'пока не найдены')+'.','compass_used',{performed:false});}
+      if(op==='material')return ok(speech(s,s.world.npcs[s.world.loops.work.employer],'Для штифта нужна проволока. Можно поискать подходящий обрезок на улице у водостока или спросить о материалах на рынке. Я разрешаю работать на моём верстаке; за найденный материал платить мне не нужно.'),'material_routes_explained',{performed:false});
+      if(['owner','price','contents','method'].includes(op)){
+        if(!access(s,e))return fail('Этот предмет сейчас нельзя рассмотреть отсюда.','item_not_here','refused');
+        const holder=owner(s,e),text=op==='owner'?(e.memoryStory&&/воспомин/u.test(norm(a.text))?'Запись связана с вашим прошлым; сам флакон хранит '+(holder?.name||'его владелец')+'. О содержании можно узнать при просмотре.':holder?'Владелец вещи — '+holder.name+'. Разрешение посмотреть не означает передачу собственности.':e.ownerId==='player'?'Это ваша вещь.':'Владелец этой вещи пока неизвестен.')
+          :op==='price'?(e.price?'Цена: '+Math.max(1,e.price-(s.world.player.discounts?.[e.stockOwner]||0))+' монет.':e.stockOwner?'Цену нужно уточнить у продавца.':'Предмет не выставлен на продажу.')
+          :op==='contents'?(e.localFacts?.some(f=>f.requiresOpen)&&!e.opened?'Источник запечатан. Сначала нужно открыть его, чтобы прочитать содержимое.':e.writtenText||e.description||'У предмета нет читаемого текста. Можно осмотреть его устройство.')
+          :e.memoryStory?'Сначала договоритесь с хранителем или получите доступ к флакону. Затем можно посмотреть воспоминание и решить его судьбу.':e.navigation?'Компасом можно сверить направление и известные пути.':e.writtenText?'Этот текст можно прочитать, показать другому человеку или сопоставить с найденной меткой.':'Опишите воздействие на другой доступный предмет: что вы хотите изменить с помощью этой вещи?';
+        return ok(tell(text),'item_'+op+'_explained',{performed:false});
+      }
+      if(!e?.memoryStory)return fail('Для этого нужно найти источник воспоминания.','memory_source_missing');
+      const memory=e.memoryStory;
+      if(op==='premise'){
+        if(!n||!here(s,n))return fail('Сейчас рядом нет хранителя, с которым можно обсудить прошлое. Можно вернуться к знакомому собеседнику.','memory_interlocutor_absent');
+        s.facts.goal||='Вернуть своё прошлое';graph.desire={text:s.facts.goal,source:rootCause(s)};
+        const text=memory.decision?'Вы уже выбрали '+(memory.decision==='keep'?'сохранить':'отпустить')+' это воспоминание. Теперь можно продолжить историю с последствиями своего решения.'
+          :'Флакон хранит эпизод вашего прошлого. Попросите меня открыть ларец, затем посмотрите воспоминание вместе со мной. Можно договориться о доступе, купить флакон за '+e.price+' монеты или сначала заняться работой в городе. Брать чужую вещь без разрешения опасно для наших отношений.';
+        return ok(tell(text),'memory_routes_explained',{performed:false});
+      }
+      if(op==='permission'){
+        if(!access(s,e,n))return fail('Сначала нужно встретиться с хранителем и полностью открыть ларец. Можно попросить об этом.','memory_container_closed');
+        const denied=authorize(s,e,n);if(denied)return denied;
+        return ok(tell('Разрешаю взять флакон и посмотреть воспоминание. Решение сохранить или отпустить его — ваше. Сам флакон остаётся моей вещью, пока мы не договорились о покупке.'),'memory_permission_granted');
+      }
+      if(op==='buy_memory'){
+        if(!access(s,e,n))return fail('Для покупки нужен доступный флакон и его владелец рядом.','memory_not_for_sale','refused');
+        if(e.ownerId==='player')return ok('Флакон уже ваш; платить второй раз не нужно.','memory_already_owned',{performed:false});
+        if(S.openGrievances(n).length)return fail(tell('Сначала уладим конфликт; покупка не заменяет возврат чужой вещи.'),'memory_conflict','refused');
+        if(s.world.player.money<e.price)return fail(tell('Цена флакона — '+e.price+' монеты. У вас '+s.world.player.money+'. Можно заработать или попросить посмотреть запись здесь, без покупки.'),'memory_price_unmet','refused');
+        const denied=authorize(s,e,n);if(denied)return denied;s.world.player.money-=e.price;e.ownerId='player';e.location='inventory';S.truth(s,'player:money',s.world.player.money);S.truth(s,'entity:'+e.id+':ownerId','player');delete e.containerId;if(!s.inventory.includes(e.label))s.inventory.push(e.label);
+        S.emit(s,'memory_purchased',e.id,null,{price:e.price,ownerId:'player'},a.id);return ok('Вы покупаете флакон за '+e.price+' монеты. Он теперь ваш; можно посмотреть воспоминание.','memory_purchased');
+      }
+      if(op==='experience'){
+        if(memory.decision==='release'||!memory.active)return fail('Запись отпущена: флакон пуст. Своё решение можно обсудить, но восстановить запись простым повтором нельзя.','memory_released','refused');
+        if(!access(s,e))return fail('Источник пока недоступен. Можно попросить хранителя открыть ларец и показать воспоминание.','memory_container_closed');
+        if(e.ownerId!=='player'&&!e.permissions?.player?.includes('memory_view')){const denied=authorize(s,e,n);if(denied)return denied;}
+        const first=!memory.previewed;memory.previewed=true;memory.revealedTurn??=s.turn;
+        const facts=s.world.player.research.knowledge;facts[memory.id]={key:memory.id,text:memory.text,sourceId:e.id,locationId:s.world.player.location,unlocks:['сохранить воспоминание','отпустить воспоминание']};
+        if(first)S.emit(s,'memory_experienced',e.id,null,{memoryId:memory.id,witnessId:memory.witnessId},a.id);
+        return ok(memory.text+'\n'+memory.stakes+' Можно также отложить решение и расспросить хранителя.','memory_experienced',{information:{novel:first,discoveries:first?[memory.id]:[]}});
+      }
+      if(op==='keep'||op==='release'){
+        if(memory.decision){if(memory.decision!==op)return fail('Вы уже '+(memory.decision==='release'?'отпустили эту запись; пустой флакон не вернёт её.':'сохранили запись и приняли прежнее обещание. Обсудите последствия, прежде чем менять решение.'),'memory_decision_committed','refused');return ok('Это решение уже принято. Его последствия сохраняются.','memory_decision_repeated',{performed:false});}
+        if(!memory.previewed)return fail('Сначала посмотрите само воспоминание. Решать, сохранить или отпустить неизвестную запись, пока рано.','memory_not_experienced');
+        if(!access(s,e)||e.ownerId!=='player'&&!e.permissions?.player?.includes('memory_choice'))return fail('Для этого решения нужен доступ к флакону и согласие его хранителя.','memory_access_lost','refused');
+        memory.decision=op;memory.active=op!=='release';s.facts.decision=op==='keep'?'сохранить':'отпустить';
+        S.emit(s,'memory_decided',e.id,null,{decision:op,memoryId:memory.id},a.id);
+        s.threads.push({id:'next-chapter',text:op==='keep'?'Расспросить свидетеля о прежнем обещании':'Выбрать новое дело, не возвращаясь к отпущенной записи',status:'open'});
+        return ok(op==='keep'?'Вы сохраняете воспоминание. Теперь вы знаете, какое обещание дали. Свидетель эпизода — '+(s.world.npcs[memory.witnessId]?.name||'хранитель')+'; можно расспросить его, если встретитесь.':'Вы отпускаете запись. Свет в флаконе гаснет. Прежний эпизод больше нельзя пережить заново; вместо старого обязательства вы можете выбрать новое дело. Хранитель признаёт ваш выбор.','memory_decided');
+      }
+      if(op==='witness_where'){const place=s.world.locations.find(l=>l.id===memory.placeId);return ok('В записи свидетель связан с местом «'+(place?.name||'известное место')+'». Можно начать поиск там; о его нынешнем местонахождении стоит спросить при встрече.','witness_location_remembered',{performed:false});}
+      if(op==='witness'){
+        const witness=s.world.npcs[memory.witnessId];if(!here(s,witness))return fail('Этот свидетель сейчас в другом месте. Нужно встретиться с ним.','memory_witness_absent','refused');
+        if(memory.decision==='release')return ok(speech(s,witness,'Я уважаю ваше решение не возвращаться к записи. Если хотите начать с нового дела, обсудим то, что требуется сейчас.'),'released_memory_respected');
+        const sharedWork=witness.conversation.relationshipCredits.some(id=>id.startsWith('work:'))||s.world.loops.work.employer===witness.id&&s.world.loops.work.status==='paid';
+        const recommendation=Boolean(witness.memory.confirmedRecommendation);
+        const credit=recommendation||Object.values(witness.researchKnowledge||{}).some(k=>k.sourceId===memory.proofSourceId)||sharedWork;
+        const basis=sharedWork?'После нашей работы я знаю, что вы умеете держать слово. ':recommendation?'Рекомендация мастера подтверждает ваш поступок. ':'Вы показали письмо с той же печатью; теперь я могу сопоставить источники. ';
+        const confirmedFirst=credit&&!memory.confirmedWitness;
+        if(confirmedFirst){memory.confirmedWitness=true;S.emit(s,'memory_witness_confirmed',witness.id,null,{memoryId:memory.id},a.id);}
+        return ok(speech(s,witness,credit?basis+'О прежнем обещании поговорим открыто: вы хотели '+memory.motive+'. Дальше можно помочь тому, кому теперь недостаёт поддержки.':'Я был в том месте, но одного пересказа мало. Покажите письмо или рекомендацию, чтобы я связал ваше нынешнее обращение с прежним обещанием.'),'memory_witness_response',{performed:false,information:{novel:confirmedFirst,discoveries:confirmedFirst?['witness:'+memory.witnessId]:[]}});
+      }
+      return null;
+    }
+    function observe(s,before,a,r){
+      const graph=initiative(s),successful=['success','partial_success'].includes(r.status)&&r.performed!==false;
+      if(!successful&&!r.information?.novel)return;
+      const antecedents=graph.threads.filter(t=>t.status==='open'&&(t.subjectId===a.targetId||t.itemId===a.targetId||t.ownerId===a.recipientId)).map(t=>t.causeId);
+      const action=record(s,a.id,'player_action',[rootCause(s),...antecedents],{id:a.id,summary:a.text,subjects:[a.targetId,a.recipientId].filter(Boolean)});
+      const sources=[];
+      for(const effect of r.effects||[]){const node=record(s,effect.id,'world_event',[action.id],{id:effect.id,summary:effect.type,subjects:[effect.subject||effect.subjectId].filter(Boolean)});sources.push(node.id);}
+      if(r.information?.novel)sources.push(record(s,'learn:'+a.id,'observed_information',[action.id],{summary:r.code,subjects:[a.targetId].filter(Boolean)}).id);
+      const causes=sources.length?sources:[action.id];
+      for(const e of s.entities){
+        const observed=s.world.player.research.properties[e.id]||s.world.loops.exploration.observed.includes(e.id);
+        const damaged=e.condition==='broken'||e.physical?.durability<e.physical?.maxDurability;
+        if(known(s,e)&&observed&&damaged&&!graph.threads.some(t=>t.kind==='repair'&&t.subjectId===e.id)){
+          const node=record(s,'need:'+e.id,'observed_damage',causes,{summary:'Нужен ремонт: '+e.label,subjects:[e.id]});graph.threads.push({id:node.id,kind:'repair',subjectId:e.id,ownerId:e.ownerId??null,repairMode:e.condition==='broken'||e.physical?.condition==='broken'?'condition':'durability',status:'open',causeId:node.id,text:'Можно изменить состояние «'+e.label+'», устранив поломку.'});
+        }
+      }
+      for(const n of Object.values(s.world.npcs))for(const g of n.grievances||[]){
+        let thread=graph.threads.find(t=>t.kind==='reparation'&&t.subjectId===g.id);
+        if(!g.resolved&&!thread&&here(s,n)&&n.social.knowledge[g.socialEventId]){const node=record(s,'conflict:'+g.id,'known_conflict',causes,{summary:n.name+': нужно исправить последствия поступка',subjects:[n.id,g.requiredItemId].filter(Boolean)});thread={id:node.id,kind:'reparation',subjectId:g.id,ownerId:n.id,itemId:g.requiredItemId??null,status:'open',causeId:node.id,text:'Уладить конфликт: '+n.name};graph.threads.push(thread);}
+        if(thread?.status==='open'&&g.resolved){const node=record(s,'reconciled:'+g.id,'restitution_changes_relationship',[thread.causeId,...causes],{summary:n.name+' признаёт исправление последствий',subjects:[n.id]});thread.status='completed';thread.resultId=node.id;}
+      }
+      for(const thread of graph.threads.filter(t=>t.kind==='repair'&&t.status==='open')){const e=entity(s,thread.subjectId);if(!e||e.destroyed){const blocked=record(s,'need-blocked:'+thread.id,'destruction_changes_need',[thread.causeId,...causes],{summary:'Вещь больше нельзя восстановить прежним способом: изменились условия дела.',subjects:[thread.subjectId]});thread.status='blocked';thread.resultId=blocked.id;continue;}if(e.condition==='repaired'||thread.repairMode==='durability'&&e.condition!=='broken'&&e.physical?.condition!=='broken'&&e.physical?.durability===e.physical?.maxDurability){const node=record(s,'repaired:'+e.id,'need_satisfied',[thread.causeId,...causes],{summary:'Поломка устранена: '+e.label,subjects:[e.id]});thread.status='completed';thread.resultId=node.id;const n=owner(s,e);if(n&&here(s,n)&&!S.openGrievances(n).length&&(n.beliefs['entity:'+e.id+':condition']?.value==='repaired'||s.world.loops.work.employer===n.id&&n.conversation.relationshipCredits.includes('work:'+s.world.loops.work.id))){const favor=record(s,'reciprocity:'+e.id,'shared_result_creates_reciprocity',[node.id],{summary:n.name+' готов обсудить ответную помощь после ремонта',subjects:[n.id,e.id]});if(!graph.threads.some(t=>t.id===favor.id))graph.threads.push({id:favor.id,kind:'reciprocity',ownerId:n.id,subjectId:e.id,causeId:favor.id,status:'open',locationId:s.world.player.location,achievement:'вы восстановили «'+e.label+'»',text:'Обсудить ответную помощь: '+n.name});}}}
+      for(const item of s.entities.filter(e=>e.loan)){let t=graph.threads.find(t=>t.kind==='return_loan'&&t.subjectId===item.id);if(!item.loan.returned&&!t){const node=record(s,'loan:'+item.id+':'+item.loan.turn,'loan_creates_obligation',causes,{summary:'Вещь нужно вернуть владельцу после использования',subjects:[item.id,item.ownerId]});graph.threads.push({id:node.id,kind:'return_loan',subjectId:item.id,ownerId:item.ownerId,causeId:node.id,status:'open',text:'Вернуть одолженную вещь: '+item.label});}if(t&&item.loan.returned&&t.status==='open'){const node=record(s,'loan-returned:'+t.id,'obligation_fulfilled',[t.causeId,...causes],{summary:'Заём возвращён; совместное дело не оставило долга',subjects:[item.id,item.ownerId]});t.status='completed';t.resultId=node.id;}}
+      const work=s.world.loops.work;
+      if(['completed','paid'].includes(work.status)&&work.id){const recommendation=s.entities.find(e=>e.recommendation&&e.location==='inventory');if(recommendation){const fulfilled=graph.threads.find(t=>t.kind==='repair'&&t.status==='completed');const node=record(s,'work-contact:'+work.id,'work_creates_reputation',[...(fulfilled?[fulfilled.resultId]:[]),...causes],{summary:'Завершённая работа дала рекомендацию, которую можно показать другому человеку.',subjects:[work.employer,recommendation.id]});if(!graph.threads.some(t=>t.kind==='reputation'&&t.subjectId===work.id))graph.threads.push({id:node.id,kind:'reputation',subjectId:work.id,itemId:recommendation.id,causeId:node.id,status:'open',text:'Показать рекомендацию торговцу и проверить, какие возможности она откроет.'});}}
+      if(r.code==='recommendation_used'){const thread=graph.threads.find(t=>t.kind==='reputation'&&t.status==='open');if(thread){const node=record(s,'reputation:'+thread.id,'reputation_changes_trade',[thread.causeId,...causes],{summary:'Подтверждённый поступок изменил условия торговли.',subjects:[a.recipientId]});thread.status='completed';thread.resultId=node.id;}}
+      if(r.code==='goal_created'){const prior=graph.threads.find(t=>t.kind==='aftermath'&&t.status==='open'&&memoryItem(s)?.memoryStory.decision==='release');const goal=s.world.rpg.goals.at(-1);const node=record(s,'goal:'+goal.id,'chosen_goal_continues_story',[...(prior?[prior.causeId]:[]),...causes],{summary:'Новый замысел принят: '+goal.text,subjects:[goal.id]});if(prior){prior.status='completed';prior.resultId=node.id;}}
+      if(['recommendation_seen','recommendation_used'].includes(r.code)){const n=S.npc(s);if(n?.memory.confirmedRecommendation){const proof=record(s,'proof:'+a.id,'proof_presented',causes,{summary:n.name+' получил подтверждение в предъявленной рекомендации.',subjects:[n.id,n.memory.confirmedRecommendation]});n.memory.confirmedRecommendationCause=proof.id;}}
+      if(r.code==='memory_witness_response'&&memoryItem(s)?.memoryStory.confirmedWitness){const thread=graph.threads.find(t=>t.kind==='aftermath'&&t.status==='open');if(thread){const node=record(s,'testimony:'+thread.id,'source_confirmed_by_witness',[thread.causeId,...causes,s.world.npcs[memoryItem(s).memoryStory.witnessId]?.memory.confirmedRecommendationCause].filter(Boolean),{summary:'Свидетель связал найденное воспоминание с вашим подтверждённым поступком.',subjects:[memoryItem(s).memoryStory.witnessId]});thread.status='completed';thread.resultId=node.id;}}
+      if(r.code==='memory_experienced'&&r.information?.novel){const e=memoryItem(s);record(s,'memory-known:'+e.id,'source_reveals_personal_goal',causes,{summary:'Прежнее обещание стало известно из источника.',subjects:[e.id,e.memoryStory.witnessId]});}
+      if(r.code==='memory_decided'){const e=memoryItem(s),known=graph.nodes.find(n=>n.key==='memory-known:'+e.id);const node=record(s,'memory-choice:'+e.id,'informed_choice',[...(known?[known.id]:[]),...causes],{summary:'Выбрано: '+e.memoryStory.decision,subjects:[e.id]});graph.threads.push({id:node.id,kind:'aftermath',subjectId:e.id,causeId:node.id,status:'open',text:e.memoryStory.decision==='keep'?'Обсудить прежнее обещание со свидетелем':'Начать новое дело после отказа от прежней записи'});}
+    }
+    function options(s){
+      const options=[],work=s.world.loops.work,e=memoryItem(s),graph=initiative(s);
+      const add=(command,label,rank=80,reason='',targetId=null)=>{if(!options.some(v=>v.command===command))options.push({command,label:label||command,kind:'story',rank,reason,targetId});};
+      if(s.world.player.pendingAction)add('Отменить уточнение','Выбрать другое действие',115,'Уточнение можно отменить');
+      for(const n of Object.values(s.world.npcs).filter(n=>here(s,n)))for(const g of S.openGrievances(n)){const item=entity(s,g.requiredItemId);if(!g.reparation&&item?.location==='inventory')add('Возвращаю '+item.label+' '+n.name,'Вернуть: '+item.label,130,'Исправить последствия',item.id);if(!g.apology)add('Извиняюсь','Признать ошибку и извиниться',120);}
+      if(work.status==='offered'&&here(s,s.world.npcs[work.employer])){add('Да','Принять работу',120);add('Нет','Отказаться от работы',115);}
+      if(work.status==='accepted'&&here(s,s.world.npcs[work.employer])){
+        const machine=s.entities.find(v=>v.localKey==='mechanism'&&v.location===s.place);
+        const actual=s.world.player.research.knowledge;
+        const diagnosis=Object.keys(actual).some(k=>k.includes('repair.diagnosis'));
+        const missing=Object.keys(actual).some(k=>k.includes('repair.missing-pin'));
+        const pin=s.entities.find(v=>v.location==='inventory'&&!v.destroyed&&/штифт/u.test(norm(v.label)));
+        const wire=s.entities.find(v=>v.location==='inventory'&&!v.destroyed&&/проволок/u.test(norm(v.label)));
+        if(machine?.pinInstalled)add('Проверяю ход механизма','Проверить результат ремонта',125);
+        else if(pin)add('Устанавливаю штифт','Установить изготовленную деталь',125);
+        else if(!diagnosis)add('Осматриваю механизм','Определить поломку',125);
+        else if(!missing)add('Проверяю комплект деталей','Проверить, чего не хватает',125);
+        else if(wire)add('Изготавливаю штифт из проволоки','Изготовить штифт',125);
+        else add('Где найти проволоку?','Узнать, где искать материал',120);
+      }
+      if(work.status==='completed'&&here(s,s.world.npcs[work.employer]))add('Забираю плату','Получить заработанные монеты',130);
+      if(e){const m=e.memoryStory,n=owner(s,e);
+        if(access(s,e)&&m.previewed&&!m.decision){add('Сохраняю воспоминание','Сохранить: принять прежнее обещание',115);add('Отпускаю воспоминание','Отпустить: начать заново',113);}
+        else if(access(s,e)&&!m.previewed&&!m.decision)add('Смотрю воспоминание','Посмотреть своё воспоминание',100);
+        else if(n&&here(s,n)&&!m.previewed){const box=entity(s,e.containerId);if(box?.known&&!box.opened&&n.dialogueState?.status!=='undiscovered'&&n.access?.includes(box.id))add(n.name+', открой '+box.label+', пожалуйста','Попросить открыть: '+box.label,98);add('Как вернуть мою память?','Обсудить возвращение памяти',95);}
+        if(m.previewed&&m.decision==='keep'&&!m.confirmedWitness&&!here(s,s.world.npcs[m.witnessId])){const queue=[[s.world.player.location,[]]],seen=new Set();let route=null;while(queue.length){const [at,path]=queue.shift();if(at===m.placeId){route=path;break;}if(seen.has(at))continue;seen.add(at);for(const edge of s.world.edges.filter(v=>v.from===at&&!v.hidden&&!v.rpg)){const barrier=entity(s,edge.barrierId);if(barrier?.locked&&!barrier.opened&&!barrier.destroyed)continue;queue.push([edge.to,[...path,edge.to]]);}}const next=route?.[0]&&S.map(s).exits.find(v=>v.id===route[0]||v.to===route[0]||s.world.locations.find(l=>l.name===v.name)?.id===route[0]);if(next&&!next.blocked)add('Иду в '+next.name,'К месту из воспоминания: '+next.name,90);add('Где найти свидетеля?','Вспомнить, где искать свидетеля',70);}
+        if(m.previewed&&m.decision==='keep'&&!m.confirmedWitness&&here(s,s.world.npcs[m.witnessId]))add('Расспрашиваю свидетеля об обещании','Обсудить прежнее обещание',105);
+      }
+      for(const thread of graph.threads.filter(t=>t.status==='open'&&t.kind==='reciprocity')){const n=s.world.npcs[thread.ownerId];if(here(s,n))add('Обсудить взаимную помощь с '+n.name,'Обсудить ответную помощь: '+n.name,75,'Ваш общий результат');}
+      for(const thread of graph.threads.filter(t=>t.status==='open'&&t.kind==='return_loan')){const item=entity(s,thread.subjectId),n=s.world.npcs[thread.ownerId];if(item?.location==='inventory'&&here(s,n))add('Возвращаю '+item.label+' '+n.name,'Вернуть одолженную вещь: '+item.label,85,'Выполнить обязательство');}
+      for(const thread of graph.threads.filter(t=>t.status==='open'&&t.kind==='reputation')){const rec=entity(s,thread.itemId),seller=Object.values(s.world.npcs).find(n=>here(s,n)&&s.entities.some(e=>e.stockOwner===n.id));if(rec?.location==='inventory'&&seller)add('Показываю '+seller.name+' рекомендацию мастера','Показать рекомендацию и обсудить условия',110);}
+      const seller=Object.values(s.world.npcs).find(n=>here(s,n)&&s.entities.some(e=>e.stockOwner===n.id));if(seller)add('Что можно купить?','Узнать товары и цены',65);
+      for(const e of s.entities.filter(e=>local(s,e)&&e.location===s.place)){
+        const observed=Boolean(s.world.player.research.properties[e.id]);if(!observed)add('Осматриваю '+e.label,'Осмотреть: '+e.label,55,'Новая деталь',e.id);
+        if(e.localKey==='drain'&&s.world.sceneFlags?.['grate-moved']!==true&&Object.keys(s.world.player.research.knowledge).some(k=>k.includes('street.loose-grate')))add('Приподнимаю решётку','Проверить пространство под решёткой',90);
+        if(e.localKey==='wire'&&e.known&&!e.hidden)add('Беру проволоку','Взять найденный материал',100);
+      }
+      return options.map(v=>({...v,kind:v.command.startsWith('Осматриваю ')?'inspect':v.command.startsWith('Иду в ')?'move':v.kind})).sort((a,b)=>b.rank-a.rank);
+    }
+    function situation(s){const graph=initiative(s),e=memoryItem(s),conflict=graph.threads.find(t=>t.kind==='reparation'&&t.status==='open');if(conflict)return conflict.text;const work=s.world.loops.work;if(work.status==='accepted')return 'Вы взялись за работу: устранить поломку и получить согласованную плату.';if(work.status==='completed')return 'Работа завершена. Осталось получить плату и решить, как использовать новый опыт.';if(e){const m=e.memoryStory;if(m.confirmedWitness)return 'Прежнее обещание подтверждено свидетелем. '+(graph.threads.find(t=>t.status==='open'&&t.kind!=='aftermath')?.text||'Можно выбрать следующее дело и опереться на приобретённые знания.');if(m.decision)return m.decision==='keep'?'Вы приняли прежнее обещание. Теперь можно узнать у свидетеля, что осталось сделать.':'Вы отпустили запись. Теперь можно выбрать дело, с которого начнётся новая история.';if(m.previewed)return 'Вы узнали о своём прежнем обещании. Решите, сохранить запись или отпустить её, зная цену.';return 'Вы ищете своё прошлое. Хранитель может показать запись; доступ можно обсудить без кражи.';}return graph.threads.find(t=>t.status==='open')?.text||s.facts.goal||null;}
+    return {init,resolve,prepare,handle,observe,options,situation,record};
+  }
+  root.StoryCausality={create};
 })(globalThis);
 </script>
 <script>/* Original narrative rules. See NARRATIVE.md for design references and limits. */
@@ -6891,7 +7158,7 @@ select{width:100%;background:#151b17;border:1px solid #394336;border-radius:10px
       }
       s.configSig = signature(config);
     }
-    containment(s,p,config);simulation.init(s,p,config);
+    containment(s,p,config);simulation.init(s,p,config);causality.init(s,config,p);
     return s;
   }
   function reframe(previous, oldConfig, newConfig) {
@@ -7289,14 +7556,7 @@ select{width:100%;background:#151b17;border:1px solid #394336;border-radius:10px
         if(lock && /откры|отпер|замок|ларец|двер|снять/.test(c.lower))return `Заклинание снимает преграду; его след можно обнаружить.\n${resolveBarrier(s,p,lock,'магия')}`;
         return verdict(s,'clarification','missing_effect','Уточните цель и ожидаемый эффект заклинания. До уточнения физический эффект не наступил.');
       }
-      case 'decision': {
-        if(s.stage<3)return verdict(s,'refused','missing_memory','Это решение пока не к чему применить: воспоминание ещё не получено.');
-        const release=/отпус/.test(c.lower);s.facts.decision=release?'отпустить':'сохранить';
-        log(s,'decision','Решение о воспоминании: '+s.facts.decision);
-        for(const t of s.threads)if(t.id==='aftermath')t.status='resolved';
-        thread(s,release?'Разобраться, что останется после отказа от прошлого':'Понять, как жить с открывшейся правдой','next-chapter');
-        return release?'Вы выбираете отпустить воспоминание. Оно больше не определяет ваше решение; цена — прежние ответы останутся недоступны. Новая зацепка: кем вы хотите стать теперь?':'Вы сохраняете воспоминание. Теперь найденную правду можно обсуждать и проверять; она остаётся частью вашей истории.';
-      }
+      case 'decision': return verdict(s,'clarification','memory_not_experienced','Сначала нужен доступный источник и само воспоминание. Одной общей стадии истории для такого решения недостаточно.');
       case 'move': case 'return': return move(s,p,c,false);
       case 'perform': if(count<2)s.trust++;danger(s,s.clocks.danger>2?1:0);s.facts.performance=c.text.slice(0,180);log(s,'performance',c.text);return voice(s,p,choose(s,'performance',[p.ironic?'План неожиданен. Но пока вы выступали, я перестал ждать подвоха. Это уже достижение.':'Неожиданное выступление меняет настроение. Я отвлёкся от своих подозрений. Вы хотите развеселить меня или выиграть время?', 'Внимание теперь на вас. Если вы кого-то отвлекаете, это подходящий момент для следующего шага.', 'Это придаёт нашей встрече совсем другой ритм. Расскажите, почему вы выбрали именно это.']));
       case 'rest': danger(s,s.clocks.danger>0?1:0);s.tension=Math.max(0,s.tension-1);return 'Вы даёте себе передышку. Напряжение спадает; незавершённые дела остаются. В безопасной обстановке можно поговорить без спешки.';
@@ -7327,7 +7587,7 @@ select{width:100%;background:#151b17;border:1px solid #394336;border-radius:10px
     return event.text;
   }
   const semantic=root.StorySemantic;
-  const semanticIntents={MOVE:'move',APPROACH:'approach',GREET:'greet',INSPECT:'inspect',SEARCH:'inspect',TAKE:'take',OPEN:'open',CLOSE:'close',USE:'use',GIVE:'give',DROP:'drop',SHOW:'show',TALK:'talk',REPAIR:'repair'};
+  const semanticIntents={MOVE:'move',APPROACH:'approach',GREET:'greet',INSPECT:'inspect',SEARCH:'inspect',TAKE:'take',OPEN:'open',CLOSE:'close',USE:'use',GIVE:'give',RETURN:'return_property',DROP:'drop',SHOW:'show',TALK:'talk',REPAIR:'repair'};
   function legacyStarts(text) {
     const head=normalizedInput(text).replace(/^(?:(?:я|мы|не|осторожно|быстро|медленно|теперь|сейчас)\s+)+/u,'');
     const delegated=/^(?:разреши|разрешите|оскорбляю|сообщаю|утверждаю|заявляю|арендую|оплачиваю|прикрываю|отхожу|отойти|отступаю|заканчиваю|прекращаю|одолжи|прошу одолжить|беру в долг|возмещаю|компенсирую|плачу|признаюсь|сознаюсь|обещаю|клянусь|верну|вернуть|приподнима|отодвига|сдвига|передвига|изгот[оа]в|устан[оа]в|делаю|сделать|вытач|согну|очища|чищу|смазыва|калибру|подбрасыва|подделыва|фабрикую|выношу|переношу|уношу|тащу|несу|покупаю|куплю|знакомлюсь)/u;
@@ -7338,10 +7598,12 @@ select{width:100%;background:#151b17;border:1px solid #394336;border-radius:10px
   // authoring catalog. Listing suggestions never executes a move.
   function contextOptions(s, query='', limit=6) {
     const items=[],used=new Set(),world=s.world||{},location=world.player?.location;
-    const add=(command,label,kind,tags=[],rank=0)=>{
-      if(!command||used.has(command))return;
-      used.add(command);items.push({command,label,kind,tags,rank});
+    const add=(command,label,kind,tags=[],rank=0,binding={})=>{
+      const identity=command+'|'+(binding.targetId||'');
+      if(!command||used.has(identity))return;
+      used.add(identity);items.push({command,label,kind,tags,rank,...binding});
     };
+    for(const option of causality.options(s))add(option.command,option.label,option.kind,[],option.rank,{targetId:option.targetId,reason:option.reason});
     add('Осматриваюсь','Осмотреться','inspect',['осмотр','вокруг','место','обстановка'],1);
     for(const exit of simulation.map(s).exits||[]){
       if(exit.blocked)continue;
@@ -7354,13 +7616,13 @@ select{width:100%;background:#151b17;border:1px solid #394336;border-radius:10px
     for(const e of s.entities||[]){
       if(!e.known||e.hidden||e.destroyed||![s.place,'inventory'].includes(e.location)||!simulation.containerAccess(s,e))continue;
       const tags=[e.label,...(e.aliases||[])];
-      add('Осматриваю '+e.label,'Осмотреть: '+e.label,'inspect',[...tags,'осмотреть','изучить','рассмотреть'],5);
+      add('Осматриваю '+e.label,'Осмотреть: '+e.label,'inspect',[...tags,'осмотреть','изучить','рассмотреть'],5,{targetId:e.id});
       if(e.kind==='barrier'){
         const verb=e.opened?'Закрываю':'Открываю';
-        add(verb+' '+e.label,(e.opened?'Закрыть: ':'Открыть: ')+e.label,e.opened?'close':'open',[...tags,e.opened?'закрыть':'открыть','дверь','контейнер'],5);
+        add(verb+' '+e.label,(e.opened?'Закрыть: ':'Открыть: ')+e.label,e.opened?'close':'open',[...tags,e.opened?'закрыть':'открыть','дверь','контейнер'],5,{targetId:e.id});
       }
-      if(e.portable&&e.location===s.place)add('Беру '+e.label,'Взять: '+e.label,'take',[...tags,'взять','забрать','подобрать'],3);
-      if(e.location==='inventory')add('Использую '+e.label,'Использовать: '+e.label,'use',[...tags,'использовать','применить','предмет'],2);
+      if(e.portable&&e.location===s.place)add('Беру '+e.label,'Взять: '+e.label,'take',[...tags,'взять','забрать','подобрать'],3,{targetId:e.id});
+      if(e.location==='inventory'&&e.navigation)add('Использую '+e.label,'Использовать: '+e.label,'use',[...tags,'использовать','применить','предмет'],2,{targetId:e.id});
     }
     const partner=world.npcs?.[world.activeNpcId];
     if(partner&&partner.location===location&&!partner.hidden){
@@ -7372,13 +7634,7 @@ select{width:100%;background:#151b17;border:1px solid #394336;border-radius:10px
     for(const command of simulation.rpg.suggestions(s)||[])add(command,command,'situation',[command,'ситуация','предложение'],3);
     if(/мастерск|рынок|лавк/u.test(norm(s.place||'')))add('Ищу работу','Найти работу','work',['работа','подработка','заработок','задание'],2);
     const q=norm(query).trim(),parts=q.split(/\s+/u).filter(Boolean);
-    if(!parts.length){
-      const chosen=[];
-      const pick=predicate=>{const item=items.find(v=>predicate(v)&&!chosen.includes(v));if(item)chosen.push(item);};
-      pick(v=>v.kind==='inspect');pick(v=>v.kind==='talk');pick(v=>v.kind==='question');pick(v=>v.kind==='situation');
-      pick(v=>v.kind==='inspect'&&v.command!=='Осматриваюсь');pick(v=>v.kind==='move');pick(v=>v.kind==='work');
-      return [...chosen,...items.filter(v=>!chosen.includes(v))].slice(0,limit);
-    }
+    if(!parts.length){const sorted=items.sort((a,b)=>b.rank-a.rank),chosen=sorted.slice(0,limit);for(const kind of ['talk','move']){const option=sorted.find(v=>v.kind===kind);if(option&&!chosen.some(v=>v.kind===kind)&&chosen.length>=limit)chosen.splice(chosen.length-1-(kind==='talk'?1:0),1,option);}return chosen;}
     return items.map((item,index)=>{
       const name=norm(item.label),body=norm(item.command),tags=norm(item.tags.join(' '));
       if(!parts.every(part=>name.includes(part)||body.includes(part)||tags.includes(part)))return null;
@@ -7415,6 +7671,8 @@ select{width:100%;background:#151b17;border:1px solid #394336;border-radius:10px
   }
 
   function resolveInput(s,text) {
+    const storyPlan=/^я (?:уже )?(?:прочитал|прочитала|видел|видела).*?[.!]\s/iu.test(text)?null:causality.resolve(s,text);if(storyPlan)return storyPlan;
+    if(s.pending?.kind==='job-offer'&&/^(?:да(?:,?\s*(?:берусь|помогу|согласен|согласна))?|согласен(?: помочь с ремонтом)?|согласна(?: помочь с ремонтом)?|берусь)[.! ]*$/iu.test(text))return semantic.resolve('Да',{...semantic.context(s),legacyStarts});
     if(/^(?:что (?:здесь )?(?:нового|изменилось)|изменения вокруг)[?.!]*$/iu.test(text.trim())){const p=semantic.resolve('Осматриваюсь',{...semantic.context(s),legacyStarts});p.steps[0].concise=true;return p;}
     const plan=semantic.resolve(text,{...semantic.context(s),legacyStarts});
     const pending=s.world.player.pendingAction;
@@ -7436,6 +7694,7 @@ select{width:100%;background:#151b17;border:1px solid #394336;border-radius:10px
     const bound=semantic.bind(step,s);
     if(!step.recognized){
       const c=parse(step.raw);c.negated=step.mode==='negated'||c.negated;
+      if(step.discourse==='amnesia'){c.intent='talk';c.negated=false;c.speech=true;}
       // Legacy narrative acts still need a real predicate, never a keyword in a description.
       if(['move','open','close','take','drop','give','use','destroy','burn','magic','attack'].includes(c.intent)&&!legacyStarts(step.raw)&&!/^приподнима/.test(c.lower))c.intent='custom';
       if(['intention','question','hypothetical','speech','report'].includes(step.mode)&&step.dependsOnPrevious){c.hypothetical=true;c.intent=step.mode==='intention'?'goal':'talk';}
@@ -7516,14 +7775,16 @@ select{width:100%;background:#151b17;border:1px solid #394336;border-radius:10px
     }
     return null;
   }
-  function reply(config, previous, input) {
+  function reply(config, previous, input, selection=null) {
     let s=init(config,previous);
     if(s.configSig!==signature(config)) {
       s=init(config,{...fresh(),turn:s.turn,facts:s.facts,journal:s.journal,inventory:s.inventory,world:s.world});
       log(s,'canon','Сцена согласована с авторскими вводными.');
     }
     const text=clean(input).slice(0,6000);s.turn++;
-    const semanticPlan=resolveInput(s,text);delete s.world.player.pendingAction;
+    const semanticPlan=resolveInput(s,text);
+    if(selection?.targetId&&semanticPlan.steps.length===1){const target=s.entities.find(e=>e.id===selection.targetId);const trusted=contextOptions(s,'',1000).some(v=>v.command===text&&v.targetId===selection.targetId);if(selection.command===text&&target&&target.known&&!target.hidden&&!target.destroyed&&simulation.containerAccess(s,target)&&trusted){semanticPlan.steps[0].targetId=target.id;}else semanticPlan.steps[0].invalidOption=true;}
+    delete s.world.player.pendingAction;
     const results=[];const intents=[];let pendingAction=null;
     for(const step of semanticPlan.steps) {
       simulation.presence(s);
@@ -7531,8 +7792,9 @@ select{width:100%;background:#151b17;border:1px solid #394336;border-radius:10px
       let p=simulation.npcProfile(s,config,profile(config));
       const action=simulation.analyze(s,config,c,text);s.currentActionId=action.id;
       action.text=step.raw;action.semantic=c.semantic;action.dependsOnPrevious=step.dependsOnPrevious;
-      simulation.rpg.prepare(s,c,action);
-      if(!action.rpg)simulation.conversation.prepare(s,c,action);
+      causality.prepare(s,c,action);
+      if(!action.story)simulation.rpg.prepare(s,c,action);
+      if(!action.rpg&&!action.story)simulation.conversation.prepare(s,c,action);
       const previousResult=results.at(-1);
       if(step.dependsOnPrevious&&previousResult&&((previousResult.status!=='success'&&!(previousResult.status==='partial_success'&&previousResult.completed))||previousResult.performed===false&&['execute','attempt','request'].includes(step.mode))){
         results.push({status:'refused',code:'dependency_failed',reason:'dependency_failed',skipped:true,performed:false,text:'Шаг «'+step.raw+'» не выполнен: предыдущее действие не завершено.',action,effects:[]});continue;
@@ -7542,7 +7804,7 @@ select{width:100%;background:#151b17;border:1px solid #394336;border-radius:10px
       if(view&&view.id!==s.world.boundNpcId){simulation.flush(s);simulation.bind(s,view.id);p=simulation.npcProfile(s,config,profile(config));}
       const before=simulation.snapshot(s);s.currentResolution={status:'success',code:'completed'};
       root.StoryMessages.begin(s);simulation.dialogue.before(s,c,action);
-      let r=semanticMode(s,c,action)||semanticAccess(s,c)||simulation.rpg.guard(s,c,action)||simulation.social.handle(s,p,c,action);
+      let r=step.invalidOption?{status:'clarification',code:'option_expired',performed:false,text:'Обстановка изменилась. Выберите доступное действие снова.',effects:[]}:causality.handle(s,p,c,action)||semanticMode(s,c,action)||semanticAccess(s,c)||simulation.rpg.guard(s,c,action)||simulation.social.handle(s,p,c,action);
       c.allowTakingHeld=action.allowTakingHeld;
       if(!r)r=simulation.rpg.handle(s,c,action);
       if(!r)r=simulation.handle(s,p,c,config,action);
@@ -7562,6 +7824,7 @@ select{width:100%;background:#151b17;border:1px solid #394336;border-radius:10px
       simulation.conversation.observe(s,before,c,action,r);
       simulation.rpg.after(s,before,c,action,r);
       r.action=action;r.effects=simulation.effects(s,before,action);
+      causality.observe(s,before,action,r);
       root.StoryMessages.finish(s,r);
       results.push(r);intents.push(action.intent);s.lastIntent=c.negated?'refuse':action.intent;
       if(c.semantic?.mode==='negated')s.lastIntent='refuse';
@@ -7592,8 +7855,9 @@ select{width:100%;background:#151b17;border:1px solid #394336;border-radius:10px
     const failed=results.filter(r=>['refused','clarification'].includes(r.status)&&!r.skipped);
     const recovery=failed.length?contextOptions(s,failed[0].action.targetLabel||'',6):[];
     if(failed.length){
-      const alternatives=[...recovery,...contextOptions(s,'',6)].filter((v,i,a)=>a.findIndex(o=>o.command===v.command)===i).slice(0,3);
-      const help='Можно попробовать: '+alternatives.map(v=>'«'+v.command+'»').join('; ')+'. Если это другой замысел, назовите предмет и желаемое изменение.';
+      const failedCommands=failed.map(v=>norm(v.action.text));
+      const alternatives=[...recovery,...contextOptions(s,'',10)].filter((v,i,a)=>!failedCommands.includes(norm(v.command))&&a.findIndex(o=>o.command===v.command)===i).slice(0,3);
+      const help=(failed[0].code==='unsupported_method'?'Назовите цель воздействия: что должно измениться и какой предмет это изменит. ':'')+'Можно попробовать: '+alternatives.map(v=>'«'+v.command+'»').join('; ')+'. Если это другой замысел, назовите предмет и желаемое изменение.';
       narration.blocks.push({speaker:{type:'narrator'},trigger:'recovery',text:help,effects:[]});output+='\n\n'+help;
     }
     const outcome={status,goalAssessment,information,recovery,semanticPlan,results:results.map(r=>({status:r.status,code:r.code,reason:r.text,information:r.information||null,conversation:r.conversation||null,rpg:r.rpg||null,skipped:Boolean(r.skipped),performed:r.performed!==false,completed:Boolean(r.completed),action:r.action,effects:r.effects})),effects};
@@ -7606,8 +7870,10 @@ select{width:100%;background:#151b17;border:1px solid #394336;border-radius:10px
     return {text:output,messages:narration.blocks,narrative:narration.blocks,memory:s,outcome,semantic:semanticPlan,results:outcome.results,analysis:outcome.results.map(r=>r.action)};
   }
   const simulation=root.StorySimulation.create({clean,norm,normalizedInput,words,stem,hash,clone,profile,matchEntity,addEntity,log,voice,resolveBarrier,containerText});
-  root.StoryEngine={version:VERSION,release:'6.0',fresh,reply,profile,restore:init,reframe,parse,clauses,
+  const causality=root.StoryCausality.create({clean,norm,hash,clone,log,words,stem,matchEntity,addEntity,simulation});
+  root.StoryEngine={version:VERSION,release:'6.1',fresh,reply,profile,restore:init,reframe,parse,clauses,
     opening(config,memory){const s=init(config,memory);const text=simulation.opening(s);s.openingShown=true;return {memory:s,text};},
+    story(memory){return {situation:causality.situation(memory),options:causality.options(memory),threads:clone(memory.world.causality.threads),nodes:clone(memory.world.causality.nodes)};},
     suggestions(memory){return simulation.rpg.suggestions(memory);},
     resolve(config,memory,text){const s=init(config,memory);return resolveInput(s,text);},
     searchActions(memory,query,limit=6){return memory?.world?contextOptions(memory,query,limit):[];},
@@ -7735,6 +8001,7 @@ let debugView=false;
 try {debugView=localStorage.getItem('between-lines-debug')==='true';}catch{}
 document.querySelector('#debug-view').checked=debugView;
 let busy = false;
+let selectedAction=null;
 let state = { config: Object.fromEntries(new FormData(settings)), messages: [], memory: engine.fresh() };
 try {
   const saved = JSON.parse(localStorage.getItem(key));
@@ -7778,7 +8045,7 @@ function updateOptionSelection(){
 }
 function selectOption(index,execute=false){
   const option=currentOptions[index];if(!option)return;
-  field.value=option.command;hideOptions();field.focus();
+  field.value=option.command;selectedAction=option;hideOptions();field.focus();
   field.setSelectionRange(field.value.length,field.value.length);
   if(execute)chat.requestSubmit();
 }
@@ -7836,7 +8103,7 @@ function revealContext(section,target){
   for(const option of options.slice(0,3)){
     const button=document.createElement('button');button.type='button';button.className='context-draft';
     button.textContent=option.label;button.addEventListener('click',()=>{
-      field.value=option.command;hideOptions();field.focus();
+      field.value=option.command;selectedAction=option;hideOptions();field.focus();
       field.setSelectionRange(field.value.length,field.value.length);
     });panel.append(button);
   }
@@ -7879,11 +8146,12 @@ function render() {
     const mentionTargets=Array.isArray(message.mentions)?message.mentions:[];
     const item = document.createElement('article'); item.className = message.role;
     const utterances=message.role==='assistant'&&Array.isArray(message.utterances)&&message.utterances.length?message.utterances:[{speaker:{type:message.role==='user'?'player':'narrator'},text:message.content}];
+    let previousSpeaker=null;
     for(const row of utterances){
       const type=['player','narrator','npc','developer'].includes(row.speaker?.type)?row.speaker.type:'narrator';
       const section=document.createElement('section');section.className='utterance speaker-'+type;section.dataset.speaker=type;section.dataset.trigger=row.trigger||'legacy';
       const label=document.createElement('small');label.textContent=type==='player'?'ВЫ':type==='npc'?(row.speaker.name||'ПЕРСОНАЖ'):type==='developer'?'РАЗРАБОТЧИК':'РАССКАЗЧИК';
-      const text=document.createElement('p');if(type==='narrator'||type==='npc')renderRichText(text,section,row.text,mentionTargets);else text.textContent=row.text;section.append(label,text);item.append(section);
+      const text=document.createElement('p');if(type==='narrator'||type==='npc')renderRichText(text,section,row.text,mentionTargets);else text.textContent=row.text;if(previousSpeaker!==type+':'+(row.speaker?.id||''))section.append(label);section.append(text);item.append(section);previousSpeaker=type+':'+(row.speaker?.id||'');
     }
     if(debugView&&message.outcome?.status) {
       const result = document.createElement('small');result.className='outcome-label';result.dataset.status=message.outcome.status;
@@ -7901,7 +8169,7 @@ function render() {
   }
   renderedMessages=state.messages.slice();
   const profile = engine.profile(state.config);
-  document.querySelector('#badge').textContent = '● Локально · 6.0';
+  document.querySelector('#badge').textContent = '● Локально · 6.1';
   const currentNpc=state.memory.world.npcs[state.memory.world.activeNpcId];
   const title = state.memory.place || profile.title || 'Ваша история';
   document.querySelector('#story-title').textContent = title[0].toUpperCase() + title.slice(1);
@@ -7947,7 +8215,7 @@ chat.addEventListener('submit', async event => {
     hideOptions();state.messages.push({ role: 'user', content: text }); field.value = '';
     status.textContent = 'История продолжается…';
     render();
-    const result = engine.reply(state.config, state.memory, text);
+    const result = engine.reply(state.config, state.memory, text,selectedAction);selectedAction=null;
     state.memory = result.memory;
     const answer = result.text;
     state.messages.push({ role: 'assistant', content: answer, utterances:result.messages, mentions:contextTargets(), outcome: { status:result.outcome.status, information:result.outcome.information, steps:result.results.map(r=>({status:r.status,intent:r.action.intent,target:r.action.targetLabel,goal:r.action.goal,method:r.action.method,expectedEffect:r.action.expectedEffect})) } }); status.textContent = ''; save();
@@ -7955,7 +8223,7 @@ chat.addEventListener('submit', async event => {
     state.messages.pop(); field.value = text; status.textContent = `${error.message} Сообщение возвращено в поле ввода — попробуйте снова.`; save();
   } finally { busy = false; send.disabled = false; settings.querySelector('button').disabled = false; render(); }
 });
-field.addEventListener('input',showOptions);
+field.addEventListener('input',()=>{selectedAction=null;showOptions();});
 field.addEventListener('focus',showOptions);
 field.addEventListener('keydown',event=>{
   if(event.key==='ArrowDown'&&currentOptions.length){event.preventDefault();selectedOption=Math.min(currentOptions.length-1,selectedOption+1);updateOptionSelection();return;}
@@ -8009,7 +8277,8 @@ document.querySelector('#start-preset').addEventListener('click',()=>{
 });
 document.querySelector('#apply-preset').addEventListener('click',()=>{const preset=globalThis.StoryPresets.find(p=>p.id===document.querySelector('#story-preset').value);if(!preset)return;for(const name of ['world','character','player','canon'])settings.elements.namedItem(name).value=preset[name];settings.elements.namedItem('world').focus();});
 document.addEventListener('keydown', event => { if (event.key === 'Escape') showPage('chat'); });
-function issueCommand(command) {
+function issueCommand(command,option=null) {
+  selectedAction=option;
   const draft=field.value;showPage('chat');field.value=command;send.click();field.value=draft;
 }
 function renderSituation(){
@@ -8018,7 +8287,8 @@ function renderSituation(){
   const work=w.loops.work;
   const pending=w.player.pendingAction;
   const completed=[...r.goals].reverse().find(g=>g.status==='completed');
-  const purpose=goal?.text||(completed?'Вы достигли цели: '+completed.text+'. Можно выбрать новый замысел.':m.facts.goal||state.config.world);
+  const storySituation=engine.story(m).situation;
+  const purpose=goal?.text||(completed?'Вы достигли цели: '+completed.text+'. '+(storySituation||'Можно выбрать новый замысел.'):storySituation||m.facts.goal||state.config.world);
   document.querySelector('#current-situation').textContent=purpose+(pending?' · Осталось уточнить незавершённое действие.':work.status==='accepted'?' · Вы приняли работу.':work.status==='completed'?' · Работа готова: можно получить плату.':'');
   const box=document.querySelector('#situation-actions');box.replaceChildren();
   const latest=state.messages.filter(msg=>msg.role==='assistant').at(-1);
@@ -8028,13 +8298,14 @@ function renderSituation(){
     const focused=terms?engine.searchActions(m,terms,3):[];
     options=[...focused,...options].filter((v,i,a)=>a.findIndex(o=>o.command===v.command)===i).slice(0,6);
   }
-  for(const option of options){const b=document.createElement('button');b.type='button';b.textContent=option.label;b.addEventListener('click',()=>issueCommand(option.command));box.append(b);}
+  for(const option of options){const b=document.createElement('button');b.type='button';b.textContent=option.label;b.addEventListener('click',()=>issueCommand(option.command,option));box.append(b);}
   const events=m.journal.filter(e=>e.kind!=='turn').slice(-3);
   document.querySelector('#recent-events').textContent=events.map(e=>e.text).join(' · ');
 }
 function renderWorld() {
   const memory=state.memory,world=memory.world,map=engine.map(memory);
   renderRpg(world,memory);
+  const causalThreads=document.querySelector('#causal-threads');causalThreads.replaceChildren();for(const thread of engine.story(memory).threads.slice(-8)){const li=document.createElement('li');li.textContent=thread.text+' · '+({open:'можно продолжить',completed:'последствие состоялось',blocked:'условия изменились'}[thread.status]||thread.status);causalThreads.append(li);}
   document.querySelector('#map-title').textContent='Место: '+memory.place;
   const exits=document.querySelector('#map-exits');exits.replaceChildren();
   for(const exit of map.exits) {const b=document.createElement('button');b.type='button';b.textContent=exit.name+(exit.blocked?' · заперто':' →');b.disabled=exit.blocked;b.addEventListener('click',()=>issueCommand('Иду в '+exit.name));exits.append(b);}
