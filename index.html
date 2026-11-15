@@ -13,7 +13,7 @@
   <div class="page-top"><span class="eyebrow">НАСТРОЙКИ АВТОРА</span><button id="close-settings" type="button" class="secondary">К чату ✕</button></div>
   <div class="eyebrow">ИНТЕРАКТИВНАЯ ИСТОРИЯ</div><h1>Между<br>строк<span>✦</span></h1>
   <p class="muted">Ваши слова меняют историю.</p>
-  <label>Готовая история<select id="story-preset"><option value="">Выберите мир</option></select></label><button id="apply-preset" type="button" class="secondary">Заполнить вводные</button><p class="hint">Выбранный мир появится в форме ниже. Сохраните вводные, затем начните заново, если нужна новая история.</p>
+  <label>Готовая история<select id="story-preset"><option value="">Выберите мир</option></select></label><button id="start-preset" type="button" class="secondary">Начать выбранную историю</button><button id="apply-preset" type="button" class="secondary">Заполнить вводные</button><p class="hint">Начните выбранную историю сразу или заполните вводные для редактирования. Текущую историю можно скачать перед заменой.</p>
   <form id="settings">
     <label>Мир и ситуация · авторский канон<textarea name="world" maxlength="4000" rows="3">Ночной город, где воспоминания продаются в стеклянных флаконах. Я прихожу в закрытую лавку за своим потерянным прошлым.</textarea></label>
     <label>Персонаж<textarea name="character" maxlength="4000" rows="3">Мира — хозяйка лавки воспоминаний. Сдержанная, наблюдательная, с сухим юмором. Она знает обо мне больше, чем говорит.</textarea></label>
@@ -56,6 +56,7 @@
 <main id="chat-page">
   <header><div><span class="eyebrow">МЕЖДУ СТРОК · 6.0</span><h2 id="story-title">Ваша история</h2></div><div class="header-actions"><span id="badge">● Офлайн</span><button id="open-world" type="button">Мир</button><button id="open-settings" type="button" aria-label="Открыть настройки">⚙</button></div></header>
   <p id="memory" class="hint" aria-live="polite"></p>
+  <details id="situation" open><summary>Сейчас в истории</summary><p id="current-situation"></p><div id="situation-actions"></div><p id="recent-events"></p></details>
   <section id="messages" aria-label="Диалог" aria-live="polite"></section>
   <div class="compose"><p id="status" role="status">Запуск… Если кнопки не отвечают, откройте файл в браузере, а не в предпросмотре мессенджера.</p><div id="command-suggestions" class="command-suggestions" role="listbox" aria-label="Подходящие действия" hidden></div><form id="chat"><textarea id="message" aria-label="Ваш ответ" placeholder="Слово, вопрос или действие…" aria-autocomplete="list" aria-controls="command-suggestions" aria-expanded="false" rows="2" maxlength="6000" required></textarea><button id="send" type="submit">Отправить</button></form><p class="hint">Enter — отправить · Shift + Enter — новая строка</p></div>
 </main>

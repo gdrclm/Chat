@@ -39,14 +39,14 @@ function hideOptions(){
 }
 function showOptions(){
   const query=field.value.trim();
-  if(busy||query.length<2||query.includes('\n')){hideOptions();return;}
+  if(busy||query.includes('\n')){hideOptions();return;}
   currentOptions=engine.searchActions(state.memory,query,6);
   selectedOption=-1;optionMenu.replaceChildren();
   for(const [index,option]of currentOptions.entries()){
     const button=document.createElement('button');button.type='button';button.className='command-option';
     button.setAttribute('role','option');button.setAttribute('aria-selected','false');
     button.textContent=option.label;
-    button.addEventListener('click',()=>selectOption(index));optionMenu.append(button);
+    button.addEventListener('click',()=>selectOption(index,true));optionMenu.append(button);
   }
   optionMenu.hidden=!currentOptions.length;field.setAttribute('aria-expanded',String(Boolean(currentOptions.length)));
 }
@@ -55,12 +55,14 @@ function updateOptionSelection(){
     button.setAttribute('aria-selected',String(i===selectedOption));
   }
 }
-function selectOption(index){
+function selectOption(index,execute=false){
   const option=currentOptions[index];if(!option)return;
   field.value=option.command;hideOptions();field.focus();
   field.setSelectionRange(field.value.length,field.value.length);
+  if(execute)chat.requestSubmit();
 }
 function describeMention(target){
+  if(target.description)return target.description;
   const memory=state.memory,world=memory.world;
   if(target.type==='entity'){
     const item=memory.entities.find(e=>e.id===target.id);
@@ -93,11 +95,10 @@ function contextTargets(){
     if(exit.blocked)continue;
     targets.push({key:'exit:'+exit.name,type:'exit',label:exit.name,forms:[exit.name]});
   }
-  return targets;
+  return targets.map(target=>({...target,description:describeMention(target)}));
 }
-function matchesMention(word,form){
-  const token=normalizeWord(word),parts=normalizeWord(form).split(/[^a-zа-я0-9]+/u).filter(Boolean);
-  return parts.some(part=>token===part||(part.length>=5&&token.length>=5&&token.slice(0,4)===part.slice(0,4)));
+function mentionPattern(form){
+  return normalizeWord(form).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
 }
 function revealContext(section,target){
   const previous=section.querySelector('.context-panel');
@@ -106,8 +107,9 @@ function revealContext(section,target){
   const heading=document.createElement('strong');heading.textContent=target.label;
   const info=document.createElement('p');info.textContent=describeMention(target);
   panel.append(heading,info);
-  let options=engine.searchActions(state.memory,target.label,10);
-  if(target.type==='npc')options=options.filter(v=>v.kind==='talk');
+  const available=contextTargets().some(t=>t.key===target.key);
+  let options=available?engine.searchActions(state.memory,target.label,10):[];
+  if(target.type==='npc')options=options.filter(v=>['talk','question'].includes(v.kind));
   if(target.type==='exit')options=options.filter(v=>v.kind==='move');
   if(target.type==='entity')options=options.filter(v=>['inspect','open','close','take','use'].includes(v.kind)&&normalizeWord(v.command).includes(normalizeWord(target.label)));
   for(const option of options.slice(0,3)){
@@ -120,34 +122,40 @@ function revealContext(section,target){
   section.append(panel);
 }
 function renderRichText(textNode,section,rawText,targets){
-  const rowText=String(rawText||'');let cursor=0,count=0;
-  for(const match of rowText.matchAll(/[a-zа-яё][a-zа-яё-]{2,}/giu)){
-    if(count>=7)break;
-    const token=match[0],word=normalizeWord(token),start=match.index;
-    const matched=targets.filter(t=>t.forms.some(v=>matchesMention(word,v)));
-    const action=/^(?:откры|закры|осмотр|изуч|взят|взять|взгля|провер|спрос|поговор|приблиз|подой|поднять|приподня|прочит|использ|исслед|перейт)/u.test(word);
-    const target=matched.length===1?matched[0]:matched.length===0&&action
-      ?{key:'action:'+word,type:'action',label:token}:null;
-    if(!target)continue;
-    textNode.append(document.createTextNode(rowText.slice(cursor,start)));
-    const link=document.createElement('button');link.type='button';link.className='context-term';
-    link.textContent=token;link.setAttribute('aria-label','Подробнее: '+target.label);
-    link.addEventListener('click',()=>revealContext(section,target));
-    textNode.append(link);cursor=start+token.length;count++;
+  const text=String(rawText||''),normalized=normalizeWord(text),matches=[];
+  for(const target of targets)for(const form of target.forms){
+    if(!form)continue;
+    const pattern=new RegExp('(?<![a-zа-я0-9])'+mentionPattern(form)+'(?![a-zа-я0-9])','giu');
+    for(const match of normalized.matchAll(pattern))matches.push({start:match.index,end:match.index+match[0].length,target});
   }
-  textNode.append(document.createTextNode(rowText.slice(cursor)));
+  matches.sort((a,b)=>a.start-b.start||b.end-a.end);
+  let cursor=0;
+  for(const match of matches){
+    if(match.start<cursor)continue;
+    // Ambiguous names remain plain text instead of pointing to an arbitrary object.
+    if(matches.some(m=>m.start===match.start&&m.end===match.end&&m.target.key!==match.target.key))continue;
+    textNode.append(document.createTextNode(text.slice(cursor,match.start)));
+    const link=document.createElement('button');link.type='button';link.className='context-term';
+    link.textContent=text.slice(match.start,match.end);link.setAttribute('aria-label','Подробнее: '+match.target.label);
+    link.addEventListener('click',()=>revealContext(section,match.target));textNode.append(link);cursor=match.end;
+  }
+  textNode.append(document.createTextNode(text.slice(cursor)));
+}
+let renderedMessages=[],renderedDebug=debugView;
+function ensureOpening(){
+  if(state.messages.length)return;
+  const opening=engine.opening(state.config,state.memory);state.memory=opening.memory;
+  state.messages.push({role:'assistant',content:opening.text,utterances:[{speaker:{type:'narrator'},trigger:'opening',text:opening.text}],mentions:contextTargets()});save();
 }
 
 function render() {
-  list.replaceChildren();
-  if (!state.messages.length) {
-    const intro = document.createElement('div'); intro.className = 'intro';
-    const title = document.createElement('h3'); title.textContent = 'Каждая история начинается со слова.';
-    const text = document.createElement('p'); text.textContent = 'Напишите «осмотреться» или название того, что заинтересовало. По мере ввода появляются подходящие действия; выделенные слова в ответах раскрывают контекст без игрового хода.';
-    intro.append(title, text); list.append(intro);
-  }
-  const mentionTargets=contextTargets();
-  for (const message of state.messages) {
+  ensureOpening();
+  const atBottom=list.scrollHeight-list.scrollTop-list.clientHeight<80;
+  const reset=renderedDebug!==debugView||renderedMessages.length>state.messages.length||renderedMessages.some((m,i)=>state.messages[i]!==m);
+  if(reset){list.replaceChildren();renderedMessages=[];renderedDebug=debugView;}
+  for (const message of state.messages.slice(renderedMessages.length)) {
+    // Legacy saves have no historical snapshot: leave those references as plain text.
+    const mentionTargets=Array.isArray(message.mentions)?message.mentions:[];
     const item = document.createElement('article'); item.className = message.role;
     const utterances=message.role==='assistant'&&Array.isArray(message.utterances)&&message.utterances.length?message.utterances:[{speaker:{type:message.role==='user'?'player':'narrator'},text:message.content}];
     for(const row of utterances){
@@ -170,13 +178,15 @@ function render() {
     }
     list.append(item);
   }
+  renderedMessages=state.messages.slice();
   const profile = engine.profile(state.config);
   document.querySelector('#badge').textContent = '● Локально · 6.0';
   const currentNpc=state.memory.world.npcs[state.memory.world.activeNpcId];
   const title = state.memory.place || profile.title || 'Ваша история';
   document.querySelector('#story-title').textContent = title[0].toUpperCase() + title.slice(1);
-  document.querySelector('#memory').textContent = `${currentNpc?.name||'Нет собеседника'} · Доверие: ${currentNpc?.trust??'—'} · Монеты: ${state.memory.world.player.money} · Вещи: ${state.memory.inventory.join(', ') || 'нет'}`;
-  list.scrollTop = list.scrollHeight;
+  document.querySelector('#memory').textContent = `${currentNpc?.name||'Нет собеседника'} · Монеты: ${state.memory.world.player.money} · Вещи: ${state.memory.inventory.join(', ') || 'нет'}`;
+  if(atBottom||reset)list.scrollTop = list.scrollHeight;
+  renderSituation();
   document.querySelector('#remembered-goal').textContent = `Цель героя: ${state.memory.facts.goal || 'пока не названа'}. Цель собеседника: ${currentNpc?.motive||'разговор не начат' }.`;
   const journal = document.querySelector('#journal'); journal.replaceChildren();
   for (const event of state.memory.journal.filter(e => e.kind !== 'turn').slice(-14)) {
@@ -219,19 +229,20 @@ chat.addEventListener('submit', async event => {
     const result = engine.reply(state.config, state.memory, text);
     state.memory = result.memory;
     const answer = result.text;
-    state.messages.push({ role: 'assistant', content: answer, utterances:result.messages, outcome: { status:result.outcome.status, information:result.outcome.information, steps:result.results.map(r=>({status:r.status,intent:r.action.intent,target:r.action.targetLabel,goal:r.action.goal,method:r.action.method,expectedEffect:r.action.expectedEffect})) } }); status.textContent = ''; save();
+    state.messages.push({ role: 'assistant', content: answer, utterances:result.messages, mentions:contextTargets(), outcome: { status:result.outcome.status, information:result.outcome.information, steps:result.results.map(r=>({status:r.status,intent:r.action.intent,target:r.action.targetLabel,goal:r.action.goal,method:r.action.method,expectedEffect:r.action.expectedEffect})) } }); status.textContent = ''; save();
   } catch (error) {
     state.messages.pop(); field.value = text; status.textContent = `${error.message} Сообщение возвращено в поле ввода — попробуйте снова.`; save();
   } finally { busy = false; send.disabled = false; settings.querySelector('button').disabled = false; render(); }
 });
 field.addEventListener('input',showOptions);
+field.addEventListener('focus',showOptions);
 field.addEventListener('keydown',event=>{
   if(event.key==='ArrowDown'&&currentOptions.length){event.preventDefault();selectedOption=Math.min(currentOptions.length-1,selectedOption+1);updateOptionSelection();return;}
   if(event.key==='ArrowUp'&&currentOptions.length){event.preventDefault();selectedOption=Math.max(-1,selectedOption-1);updateOptionSelection();return;}
   if(event.key==='Escape'&&currentOptions.length){event.preventDefault();event.stopPropagation();hideOptions();return;}
   if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing){
     event.preventDefault();
-    if(selectedOption>=0&&currentOptions.length)selectOption(selectedOption);else send.click();
+    if(selectedOption>=0&&currentOptions.length)selectOption(selectedOption,true);else send.click();
   }
 });
 render();
@@ -268,10 +279,37 @@ document.querySelector('#close-settings').addEventListener('click', () => showSe
 document.querySelector('#open-world').addEventListener('click',()=>showPage('world'));
 document.querySelector('#close-world').addEventListener('click',()=>showPage('chat'));
 for(const preset of globalThis.StoryPresets){const option=document.createElement('option');option.value=preset.id;option.textContent=preset.name;document.querySelector('#story-preset').append(option);}
+document.querySelector('#start-preset').addEventListener('click',()=>{
+  const preset=globalThis.StoryPresets.find(p=>p.id===document.querySelector('#story-preset').value);if(!preset||busy)return;
+  if(state.memory.turn>0&&!confirm('Начать выбранную историю вместо текущей? Скачайте сохранение, если хотите вернуться к ней.'))return;
+  state={config:Object.fromEntries(['world','character','player','canon'].map(name=>[name,preset[name]||''])),messages:[],memory:engine.restore(preset,engine.fresh())};
+  for(const name of ['world','character','player','canon'])settings.elements.namedItem(name).value=state.config[name];
+  save();render();showPage('chat');
+});
 document.querySelector('#apply-preset').addEventListener('click',()=>{const preset=globalThis.StoryPresets.find(p=>p.id===document.querySelector('#story-preset').value);if(!preset)return;for(const name of ['world','character','player','canon'])settings.elements.namedItem(name).value=preset[name];settings.elements.namedItem('world').focus();});
 document.addEventListener('keydown', event => { if (event.key === 'Escape') showPage('chat'); });
 function issueCommand(command) {
   const draft=field.value;showPage('chat');field.value=command;send.click();field.value=draft;
+}
+function renderSituation(){
+  const m=state.memory,w=m.world,r=w.rpg;
+  const goal=r.goals.find(g=>g.id===r.primaryGoalId&&g.status==='active')||r.goals.find(g=>g.status==='active');
+  const work=w.loops.work;
+  const pending=w.player.pendingAction;
+  const completed=[...r.goals].reverse().find(g=>g.status==='completed');
+  const purpose=goal?.text||(completed?'Вы достигли цели: '+completed.text+'. Можно выбрать новый замысел.':m.facts.goal||state.config.world);
+  document.querySelector('#current-situation').textContent=purpose+(pending?' · Осталось уточнить незавершённое действие.':work.status==='accepted'?' · Вы приняли работу.':work.status==='completed'?' · Работа готова: можно получить плату.':'');
+  const box=document.querySelector('#situation-actions');box.replaceChildren();
+  const latest=state.messages.filter(msg=>msg.role==='assistant').at(-1);
+  let options=engine.searchActions(m,'',6);
+  if(latest?.outcome&&['refused','clarification'].includes(latest.outcome.status)){
+    const terms=latest.outcome.steps?.map(step=>step.target).filter(Boolean).join(' ')||'';
+    const focused=terms?engine.searchActions(m,terms,3):[];
+    options=[...focused,...options].filter((v,i,a)=>a.findIndex(o=>o.command===v.command)===i).slice(0,6);
+  }
+  for(const option of options){const b=document.createElement('button');b.type='button';b.textContent=option.label;b.addEventListener('click',()=>issueCommand(option.command));box.append(b);}
+  const events=m.journal.filter(e=>e.kind!=='turn').slice(-3);
+  document.querySelector('#recent-events').textContent=events.map(e=>e.text).join(' · ');
 }
 function renderWorld() {
   const memory=state.memory,world=memory.world,map=engine.map(memory);
@@ -305,7 +343,7 @@ function renderWorld() {
   const conflicts=document.querySelector('#relationship-records');conflicts.replaceChildren();
   const beliefs=document.querySelector('#belief-records');beliefs.replaceChildren();
   for(const n of Object.values(world.npcs)) {
-    if(n.dialogueState.status!=='undiscovered'){const rel=n.social.relationship,row=document.createElement('li');row.textContent=`${n.name}: доверие ${n.trust}, уважение ${rel.respect}, страх ${rel.fear}, подозрение ${rel.suspicion}, враждебность ${rel.hostility}, симпатия ${rel.affection}${n.social.cautious?' · сохраняет осторожность':''}`;values.append(row);}
+    if(n.dialogueState.status!=='undiscovered'){const rel=n.social.relationship,row=document.createElement('li');row.textContent=`${n.name}: ${debugView?`доверие ${n.trust}, уважение ${rel.respect}, страх ${rel.fear}, подозрение ${rel.suspicion}, враждебность ${rel.hostility}, симпатия ${rel.affection}`:n.social.cautious?'сохраняет осторожность':n.grievances.some(g=>!g.resolved)?'помнит неурегулированный конфликт':n.trust>1?'готов к сотрудничеству':'присматривается к герою'}`;values.append(row);}
     const sources={witness:'собственное наблюдение',report:'пересказ',missing:'обнаружена пропажа',confession:'признание',property_identified:'опознана вещь',promise:'срок обещания',agreement:'условия договора',damage_discovered:'обнаружен ущерб'};
     for(const k of Object.values(n.social.knowledge).slice(-8)){const row=document.createElement('li');row.textContent=`${n.name}: ${sources[k.source]||'получены сведения'} · виновник: ${k.actorId==='player'?'герой':world.npcs[k.actorId]?.name||'не установлен'} · уверенность ${Math.round(k.confidence*100)}%`;socialKnowledge.append(row);}
     for(const g of n.grievances){const row=document.createElement('li');row.textContent=`${n.name}: ${g.reason} · ${g.resolved?'примирение состоялось':`нужны извинение${g.apology?' (получено)':''} и значимый поступок: ${g.compensation?'возместить ущерб: '+g.compensation+' монеты':g.requiredItem||n.motive}${g.reparation?' (получено)':''}`}`;conflicts.append(row);}

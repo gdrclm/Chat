@@ -233,7 +233,8 @@
       for(const n of Object.values(s.world.npcs).filter(n=>n.location===where.id)){H.dialogue.notice(s,n);if(!social.noticed.includes(n.id))social.noticed.push(n.id);if(!social.encountered.includes(n.id))social.encountered.push(n.id);}
       const repaired=role(where)==='workshop'&&s.entities.some(e=>e.localKey==='mechanism'&&e.location===s.place&&e.condition==='repaired');
       const description=repaired?'В мастерской на верстаке работает собранный механизм. Причина прежней поломки устранена; инструменты сложены рядом.':where.scene.description;
-      return [{kind:'location',locationId:where.id,phase,text:description},...(seen.length?[{kind:'visible',locationId:where.id,phase,text:'Видно: '+seen.map(e=>'«'+e.label+'»').slice(0,5).join(', ')+'.'}]:[])];
+      const changes=phase==='arrival'?visualChanges(where.scene.lastSurveySnapshot,sceneSnapshot(s,where)):[];
+      return [{kind:'location',locationId:where.id,phase,text:description},...(seen.length?[{kind:'visible',locationId:where.id,phase,text:'Видно: '+seen.map(e=>'«'+e.label+'»').join(', ')+'.'}]:[]),...(changes.length?[{kind:'change',locationId:where.id,phase,text:'После вашего отсутствия: '+changes.join('; ')+'.'}]:[])];
     }
     // "Осмотреться" is a reusable scene overview, not a request for a delta.
     // Every call must show the present location, visible interactables,
@@ -311,6 +312,8 @@
           :overviewBlocks(s);
         if(changes.length)narration.push({kind:'change',locationId:where.id,text:'После прошлого осмотра: '+changes.join('; ')+'.'});
         if(revealed.length)narration.push({kind:'findings',locationId:where.id,text:'При осмотре заметно: '+revealed.map(label=>'«'+label+'»').join(', ')+'.'});
+        const concise=semantic?.concise||/что (?:здесь )?(?:изменилось|нового)|изменения вокруг/u.test(norm(text));
+        if(concise)narration.splice(0,narration.length,{kind:'observation',locationId:where.id,text:changes.length?'После прошлого осмотра: '+changes.join('; ')+'.':'После прошлого осмотра видимых изменений нет.'});
         const output=narration.map(block=>block.text).join('\n');
         const novel=m==='listen'
           ? Boolean(revealed.length||(!previousMethod&&ambient!=='Вы прислушиваетесь. Новых звуков не обнаружено.'))
@@ -555,6 +558,6 @@
       for(const id of affected){const place=s.world.locations.find(n=>n.id===id);if(!place.scene)continue;place.scene.revision++;place.scene.events.push({turn:s.turn,actionId:action.id,type:'physical_change'});place.scene.events=place.scene.events.slice(-20);}
     }
     function openedText(s,e){return sourceFacts(s,e).filter(f=>availableFact(s,e,f,'read')).map(f=>f.text).join('\n')||'В этом источнике пока нет заданных сведений.';}
-    return {init,handle,inspect,entry,entryBlocks,sourceLearnedAfter,changed,openedText,fact,research,permission,grantPermission};
+    return {overviewBlocks,init,handle,inspect,entry,entryBlocks,sourceLearnedAfter,changed,openedText,fact,research,permission,grantPermission};
   }};
 })(globalThis);

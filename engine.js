@@ -611,11 +611,11 @@
   function legacyStarts(text) {
     const head=normalizedInput(text).replace(/^(?:(?:я|мы|не|осторожно|быстро|медленно|теперь|сейчас)\s+)+/u,'');
     const delegated=/^(?:разреши|разрешите|оскорбляю|сообщаю|утверждаю|заявляю|арендую|оплачиваю|прикрываю|отхожу|отойти|отступаю|заканчиваю|прекращаю|одолжи|прошу одолжить|беру в долг|возмещаю|компенсирую|плачу|признаюсь|сознаюсь|обещаю|клянусь|верну|вернуть|приподнима|отодвига|сдвига|передвига|изгот[оа]в|устан[оа]в|делаю|сделать|вытач|согну|очища|чищу|смазыва|калибру|подбрасыва|подделыва|фабрикую|выношу|переношу|уношу|тащу|несу|покупаю|куплю|знакомлюсь)/u;
-    return delegated.test(head)||ACTIONS.some(([,re])=>new RegExp('^(?:'+re.source+')',re.flags).test(head));
+    return /^(?:работаю|чиню инструменты|помогаю в мастерской|выполняю работу)(?:[.!?]|$|\s)/u.test(head)||delegated.test(head)||ACTIONS.some(([,re])=>new RegExp('^(?:'+re.source+')',re.flags).test(head));
   }
 
   // Searchable actions are generated from the *current* scene, not the 325-item
-  // authoring catalog. A suggestion is a draft command, never an executed move.
+  // authoring catalog. Listing suggestions never executes a move.
   function contextOptions(s, query='', limit=6) {
     const items=[],used=new Set(),world=s.world||{},location=world.player?.location;
     const add=(command,label,kind,tags=[],rank=0)=>{
@@ -632,7 +632,7 @@
       add('Говорю с '+n.name,'Поговорить: '+n.name,'talk',[n.name,'разговор','общение','спросить'],6);
     }
     for(const e of s.entities||[]){
-      if(!e.known||e.hidden||e.destroyed||![s.place,'inventory'].includes(e.location))continue;
+      if(!e.known||e.hidden||e.destroyed||![s.place,'inventory'].includes(e.location)||!simulation.containerAccess(s,e))continue;
       const tags=[e.label,...(e.aliases||[])];
       add('Осматриваю '+e.label,'Осмотреть: '+e.label,'inspect',[...tags,'осмотреть','изучить','рассмотреть'],5);
       if(e.kind==='barrier'){
@@ -644,7 +644,7 @@
     }
     const partner=world.npcs?.[world.activeNpcId];
     if(partner&&partner.location===location&&!partner.hidden){
-      for(const t of root.ConversationTopics?.all||[]){
+      for(const t of [...(root.ConversationTopics?.all||[])].sort((a,b)=>Number(Boolean(partner.conversation?.discussedTopics[a.id]))-Number(Boolean(partner.conversation?.discussedTopics[b.id])))){
         if(!t.questions?.[0])continue;
         add(t.questions[0],'Спросить: '+t.label,'question',[t.label,t.id,...t.questions,'поговорить','спросить'],1);
       }
@@ -652,7 +652,13 @@
     for(const command of simulation.rpg.suggestions(s)||[])add(command,command,'situation',[command,'ситуация','предложение'],3);
     if(/мастерск|рынок|лавк/u.test(norm(s.place||'')))add('Ищу работу','Найти работу','work',['работа','подработка','заработок','задание'],2);
     const q=norm(query).trim(),parts=q.split(/\s+/u).filter(Boolean);
-    if(!parts.length)return [];
+    if(!parts.length){
+      const chosen=[];
+      const pick=predicate=>{const item=items.find(v=>predicate(v)&&!chosen.includes(v));if(item)chosen.push(item);};
+      pick(v=>v.kind==='inspect');pick(v=>v.kind==='talk');pick(v=>v.kind==='question');pick(v=>v.kind==='situation');
+      pick(v=>v.kind==='inspect'&&v.command!=='Осматриваюсь');pick(v=>v.kind==='move');pick(v=>v.kind==='work');
+      return [...chosen,...items.filter(v=>!chosen.includes(v))].slice(0,limit);
+    }
     return items.map((item,index)=>{
       const name=norm(item.label),body=norm(item.command),tags=norm(item.tags.join(' '));
       if(!parts.every(part=>name.includes(part)||body.includes(part)||tags.includes(part)))return null;
@@ -689,6 +695,7 @@
   }
 
   function resolveInput(s,text) {
+    if(/^(?:что (?:здесь )?(?:нового|изменилось)|изменения вокруг)[?.!]*$/iu.test(text.trim())){const p=semantic.resolve('Осматриваюсь',{...semantic.context(s),legacyStarts});p.steps[0].concise=true;return p;}
     const plan=semantic.resolve(text,{...semantic.context(s),legacyStarts});
     const pending=s.world.player.pendingAction;
     if(pending&&plan.steps.length===1&&!plan.steps[0].recognized&&!legacyStarts(text)&&plan.steps[0].mode==='execute'&&words(text).length<=8){
@@ -854,7 +861,7 @@
     const metaBefore=simulation.snapshot(s),meta=simulation.developer.tick(s);
     if(meta){meta.effects=simulation.effects(s,metaBefore,meta.action);root.StoryMessages.finish(s,meta);results.push(meta);}else root.StoryMessages.finish(s,{text:''});
     const due=simulation.runDue(s,p);results.push(...due);
-    const narration=root.StoryNarrator.compose({intro:s.turn===1?clean(config.world)||'История начинается.':'',results,event:eventResult.narration});
+    const narration=root.StoryNarrator.compose({intro:s.turn===1&&!s.openingShown?clean(config.world)||'История начинается.':'',results,event:eventResult.narration});
     let output=narration.text;
     const statuses=results.map(r=>r.status);
     let status=statuses.every(v=>v==='success')?'success':statuses.includes('partial_success')||statuses.includes('success')?'partial_success':statuses.includes('refused')?'refused':'clarification';
@@ -862,7 +869,14 @@
     if(goalAssessment?.status==='pending' && ['success','partial_success'].includes(status)){status='partial_success';narration.blocks.push({speaker:{type:'narrator'},trigger:'goal_assessment',text:goalAssessment.reason,effects:[]});output+='\n\n'+goalAssessment.reason;}
     const effects=results.flatMap(r=>r.effects||[]);
     const information={novel:results.some(r=>r.information?.novel),discoveries:[...new Set(results.flatMap(r=>r.information?.discoveries||[]))],opportunities:[...new Set(results.flatMap(r=>r.information?.opportunities||[]))]};
-    const outcome={status,goalAssessment,information,semanticPlan,results:results.map(r=>({status:r.status,code:r.code,reason:r.text,information:r.information||null,conversation:r.conversation||null,rpg:r.rpg||null,skipped:Boolean(r.skipped),performed:r.performed!==false,completed:Boolean(r.completed),action:r.action,effects:r.effects})),effects};
+    const failed=results.filter(r=>['refused','clarification'].includes(r.status)&&!r.skipped);
+    const recovery=failed.length?contextOptions(s,failed[0].action.targetLabel||'',6):[];
+    if(failed.length){
+      const alternatives=[...recovery,...contextOptions(s,'',6)].filter((v,i,a)=>a.findIndex(o=>o.command===v.command)===i).slice(0,3);
+      const help='Можно попробовать: '+alternatives.map(v=>'«'+v.command+'»').join('; ')+'. Если это другой замысел, назовите предмет и желаемое изменение.';
+      narration.blocks.push({speaker:{type:'narrator'},trigger:'recovery',text:help,effects:[]});output+='\n\n'+help;
+    }
+    const outcome={status,goalAssessment,information,recovery,semanticPlan,results:results.map(r=>({status:r.status,code:r.code,reason:r.text,information:r.information||null,conversation:r.conversation||null,rpg:r.rpg||null,skipped:Boolean(r.skipped),performed:r.performed!==false,completed:Boolean(r.completed),action:r.action,effects:r.effects})),effects};
     if(results.length>1) {
       const plan={id:'turn-plan:'+s.turn,actor:'player',goal:results[0].action.goal,expectedEffect:results[0].action.expectedEffect,steps:outcome.results,status,goalAssessment,causes:effects.map(e=>e.id)};
       s.world.plans.push(plan);s.world.plans=s.world.plans.slice(-40);
@@ -873,6 +887,7 @@
   }
   const simulation=root.StorySimulation.create({clean,norm,normalizedInput,words,stem,hash,clone,profile,matchEntity,addEntity,log,voice,resolveBarrier,containerText});
   root.StoryEngine={version:VERSION,release:'6.0',fresh,reply,profile,restore:init,reframe,parse,clauses,
+    opening(config,memory){const s=init(config,memory);const text=simulation.opening(s);s.openingShown=true;return {memory:s,text};},
     suggestions(memory){return simulation.rpg.suggestions(memory);},
     resolve(config,memory,text){const s=init(config,memory);return resolveInput(s,text);},
     searchActions(memory,query,limit=6){return memory?.world?contextOptions(memory,query,limit):[];},

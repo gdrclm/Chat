@@ -28,8 +28,7 @@ with sync_playwright() as p:
   page.locator('#message').fill('табурет')
   assert page.locator('#command-suggestions .command-option').count()>0
   page.locator('#command-suggestions .command-option').filter(has_text='Сажусь на табурет').tap()
-  assert page.locator('#message').input_value()=='Сажусь на табурет'
-  page.locator('#send').tap()
+  assert page.locator('#message').input_value()==''
   assert memory()['world']['player']['body']['posture']=='sitting'
   page.reload();assert memory()['world']['player']['body']['posture']=='sitting';send('Встаю')
   send('Ставлю цель: починить тележку');send('Начинаю собственную историю');send('Устраиваюсь на работу у Ильи');send('Ремонтирую тележку');send('Требую оплату услуги')
@@ -47,5 +46,6 @@ with sync_playwright() as p:
   assert page.locator('#command-suggestions .command-option').count()==0
   assert page.evaluate('document.documentElement.scrollHeight <= innerHeight + 2')
   assert not errors,errors
-  page.screenshot(path=f'/tmp/chat-60-mobile-{width}.png');context.close();print('6.0 mobile',width,height,'PASS',flush=True)
+  (Path(__file__).resolve().parents[1]/'work').mkdir(exist_ok=True)
+  page.screenshot(path=str(Path(__file__).resolve().parents[1]/'work'/f'chat-60-mobile-{width}.png'));context.close();print('6.0 mobile',width,height,'PASS',flush=True)
  browser.close()

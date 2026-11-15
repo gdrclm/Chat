@@ -1,8 +1,11 @@
 import http from 'node:http';
-import { readFile } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
 const files = { '/': ['index.html', 'text/html'], '/app.js': ['app.js', 'text/javascript'], '/engine.js': ['engine.js', 'text/javascript'], '/style.css': ['style.css', 'text/css'] };
+for(const name of await readdir(fileURLToPath(new URL('.',import.meta.url)))){
+  if(/^[a-z0-9-]+\.(?:js|css|html)$/i.test(name)&&name!=='server.js')files['/'+name]=[name,name.endsWith('.js')?'text/javascript':name.endsWith('.css')?'text/css':'text/html'];
+}
 const port = Number(process.env.PORT || 3000);
 http.createServer(async (req, res) => {
   try {

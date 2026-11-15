@@ -16,6 +16,7 @@
         if(name&&!['Привет','Спасибо','Извини','Хорошо','Ладно','Жду','Почему','Осматриваюсь','Нет','Да'].includes(name))return {type:pending.type,value:name,text};
       }
       if(pending.type==='player_goal'&&(/^(?:я\s+)?(?:ищу|хочу найти|хочу вернуть|мне нужно|моя цель|пришел за|пришла за)/iu.test(text)||c.intent==='custom'&&!/[?]/u.test(text)&&text.split(/\s+/).length<12&&!c.semantic?.unsupportedVerb))return {type:pending.type,value:text.replace(/^(?:я )?(?:ищу|хочу найти|моя цель\s*[:—]?|мне нужно)\s*/iu,'').replace(/[.!]+$/u,''),text};
+      if(pending.type.startsWith('everyday:')&&!c.semantic?.recognized&&['custom','talk'].includes(c.intent)&&!/[?]/u.test(text)&&(!c.semantic?.unsupportedVerb||/^(?:я )?(?:предпочитаю|люблю|мне нравится|мне нравятся)/iu.test(text)))return {type:pending.type,value:text,text};
       if(['motivation','intentions'].includes(pending.type)&&['custom','talk','goal'].includes(c.intent)&&!/[?]/u.test(text)&&!c.semantic?.unsupportedVerb)return {type:pending.type,value:text,text};
       return null;
     }
@@ -25,6 +26,7 @@
       if(n?.conversation.pendingNpcQuestion&&(!dialogue.active(s,n)||s.turn-n.conversation.pendingNpcQuestion.askedTurn>4))n.conversation.pendingNpcQuestion=null;
       const answer=playerAnswer(s,n,c);
       if(answer){a.conversation={kind:'player_answer',...answer};a.intent='conversation_answer';c.intent='talk';c.speech=true;c.hypothetical=false;c.negated=false;a.negated=false;c.conversation=a.conversation;return;}
+      if(a.intent==='work'&&!/[?]/u.test(text))return;
       if(mode==='negated'||c.negated)return;
       if(c.intent==='greet'&&a.recipientId!=='player'&&['execute','attempt'].includes(mode||'execute')){a.conversation={kind:'greeting',topicId:'name',raw:text};c.conversation=a.conversation;return;}
       let query=text;if(c.speech){const quoted=text.match(/[«"]([^»"]+)[»"]/u);if(quoted)query=quoted[1];}
@@ -160,6 +162,7 @@
       if(!n.memory.playerName&&canAsk(n,'player_name')&&['name','identity','acquaintance'].includes(request.topicId))return Memory.ask(n,'player_name','А как зовут вас?',s.turn);
       if(!n.memory.playerGoal&&canAsk(n,'player_goal')&&['presence','place','goal','occupation'].includes(request.topicId))return Memory.ask(n,'player_goal','А что ищете вы?',s.turn);
       if(n.memory.playerGoal&&canAsk(n,'motivation')&&['goal','plans','help'].includes(request.topicId))return Memory.ask(n,'motivation','Вы говорили, что хотите '+n.memory.playerGoal+'. Почему это для вас важно?',s.turn);
+      if(['food','drink','rest','hobbies','music'].includes(request.topicId)&&canAsk(n,'everyday:'+request.topicId))return Memory.ask(n,'everyday:'+request.topicId,'А вам что нравится? Если не хочется отвечать, можем сменить тему.',s.turn);
       return '';
     }
     function availableActions(n){
@@ -191,6 +194,7 @@
           if(type==='player_name'){n.memory.playerName=request.value;s.facts.name=request.value;log(s,'fact','Имя героя: '+request.value);text='Запомню: '+request.value+'.';}
           if(type==='player_goal'){n.memory.playerGoal=request.value;s.facts.goal=request.value;text='Вы ищете '+request.value+'. Я услышал, что для вас важно.';}
           if(type==='intentions'){n.memory.playerIntentions=request.value;text='Ваше объяснение я услышал. Доверие будут определять поступки.';}
+          if(type.startsWith('everyday:'))text='Запомню, что вам нравится. Хорошо иногда поговорить и о повседневном.';
           if(type==='motivation'){n.memory.playerMotivation=request.value;text='Я запомню, почему для вас это важно.';}
           n.memory.heardNotes||=[];if(!n.memory.heardNotes.includes(request.text))n.memory.heardNotes.push(request.text);n.memory.heardNotes=n.memory.heardNotes.slice(-50);
         }
@@ -237,6 +241,9 @@
       const credit='work:'+work.id,m=n.conversation;
       if(m.relationshipCredits.includes(credit)||before.work?.status===work.status||openGrievances(n).length)return;
       m.relationshipCredits.push(credit);social.change(s,n,{trust:1,respect:1,reliability:1});emit(s,'conversation_shared_experience',n.id,null,{kind:'completed_work',workId:work.id});
+      const acknowledgement='Вы довели работу до результата. Теперь я знаю, что на вас можно положиться.';
+      r.text+='\n'+dialogue.say(s,n,acknowledgement,'witness_event');
+      log(s,'relationship',n.name+': помнит выполненную работу и готов больше доверять герою.');
     }
     function unknown(s,p,c,a){
       const n=npc(s);if(!n||!here(s,n))return {status:'refused',code:'npc_absent',text:'Рядом нет собеседника.',effects:[]};

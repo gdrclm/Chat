@@ -607,9 +607,7 @@
         const w=s.world.loops.work;
         if(w.status!=='accepted'||w.type!=='repair')return no('Сначала договоритесь о подходящей работе.','no_active_job');
         if(!here(s,s.world.npcs[w.employer]))return no('Работа выполняется в мастерской нанимателя.','wrong_workplace');
-        if(w.lastWorkTurn===s.turn)return no('Вторую часть работы нужно сделать отдельным ходом.','work_needs_time');
-        w.lastWorkTurn=s.turn;w.progress++;if(w.progress>=2)w.status='completed';
-        return w.status==='completed'?ok('Обе части ремонта готовы. Теперь можно забрать плату.','job_completed'):partial('Первая часть ремонта готова. Осталась вторая.','job_progress');
+        return ask('Ремонт требует конкретного действия. Осмотрите повреждённый механизм, проверьте комплект деталей, затем изготовьте и установите штифт и проверьте ход.','specific_work_step');
       }
       if(a.intent==='deliver_job') {
         const w=s.world.loops.work,target=findNpc(s,'Лея',true),parcel=s.entities.find(v=>v.id===w.parcelId);
@@ -666,6 +664,6 @@
     const rpg=root.StoryRpg.create({...H,emit,truth,findNpc,findLocation,makeNpc,moveActor,containerAccess,dialogue,social,conversation,npc,here,flush,bind,hear,proposition});
     const spatial=root.StorySpatial.create({...H,emit,containerAccess});
     const scenes=root.StoryScenes.create({...H,npc,here,findLocation,openGrievances,emit,truth,containerAccess,spatial,dialogue,getExits:exits,sayNpc:(s,n,text,trigger)=>dialogue.say(s,n,text,trigger)});
-    return {dialogue,developer,social,conversation,rpg,containerAccess,inspectScene:scenes.inspect,openedText:scenes.openedText,init,analyze,handle,after,flush,bind,presence,npc,npcProfile,openGrievances,snapshot,effects,runDue,map,assessGoal,proposition,emit,truth,annotate,statuses,result};
+    return {dialogue,developer,social,conversation,rpg,containerAccess,opening:s=>scenes.overviewBlocks(s).map(b=>b.text).join("\n"),inspectScene:scenes.inspect,openedText:scenes.openedText,init,analyze,handle,after,flush,bind,presence,npc,npcProfile,openGrievances,snapshot,effects,runDue,map,assessGoal,proposition,emit,truth,annotate,statuses,result};
   }};
 })(globalThis);
